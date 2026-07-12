@@ -116,10 +116,30 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 - ⬜ Save / load project files; reproducible run manifests
 
 ### Milestone 3 — Three scales + gravity sweep
-- ⬜ Single‑leaf preset & validation
+- ✅ **Single‑leaf preset & gravity sweep — first science output (see §5a)**
 - ⬜ Rosette preset (multi‑leaf)
 - ⬜ Microgreen‑canopy preset (community/porous‑canopy)
-- ⬜ Automated gravity sweep with comparative dashboard
+- 🟡 Gravity sweep — 4 selectable presets (Earth/Mars/Moon/µg) + reproducible headless sweep done; automated in‑app comparative dashboard still to build
+
+#### 5a. First science result — single leaf, gravity sweep
+A 2-D Arabidopsis leaf (elliptical blade) sits in a closed chamber with ambient‑held walls. Its surface
+is a stomatal source/sink (CO₂ uptake, O₂ + H₂O release); the near‑leaf air is lighter (humid, CO₂‑depleted),
+so solutal Boussinesq buoyancy drives convection that sweeps the boundary layer — until gravity is reduced.
+Headless sweep, 30 000 steps each (reproducible; select any preset in the app and press Run):
+
+| Gravity | u_max (convection) | Ra (H₂O) | ΔC H₂O | ΔC CO₂ | ΔC O₂ |
+|---|---|---|---|---|---|
+| Earth 1 g | 4.6e‑2 | 1.4e4 | 0.128 | −0.161 | 0.113 |
+| Mars 0.38 g | 2.8e‑2 | 6.4e3 | 0.151 | −0.190 | 0.134 |
+| Moon 0.17 g | 1.6e‑2 | 3.3e3 | 0.176 | −0.224 | 0.157 |
+| **microgravity 0 g** | **0.0** | 0 | **0.231** | **−0.326** | **0.215** |
+
+**Result:** as gravity falls, convection weakens (u_max scales ≈ √g) and the surface‑to‑ambient gas gaps
+steepen monotonically. In microgravity convection vanishes and the gradients are ≈1.8–2× steeper than on
+Earth (CO₂ depletion doubles) — the leaf sits in stale, CO₂‑starved, humid air. This is the candidate
+spaceflight plant‑stress mechanism, now reproduced from first principles.
+*(Caveat: the δ boundary‑layer metric saturates against the small chamber here; ΔC is the robust signal.
+A larger domain + forced‑airflow comparison are the next refinements.)*
 
 ### Milestone 4 — Validation against real data
 - ⬜ Ingest Vernier O₂/RH/temperature `ExportedData` time series
