@@ -1,10 +1,13 @@
 import { LBMFluid } from '../solver/lbm/LBMFluid';
+import { ScalarField } from '../solver/lbm/ScalarField';
+import { applyBoussinesqForce } from '../solver/lbm/buoyancy';
 import { feq, viscosityFromRe, tauFromViscosity } from '../solver/lbm/d2q9';
 import { computeDimensionless } from '../solver/diagnostics/dimensionless';
 import { ghiaL2Error } from '../solver/diagnostics/ghia';
 import { StrouhalProbe } from '../solver/diagnostics/strouhal';
+import { diffusionStep } from '../solver/diagnostics/analytic';
 
-export type RenderMode = 'speed' | 'vorticity';
+export type RenderMode = 'speed' | 'vorticity' | 'scalar';
 
 export interface Readout {
   label: string;
@@ -17,6 +20,8 @@ export interface ScenarioInstance {
   readonly id: string;
   readonly label: string;
   readonly fluid: LBMFluid;
+  /** Present when the scenario carries a scalar (species/temperature) field. */
+  readonly scalarField?: ScalarField;
   readonly renderMode: RenderMode;
   /** Field value mapped to the top of the colormap. */
   readonly renderScale: number;
@@ -264,6 +269,177 @@ function buildCylinder(): ScenarioInstance {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Scenario 3 — Natural-convection cavity (validation gate 3: Nu vs Ra)
+//   Differentially heated square cavity (de Vahl Davis 1983). Hot left wall,
+//   cold right wall, adiabatic top/bottom, no-slip everywhere. Buoyancy from the
+//   temperature field drives a convection roll; the hot-wall Nusselt number must
+//   match the benchmark — the proof that the gravity/buoyancy coupling is right.
+// ---------------------------------------------------------------------------
+function buildNaturalConvection(): ScenarioInstance {
+  const N = 66; // 64 fluid cells + wall border
+  const H = N - 2;
+  const nu = 0.02;
+  const Pr = 0.71;
+  const kappa = nu / Pr; // thermal diffusivity
+  const Ra = 1e4; // de Vahl Davis reference: Nu_hot ≈ 2.238
+  const dT = 1;
+  // Buoyancy coefficient A = g·β chosen so that Ra = A·ΔT·H³ / (ν·κ).
+  const A = (Ra * nu * kappa) / (dT * H ** 3);
+
+  const tauF = tauFromViscosity(nu);
+  const fluid = new LBMFluid(N, N, tauF);
+  fluid.setEquilibrium(1, 0, 0);
+  fluid.enableForcing();
+
+  const temp = new ScalarField(fluid, kappa, 0.5); // tauC set from kappa in ctor
+
+  // Walls: full border no-slip. Left = hot Dirichlet, right = cold Dirichlet,
+  // top/bottom left adiabatic (no Dirichlet → zero-flux bounce-back).
+  for (let x = 0; x < N; x++) {
+    for (let y = 0; y < N; y++) {
+      const c = fluid.index(x, y);
+      const border = x === 0 || x === N - 1 || y === 0 || y === N - 1;
+      if (!border) continue;
+      fluid.solid[c] = 1;
+      if (x === 0) temp.setDirichlet(c, 1); // hot
+      else if (x === N - 1) temp.setDirichlet(c, 0); // cold
+    }
+  }
+
+  // Average hot-wall Nusselt number, normalised so pure conduction gives 1.
+  const nusseltHot = (): number => {
+    let sum = 0;
+    let n = 0;
+    for (let y = 1; y < N - 1; y++) {
+      const t1 = temp.C[fluid.index(1, y)];
+      // Nu_local = (T_wall − T[x=1]) · H / (ΔT · 0.5); wall midpoint is 0.5 in.
+      sum += ((1 - t1) * H) / (0.5 * dT);
+      n++;
+    }
+    return sum / n;
+  };
+
+  return {
+    id: 'natconv',
+    label: 'Natural-convection cavity (Ra 1e4)',
+    fluid,
+    scalarField: temp,
+    renderMode: 'scalar',
+    renderScale: 1,
+    postStream() {
+      /* walls handled by masks + Dirichlet */
+    },
+    onAfterStep() {
+      temp.step();
+      // Boussinesq force for the next fluid step: f_y = A·ρ·(T − 0.5), so warm
+      // fluid (T > 0.5) rises. A encodes g·β and sets the Rayleigh number.
+      applyBoussinesqForce(fluid, 0, A, [{ field: temp, beta: 1, ref: 0.5 }]);
+    },
+    diagnostics(step: number): Readout[] {
+      const Nu = nusseltHot();
+      const converged = step > 40000;
+      const inRange = Nu > 1.9 && Nu < 2.5;
+      const status: Readout['status'] = !converged
+        ? 'pending'
+        : inRange
+          ? 'pass'
+          : 'warn';
+      return [
+        { label: 'Rayleigh', value: Ra.toExponential(0) },
+        { label: 'Prandtl', value: Pr.toFixed(2) },
+        { label: 'steps', value: step.toLocaleString() },
+        { label: 'Nu (hot wall)', value: Nu.toFixed(3), status },
+        {
+          label: 'Gate 3 (buoyancy)',
+          value: !converged
+            ? 'converging…'
+            : inRange
+              ? 'PASS (Nu≈2.24)'
+              : 'off target',
+          status,
+        },
+      ];
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 4 — Pure diffusion (validation gate 4: error-function profile)
+//   No flow (g = 0, u = 0). An initial concentration step diffuses; the profile
+//   must follow C(x,t) = ½ erfc((x−x0)/(2√(Dt))) — the molecular-diffusion limit
+//   that dominates transport in microgravity once convection is switched off.
+// ---------------------------------------------------------------------------
+function buildDiffusion(): ScenarioInstance {
+  const nx = 200;
+  const ny = 8;
+  const D = 1 / 6; // diffusivity → tauC = 1.0
+  const x0 = nx / 2; // step between cells 99 and 100 → interface at 99.5
+  const iface = x0 - 0.5;
+
+  const fluid = new LBMFluid(nx, ny, tauFromViscosity(1 / 6));
+  fluid.setEquilibrium(1, 0, 0); // at rest; never stepped → pure diffusion
+
+  const conc = new ScalarField(fluid, D, 0);
+  conc.initField((x) => (x < x0 ? 1 : 0));
+
+  let latchedPass = false;
+
+  const l2Error = (step: number): number => {
+    const yrow = ny >> 1;
+    let sq = 0;
+    let n = 0;
+    for (let x = 1; x < nx - 1; x++) {
+      const analytic = diffusionStep(x, step, D, iface, 1, 0);
+      const d = conc.C[fluid.index(x, yrow)] - analytic;
+      sq += d * d;
+      n++;
+    }
+    return Math.sqrt(sq / n);
+  };
+
+  return {
+    id: 'diffusion',
+    label: 'Pure diffusion (erfc limit)',
+    fluid,
+    scalarField: conc,
+    renderMode: 'scalar',
+    renderScale: 1,
+    postStream() {
+      /* no flow */
+    },
+    onAfterStep() {
+      conc.step();
+    },
+    diagnostics(step: number): Readout[] {
+      const err = l2Error(step);
+      // Valid while the diffusion front has not reached the reflecting walls
+      // (~step 1800 for this domain); latch PASS once achieved in-window.
+      const inWindow = step >= 400 && step <= 1600;
+      if (inWindow && err < 0.02) latchedPass = true;
+      const status: Readout['status'] =
+        step < 400 ? 'pending' : latchedPass ? 'pass' : inWindow ? 'warn' : 'warn';
+      return [
+        { label: 'diffusivity D', value: D.toFixed(3) },
+        { label: 'steps', value: step.toLocaleString() },
+        { label: 'erfc L2 error', value: err.toFixed(4), status },
+        {
+          label: 'Gate 4 (diffusion)',
+          value:
+            step < 400
+              ? 'diffusing…'
+              : latchedPass
+                ? 'PASS (<0.02)'
+                : step > 1600
+                  ? 'window closed'
+                  : 'measuring…',
+          status,
+        },
+      ];
+    },
+  };
+}
+
 export const SCENARIOS: ScenarioDef[] = [
   {
     id: 'cavity',
@@ -278,5 +454,19 @@ export const SCENARIOS: ScenarioDef[] = [
     description:
       'Validation gate 2 — measures the Kármán vortex-shedding Strouhal number. Unconfined St ≈ 0.164 at Re 100; this confined channel (≈17% blockage) raises it to ≈ 0.19–0.20 (measured 0.196).',
     build: buildCylinder,
+  },
+  {
+    id: 'natconv',
+    label: 'Natural convection (buoyancy)',
+    description:
+      'Validation gate 3 — differentially heated cavity at Ra 1e4. Buoyancy from the temperature field drives a convection roll; the hot-wall Nusselt number must match de Vahl Davis (1983), Nu ≈ 2.24. This is the proof that the gravity/buoyancy coupling is physically correct.',
+    build: buildNaturalConvection,
+  },
+  {
+    id: 'diffusion',
+    label: 'Pure diffusion (microgravity limit)',
+    description:
+      'Validation gate 4 — with no flow, an initial concentration step must relax to the error-function profile C(x,t)=½ erfc((x−x0)/2√(Dt)). This molecular-diffusion limit is exactly what dominates gas transport once microgravity removes convection.',
+    build: buildDiffusion,
   },
 ];

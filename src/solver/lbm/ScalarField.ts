@@ -61,6 +61,18 @@ export class ScalarField {
     if (!this.source) this.source = new Float32Array(this.size);
   }
 
+  /**
+   * Per-solid-cell Dirichlet value. NaN → the wall stays zero-flux (Neumann /
+   * adiabatic). A finite value pins the concentration at the wall midpoint via
+   * anti-bounce-back (e.g. hot/cold walls, or a fixed ambient boundary).
+   */
+  dirichlet: Float32Array | null = null;
+
+  setDirichlet(cell: number, value: number): void {
+    if (!this.dirichlet) this.dirichlet = new Float32Array(this.size).fill(NaN);
+    this.dirichlet[cell] = value;
+  }
+
   private feq5(i: number, C: number, ux: number, uy: number): number {
     const eu = CX5[i] * ux + CY5[i] * uy;
     return W5[i] * C * (1 + eu / CS2_5);
@@ -68,6 +80,19 @@ export class ScalarField {
 
   setEquilibrium(C0: number): void {
     for (let c = 0; c < this.size; c++) {
+      this.C[c] = C0;
+      const base = c * Q5;
+      for (let i = 0; i < Q5; i++) this.g[base + i] = this.feq5(i, C0, 0, 0);
+    }
+  }
+
+  /** Initialise the concentration from a spatial function C0(x, y) (u = 0). */
+  initField(fn: (x: number, y: number) => number): void {
+    const nx = this.fluid.nx;
+    for (let c = 0; c < this.size; c++) {
+      const x = c % nx;
+      const y = (c / nx) | 0;
+      const C0 = fn(x, y);
       this.C[c] = C0;
       const base = c * Q5;
       for (let i = 0; i < Q5; i++) this.g[base + i] = this.feq5(i, C0, 0, 0);
@@ -100,8 +125,9 @@ export class ScalarField {
       }
     }
 
-    // streaming with zero-flux bounce-back at solids/borders
+    // streaming: bounce-back (zero-flux) or anti-bounce-back (Dirichlet) at walls
     const gtmp = this.gtmp;
+    const dir = this.dirichlet;
     for (let y = 0; y < ny; y++) {
       for (let x = 0; x < nx; x++) {
         const c = x + y * nx;
@@ -112,12 +138,21 @@ export class ScalarField {
           const yn = y + CY5[i];
           const gi = g[base + i];
           if (xn < 0 || xn >= nx || yn < 0 || yn >= ny) {
-            gtmp[base + OPP5[i]] = gi;
+            gtmp[base + OPP5[i]] = gi; // domain border: zero-flux
             continue;
           }
           const n = xn + yn * nx;
-          if (solid[n]) gtmp[base + OPP5[i]] = gi;
-          else gtmp[n * Q5 + i] = gi;
+          if (solid[n]) {
+            const cw = dir ? dir[n] : NaN;
+            if (!Number.isNaN(cw)) {
+              // Dirichlet wall (u_wall = 0): impose C = cw at the wall midpoint.
+              gtmp[base + OPP5[i]] = -gi + 2 * W5[i] * cw;
+            } else {
+              gtmp[base + OPP5[i]] = gi; // adiabatic / zero-flux
+            }
+          } else {
+            gtmp[n * Q5 + i] = gi;
+          }
         }
       }
     }

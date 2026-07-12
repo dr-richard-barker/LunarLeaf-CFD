@@ -46,7 +46,9 @@ export class FieldRenderer {
         }
 
         let rgb: [number, number, number];
-        if (renderMode === 'vorticity') {
+        if (renderMode === 'scalar' && instance.scalarField) {
+          rgb = viridis(instance.scalarField.C[c] / renderScale);
+        } else if (renderMode === 'vorticity') {
           const w = fluid.vorticity(x, y) / renderScale;
           rgb = diverging(w);
         } else {
