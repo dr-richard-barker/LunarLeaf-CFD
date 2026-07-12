@@ -1,0 +1,196 @@
+:root {
+  --bg: #0b0d17;
+  --panel: #151827;
+  --panel-2: #1d2133;
+  --ink: #e6e9f2;
+  --muted: #9aa3bd;
+  --accent: #5ec8ff;
+  --go: #2fbf71;
+  --stop: #e0654e;
+  --pass: #2fbf71;
+  --warn: #e0a13a;
+  --pending: #6b7392;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+header h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+  letter-spacing: 0.2px;
+}
+
+header .sub {
+  color: var(--muted);
+  margin: 0 0 18px;
+  font-size: 13px;
+  max-width: 760px;
+  line-height: 1.5;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.viewport canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #000;
+  border: 1px solid #2a2f45;
+  border-radius: 10px;
+  image-rendering: pixelated;
+}
+
+.viewport .mode {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 8px 2px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid #2a2f45;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.group {
+  margin-bottom: 18px;
+}
+
+.group label,
+.group h2 {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+select,
+input[type='range'] {
+  width: 100%;
+}
+
+select {
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid #333a55;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+.controls button {
+  flex: 1;
+  padding: 9px 6px;
+  border-radius: 8px;
+  border: 1px solid #333a55;
+  background: var(--panel-2);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.controls button.go {
+  background: var(--go);
+  border-color: var(--go);
+  color: #062b16;
+}
+
+.controls button.stop {
+  background: var(--stop);
+  border-color: var(--stop);
+  color: #300f08;
+}
+
+.readouts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.readouts td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #262b40;
+}
+
+.readouts td.val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.readouts tr.pass td.val {
+  color: var(--pass);
+  font-weight: 700;
+}
+
+.readouts tr.warn td.val {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.readouts tr.pending td.val {
+  color: var(--pending);
+}
+
+.foot {
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.foot code {
+  color: var(--ink);
+  background: var(--panel-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}

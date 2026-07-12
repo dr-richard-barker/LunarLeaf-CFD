@@ -5,3 +5,5 @@ dist/
 .DS_Store
 validation/*.csv
 validation/*.xlsx
+scratch_val.*
+scratch_cyl.log

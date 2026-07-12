@@ -83,17 +83,25 @@ publication‑grade data and figures. Full design: [`docs/ARCHITECTURE_AND_PLAN.
 Status legend: ✅ done · 🟡 in progress · ⬜ not started
 
 ### Milestone 0 — Foundations
-- ⬜ Repo scaffolding (this README, docs, LICENSE, `.zenodo.json`, `CITATION.cff`)
+- 🟡 Repo scaffolding — README, docs, Vite+React+TS app scaffolded; LICENSE, `.zenodo.json`, `CITATION.cff` still to add
 - ⬜ Consolidate three prototypes into `/legacy` for reference & credit
-- ⬜ Decide stack & pin versions (React + TS + R3F confirmed from prototypes; solver stack TBD in plan)
-- ⬜ Define the canonical parameter schema (geometry, domain, environment, gravity, biology, solver)
+- ✅ Decide stack & pin versions — React 18 + TypeScript + Vite; CPU D2Q9 LBM core (WebGPU/WASM twin deferred to later milestones per plan)
+- 🟡 Define the canonical parameter schema — solver/scenario types in place; full UI schema (geometry/env/biology) comes with M2
 
 ### Milestone 1 — Real 2D solver (the scientific core)
-- ⬜ Incompressible flow solver (LBM or projection FD) — validated on lid‑driven cavity + flow‑past‑cylinder
-- ⬜ Scalar advection–diffusion for CO₂, O₂, H₂O with correct diffusivities
-- ⬜ Boussinesq buoyancy coupled to a **user‑set gravity vector** (µg → 1 g)
+- 🟡 Incompressible flow solver (D2Q9 LBM, BGK) — **built and validated on both benchmarks** (see below); scalar/buoyancy modules written, not yet wired to a scenario
+- 🟡 Scalar advection–diffusion for CO₂, O₂, H₂O — D2Q5 `ScalarField` implemented with correct diffusivities; validation gate 4 (pure-diffusion erf limit) still to wire
+- 🟡 Boussinesq buoyancy coupled to a **user‑set gravity vector** (µg → 1 g) — `applyBoussinesqForce` + gravity presets implemented; gate 3 (natural-convection Nu–Ra) still to wire
 - ⬜ Leaf boundary as source/sink (stomatal flux BCs)
-- ⬜ Report Gr, Ra, Re, Sh, Nu, δ, g_bl each run
+- 🟡 Report Gr, Ra, Re, Sh, Nu, δ, g_bl each run — Re/Gr/Ra/Pe/Sc reporter implemented; δ, Sh, g_bl come with the leaf scenario
+
+#### Milestone 1 validation results (headless, reproducible)
+| Gate | Benchmark | Expected | Measured | Status |
+|---|---|---|---|---|
+| **1** | Lid-driven cavity, Re 100 — centreline vs. Ghia et al. (1982) | L2 < 0.05 | **L2 = 0.0105** (11k steps) | ✅ PASS |
+| **2** | Flow past cylinder, Re 100 — Kármán shedding Strouhal | 0.164 unconfined; ≈0.19–0.20 at ~17% blockage | **St = 0.192** (16 cycles, 40k steps) | ✅ PASS |
+
+Run the interactive bench with `npm install && npm run dev` → open the Scenario selector, press **Run**, watch the diagnostics/gate panel. (A visible browser tab is needed — background tabs throttle `requestAnimationFrame` to zero.)
 
 ### Milestone 2 — User‑friendly GUI (professional‑package features)
 - ⬜ Import 3D models (STL / OBJ / GLB / PLY) + parametric leaf‑shape generator
@@ -165,7 +173,7 @@ Kept out of git until curated; sources noted for the deposit.
 
 ---
 
-## 10. Repository structure (target)
+## 10. Repository structure
 ```
 LunarLeaf_CFD/
 ├── README.md                     ← this file (the living goal tracker)
@@ -173,8 +181,15 @@ LunarLeaf_CFD/
 │   ├── ANALYSIS_OF_PRIOR_ATTEMPTS.md
 │   ├── ARCHITECTURE_AND_PLAN.md
 │   └── PHYSICS_NOTES.md          ← governing equations & dimensionless numbers (to add)
-├── legacy/                       ← the three AI‑Studio prototypes, preserved for credit/reference
-├── src/                          ← the consolidated app (to build)
+├── src/                          ← the consolidated app (Milestone 1 scaffolded)
+│   ├── solver/lbm/               ← d2q9, LBMFluid, ScalarField, buoyancy
+│   ├── solver/diagnostics/       ← dimensionless numbers, Ghia reference, Strouhal probe
+│   ├── scenarios/                ← cavity + cylinder validation cases
+│   ├── render/                   ← colormaps + field rasteriser
+│   ├── sim/                      ← SimulationController (RAF loop)
+│   └── ui/                       ← App.tsx debug bench
+├── index.html · package.json · vite.config.ts · tsconfig.json
+├── legacy/                       ← the three AI‑Studio prototypes (to import for credit/reference)
 ├── validation/                   ← measured datasets + comparison notebooks (to add)
 ├── .zenodo.json                  ← (to add)
 └── CITATION.cff                  ← (to add)
