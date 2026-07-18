@@ -441,30 +441,153 @@ function buildDiffusion(): ScenarioInstance {
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 5 — Single Arabidopsis leaf, gravity sweep (first science output)
+// Scenarios 5–7 — Arabidopsis at three scales, gravity sweep (the science)
 //
-//   A thin leaf (elliptical cross-section) sits in a closed chamber whose outer
-//   walls hold ambient concentrations (Dirichlet = 0 excess). The leaf surface is
-//   a stomatal source/sink: CO2 uptake (sink), O2 + H2O release (source). The
-//   near-leaf air is lighter (humid + CO2-depleted), so under gravity it rises —
-//   solutal Boussinesq buoyancy — continually sweeping the boundary layer. Fields
-//   are stored as excess-over-ambient, so ambient = 0 and CO2 goes negative.
-//
-//   Sweeping the gravity ratio g/g_earth (Earth → Mars → Moon → microgravity)
-//   weakens convection; the boundary layer thickens and the surface-to-ambient
-//   gaps ΔC steepen — the mechanism this whole project exists to model.
+//   A plant (single leaf → rosette → microgreen canopy) exchanges gas through a
+//   stomatal source/sink on its surface: CO2 uptake (sink), O2 + H2O release
+//   (source). The near-surface air is lighter (humid + CO2-depleted), so under
+//   gravity it rises — solutal Boussinesq buoyancy — sweeping the boundary layer.
+//   Reducing gravity weakens convection; the surface-to-ambient gaps ΔC steepen,
+//   and denser geometries (rosette, canopy) trap air and amplify the effect.
+//   Fields store excess-over-ambient, so ambient = 0 and CO2 goes negative.
 // ---------------------------------------------------------------------------
-function buildSingleLeaf(id: string, label: string, gRatio: number): () => ScenarioInstance {
+
+interface Species {
+  co2: ScalarField;
+  o2: ScalarField;
+  h2o: ScalarField;
+}
+
+/** Mark the full domain border as no-slip walls held at ambient concentration. */
+function chamberWalls(fluid: LBMFluid, sp: Species): void {
+  const { nx, ny } = fluid;
+  for (let x = 0; x < nx; x++) {
+    for (let y = 0; y < ny; y++) {
+      if (x !== 0 && x !== nx - 1 && y !== 0 && y !== ny - 1) continue;
+      const c = fluid.index(x, y);
+      fluid.solid[c] = 1;
+      sp.co2.setDirichlet(c, 0);
+      sp.o2.setDirichlet(c, 0);
+      sp.h2o.setDirichlet(c, 0);
+    }
+  }
+}
+
+/** Rasterise a (possibly rotated) solid ellipse into the fluid + isLeaf masks. */
+function stampEllipse(
+  fluid: LBMFluid,
+  isLeaf: Uint8Array,
+  cx: number,
+  cy: number,
+  a: number,
+  b: number,
+  angle: number,
+): void {
+  const ca = Math.cos(angle);
+  const sa = Math.sin(angle);
+  const R = Math.ceil(Math.max(a, b)) + 1;
+  const x0 = Math.max(0, Math.floor(cx - R));
+  const x1 = Math.min(fluid.nx - 1, Math.ceil(cx + R));
+  const y0 = Math.max(0, Math.floor(cy - R));
+  const y1 = Math.min(fluid.ny - 1, Math.ceil(cy + R));
+  for (let x = x0; x <= x1; x++) {
+    for (let y = y0; y <= y1; y++) {
+      const dx = x - cx;
+      const dy = y - cy;
+      const lx = dx * ca + dy * sa;
+      const ly = -dx * sa + dy * ca;
+      if ((lx / a) ** 2 + (ly / b) ** 2 <= 1) {
+        const c = fluid.index(x, y);
+        fluid.solid[c] = 1;
+        isLeaf[c] = 1;
+      }
+    }
+  }
+}
+
+// --- geometry: single leaf (closed chamber, one horizontal blade) ---
+function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+  chamberWalls(fluid, sp);
+  const isLeaf = new Uint8Array(fluid.size);
+  stampEllipse(fluid, isLeaf, fluid.nx / 2, fluid.ny / 2, 26, 4, 0);
+  return { isLeaf, charLen: 52 };
+}
+
+// --- geometry: rosette (closed chamber, fan of overlapping leaves) ---
+function rosetteGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+  chamberWalls(fluid, sp);
+  const isLeaf = new Uint8Array(fluid.size);
+  const cx = fluid.nx / 2;
+  const cy = fluid.ny / 2;
+  const a = 20;
+  const b = 3.4;
+  const off = 15; // leaf-centre offset from the crown
+  const anglesDeg = [22, 8, -8, -22, 158, 172, 188, 202];
+  for (const deg of anglesDeg) {
+    const ang = (deg * Math.PI) / 180;
+    stampEllipse(fluid, isLeaf, cx + off * Math.cos(ang), cy + off * Math.sin(ang), a, b, ang);
+  }
+  return { isLeaf, charLen: 70 };
+}
+
+// --- geometry: microgreen canopy (soil floor, row of upright shoots) ---
+function canopyGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+  const { nx, ny } = fluid;
+  const isLeaf = new Uint8Array(fluid.size);
+  // Top + side walls: ambient (open room). Bottom is soil (adiabatic), added next.
+  for (let x = 0; x < nx; x++) {
+    for (let y = 0; y < ny; y++) {
+      if (x !== 0 && x !== nx - 1 && y !== ny - 1) continue;
+      const c = fluid.index(x, y);
+      fluid.solid[c] = 1;
+      sp.co2.setDirichlet(c, 0);
+      sp.o2.setDirichlet(c, 0);
+      sp.h2o.setDirichlet(c, 0);
+    }
+  }
+  for (let x = 0; x < nx; x++) fluid.solid[fluid.index(x, 0)] = 1; // soil floor (no Dirichlet)
+  // Upright shoots standing on the soil, packed like a lawn. Microgreens are
+  // short; kept sparse enough that the within-canopy air still accumulates while
+  // the density perturbation stays in the Boussinesq/low-Mach regime.
+  const spacing = 12;
+  const halfW = 1.7;
+  const height = 13;
+  for (let bx = spacing; bx < nx - spacing + 1; bx += spacing) {
+    stampEllipse(fluid, isLeaf, bx, 1 + height, halfW, height, 0);
+  }
+  return { isLeaf, charLen: 26 };
+}
+
+type Geometry = (fluid: LBMFluid, sp: Species) => { isLeaf: Uint8Array; charLen: number };
+
+interface LeafSceneCfg {
+  id: string;
+  label: string;
+  gRatio: number;
+  nx: number;
+  ny: number;
+  renderScale: number;
+  geometry: Geometry;
+  /** Per-area flux multiplier (default 1). <1 models canopy self-shading, which
+   *  lowers per-leaf assimilation and keeps a dense stand in the Boussinesq regime. */
+  sourceScale?: number;
+}
+
+/**
+ * Shared builder for the three plant scales. Wires the stomatal source/sink onto
+ * whatever surface the geometry defines, couples solutal buoyancy to a gravity
+ * vector, and reports convection strength + the surface gaps (mean and peak — the
+ * peak captures the worst trapped/interior spot that rosettes and canopies create).
+ */
+function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
   return () => {
-    const nx = 128;
-    const ny = 96;
+    const { nx, ny } = cfg;
     const nu = 0.02;
     const fluid = new LBMFluid(nx, ny, tauFromViscosity(nu));
     fluid.setEquilibrium(1, 0, 0);
     fluid.enableForcing();
 
-    // Species (excess over ambient). Diffusivities keep the real D ordering
-    // D_CO2 < D_O2 < D_H2O and sit in a stable tauC range.
+    // Species (excess over ambient); D_CO2 < D_O2 < D_H2O as in air.
     const co2 = new ScalarField(fluid, 0.033, 0);
     const o2 = new ScalarField(fluid, 0.042, 0);
     const h2o = new ScalarField(fluid, 0.05, 0);
@@ -472,51 +595,25 @@ function buildSingleLeaf(id: string, label: string, gRatio: number): () => Scena
     o2.enableSource();
     h2o.enableSource();
 
-    // Outer chamber walls: no-slip + ambient (0) Dirichlet for every species.
-    for (let x = 0; x < nx; x++) {
-      for (let y = 0; y < ny; y++) {
-        const border = x === 0 || x === nx - 1 || y === 0 || y === ny - 1;
-        if (!border) continue;
-        const c = fluid.index(x, y);
-        fluid.solid[c] = 1;
-        co2.setDirichlet(c, 0);
-        o2.setDirichlet(c, 0);
-        h2o.setDirichlet(c, 0);
-      }
-    }
+    const { isLeaf, charLen } = cfg.geometry(fluid, { co2, o2, h2o });
 
-    // Leaf: thin horizontal ellipse at the chamber centre.
-    const cx = nx / 2;
-    const cy = ny / 2;
-    const aLeaf = 26; // horizontal half-length
-    const bLeaf = 4; // half-thickness
-    const isLeaf = new Uint8Array(fluid.size);
-    for (let x = 0; x < nx; x++) {
-      for (let y = 0; y < ny; y++) {
-        if (((x - cx) / aLeaf) ** 2 + ((y - cy) / bLeaf) ** 2 <= 1) {
-          const c = fluid.index(x, y);
-          fluid.solid[c] = 1;
-          isLeaf[c] = 1;
-        }
-      }
-    }
-
-    // Stomatal fluxes on fluid cells adjacent to the leaf surface. Kept small so
+    // Stomatal fluxes on fluid cells adjacent to the plant surface. Kept small so
     // the surface excess ΔC stays ≪ 1 (Boussinesq small-perturbation regime).
-    const S_CO2 = 5e-4; // uptake (sink)
-    const S_O2 = 4e-4; // release
-    const S_H2O = 5e-4; // transpiration (release)
+    const sScale = cfg.sourceScale ?? 1;
+    const S_CO2 = 5e-4 * sScale;
+    const S_O2 = 4e-4 * sScale;
+    const S_H2O = 5e-4 * sScale;
     const surfaceCells: number[] = [];
     for (let x = 1; x < nx - 1; x++) {
       for (let y = 1; y < ny - 1; y++) {
         const c = fluid.index(x, y);
         if (fluid.solid[c]) continue;
-        const touchesLeaf =
+        const touches =
           isLeaf[fluid.index(x + 1, y)] ||
           isLeaf[fluid.index(x - 1, y)] ||
           isLeaf[fluid.index(x, y + 1)] ||
           isLeaf[fluid.index(x, y - 1)];
-        if (touchesLeaf) {
+        if (touches) {
           surfaceCells.push(c);
           co2.source![c] = -S_CO2;
           o2.source![c] = S_O2;
@@ -525,41 +622,25 @@ function buildSingleLeaf(id: string, label: string, gRatio: number): () => Scena
       }
     }
 
-    // Buoyancy. Base lattice coefficient tuned so Earth gravity gives a clear
-    // convective roll (u_max ~ 0.05) at low Mach. Signed density coefficients:
-    // humid air lighter (β<0); CO2 heavier (β>0, but it is depleted → lighter);
+    // Buoyancy: humid air lighter (β<0); CO2 heavier (β>0, but depleted → lighter);
     // O2 slightly heavier (β>0). Gravity points down (−y), scaled by g/g_earth.
     const B = 8e-4;
-    const gLat = B * gRatio;
+    const gLat = B * cfg.gRatio;
     const contributors = [
       { field: h2o, beta: -1.0, ref: 0 },
       { field: co2, beta: 0.7, ref: 0 },
       { field: o2, beta: 0.5, ref: 0 },
     ];
 
-    const leafLen = 2 * aLeaf;
-    const colCx = Math.round(cx);
-    // First fluid cell directly above the leaf at the centre column.
-    let leafTop = Math.round(cy);
-    while (leafTop > 1 && fluid.solid[fluid.index(colCx, leafTop)]) leafTop--;
-
-    // Average excess over the surface cells (surface−ambient gap ΔC).
-    const surfaceMean = (field: ScalarField): number => {
-      let s = 0;
-      for (const c of surfaceCells) s += field.C[c];
-      return s / surfaceCells.length;
-    };
-
-    // Concentration boundary-layer thickness: distance above the leaf where the
-    // H2O excess falls below 1% of its surface value.
-    const boundaryLayer = (): number => {
-      const surf = h2o.C[fluid.index(colCx, leafTop)];
-      if (surf <= 1e-9) return 0;
-      const thresh = 0.01 * surf;
-      for (let y = leafTop - 1; y >= 1; y--) {
-        if (h2o.C[fluid.index(colCx, y)] < thresh) return leafTop - y;
+    const surfaceStats = (field: ScalarField): { mean: number; peak: number } => {
+      let sum = 0;
+      let peak = 0;
+      for (const c of surfaceCells) {
+        const v = field.C[c];
+        sum += v;
+        if (Math.abs(v) > Math.abs(peak)) peak = v;
       }
-      return leafTop - 1;
+      return { mean: sum / surfaceCells.length, peak };
     };
 
     const maxSpeed = (): number => {
@@ -573,14 +654,14 @@ function buildSingleLeaf(id: string, label: string, gRatio: number): () => Scena
     };
 
     return {
-      id,
-      label,
+      id: cfg.id,
+      label: cfg.label,
       fluid,
       scalarField: h2o,
       renderMode: 'scalar',
-      renderScale: 0.12,
+      renderScale: cfg.renderScale,
       postStream() {
-        /* chamber walls handled by masks + Dirichlet */
+        /* walls handled by masks + Dirichlet */
       },
       onAfterStep() {
         co2.step();
@@ -591,57 +672,86 @@ function buildSingleLeaf(id: string, label: string, gRatio: number): () => Scena
       diagnostics(step: number): Readout[] {
         fluid.computeMacroscopic();
         const umax = maxSpeed();
-        const dCw = surfaceMean(h2o);
-        const dCc = surfaceMean(co2);
-        const dCo = surfaceMean(o2);
-        const delta = boundaryLayer();
-        // Solutal Rayleigh for the water-vapour plume (∝ g).
+        const w = surfaceStats(h2o);
+        const cc = surfaceStats(co2);
+        const oo = surfaceStats(o2);
         const Sc = nu / 0.05;
-        const Gr = (gLat * Math.abs(dCw) * leafLen ** 3) / (nu * nu);
-        const Ra = Gr * Sc;
-        const gAbs = gRatio * GRAVITY.earth;
+        const Ra = ((gLat * Math.abs(w.mean) * charLen ** 3) / (nu * nu)) * Sc;
+        const gAbs = cfg.gRatio * GRAVITY.earth;
         return [
-          { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${gRatio.toFixed(3)} g)` },
+          { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${cfg.gRatio.toFixed(3)} g)` },
           { label: 'steps', value: step.toLocaleString() },
           { label: 'u_max (convection)', value: umax.toExponential(2) },
           { label: 'Rayleigh (H₂O)', value: Ra.toExponential(1) },
-          { label: 'δ boundary layer', value: `${delta} cells` },
-          { label: 'ΔC H₂O (surface)', value: dCw.toFixed(3) },
-          { label: 'ΔC CO₂ (surface)', value: dCc.toFixed(3) },
-          { label: 'ΔC O₂ (surface)', value: dCo.toFixed(3) },
+          { label: 'ΔC H₂O  mean/peak', value: `${w.mean.toFixed(3)} / ${w.peak.toFixed(3)}` },
+          { label: 'ΔC CO₂  mean/peak', value: `${cc.mean.toFixed(3)} / ${cc.peak.toFixed(3)}` },
+          { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
         ];
       },
     };
   };
 }
 
+const R2E = GRAVITY.mars / GRAVITY.earth;
+const M2E = GRAVITY.moon / GRAVITY.earth;
+
 const LEAF_DESC =
-  'Single Arabidopsis leaf in a chamber — stomatal CO₂ uptake + O₂/H₂O release, with solutal buoyancy. Watch u_max, the boundary-layer thickness δ, and the surface gaps ΔC change as gravity is swept. Run each preset to steady state (~30k steps) and compare.';
+  'Single Arabidopsis leaf in a closed chamber — stomatal CO₂ uptake + O₂/H₂O release with solutal buoyancy. Sweep gravity (select each preset, Run ~30k steps) and watch u_max fall and the surface gaps ΔC steepen.';
+const ROSETTE_DESC =
+  'A rosette of overlapping leaves. Leaves shade each other’s airflow and trap air near the crown, so the interior surface gaps (ΔC peak) run steeper than an isolated leaf — an effect that worsens as gravity falls.';
+const CANOPY_DESC =
+  'A microgreen “lawn” — a dense row of upright shoots on soil, ambient above. Convection ventilates only the canopy top; the within-canopy air stagnates, and in microgravity the whole stand’s gas gaps blow out.';
+
+const DOM = { nx: 128, ny: 96 };
 
 export const SCENARIOS: ScenarioDef[] = [
   {
     id: 'leaf-earth',
     label: 'Leaf · Earth (1 g)',
     description: LEAF_DESC,
-    build: buildSingleLeaf('leaf-earth', 'Single leaf — Earth (1 g)', 1),
+    build: makeLeafScene({ ...DOM, id: 'leaf-earth', label: 'Single leaf — Earth (1 g)', gRatio: 1, renderScale: 0.12, geometry: leafGeometry }),
   },
   {
     id: 'leaf-mars',
     label: 'Leaf · Mars (0.38 g)',
     description: LEAF_DESC,
-    build: buildSingleLeaf('leaf-mars', 'Single leaf — Mars (0.38 g)', GRAVITY.mars / GRAVITY.earth),
+    build: makeLeafScene({ ...DOM, id: 'leaf-mars', label: 'Single leaf — Mars (0.38 g)', gRatio: R2E, renderScale: 0.12, geometry: leafGeometry }),
   },
   {
     id: 'leaf-moon',
     label: 'Leaf · Moon (0.17 g)',
     description: LEAF_DESC,
-    build: buildSingleLeaf('leaf-moon', 'Single leaf — Moon (0.17 g)', GRAVITY.moon / GRAVITY.earth),
+    build: makeLeafScene({ ...DOM, id: 'leaf-moon', label: 'Single leaf — Moon (0.17 g)', gRatio: M2E, renderScale: 0.12, geometry: leafGeometry }),
   },
   {
     id: 'leaf-ug',
     label: 'Leaf · microgravity (0 g)',
     description: LEAF_DESC,
-    build: buildSingleLeaf('leaf-ug', 'Single leaf — microgravity (0 g)', 0),
+    build: makeLeafScene({ ...DOM, id: 'leaf-ug', label: 'Single leaf — microgravity (0 g)', gRatio: 0, renderScale: 0.12, geometry: leafGeometry }),
+  },
+  {
+    id: 'rosette-earth',
+    label: 'Rosette · Earth (1 g)',
+    description: ROSETTE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'rosette-earth', label: 'Rosette — Earth (1 g)', gRatio: 1, renderScale: 0.18, geometry: rosetteGeometry }),
+  },
+  {
+    id: 'rosette-ug',
+    label: 'Rosette · microgravity (0 g)',
+    description: ROSETTE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'rosette-ug', label: 'Rosette — microgravity (0 g)', gRatio: 0, renderScale: 0.18, geometry: rosetteGeometry }),
+  },
+  {
+    id: 'canopy-earth',
+    label: 'Microgreen canopy · Earth (1 g)',
+    description: CANOPY_DESC,
+    build: makeLeafScene({ ...DOM, id: 'canopy-earth', label: 'Microgreen canopy — Earth (1 g)', gRatio: 1, renderScale: 0.3, sourceScale: 0.3, geometry: canopyGeometry }),
+  },
+  {
+    id: 'canopy-ug',
+    label: 'Microgreen canopy · microgravity (0 g)',
+    description: CANOPY_DESC,
+    build: makeLeafScene({ ...DOM, id: 'canopy-ug', label: 'Microgreen canopy — microgravity (0 g)', gRatio: 0, renderScale: 0.3, sourceScale: 0.3, geometry: canopyGeometry }),
   },
   {
     id: 'cavity',
