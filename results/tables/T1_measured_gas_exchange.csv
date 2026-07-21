@@ -1,0 +1,14 @@
+quantity,value,units,source
+Net CO2 assimilation A,1.38,umol CO2 h^-1 cm^-2,Biomass L&H1 (Col mean)
+Net CO2 assimilation A,3.85,umol m^-2 s^-1,= converted
+Dark respiration R,0.43,umol CO2 h^-1 cm^-2,Biomass L&H1 (Col mean)
+Dark respiration R,1.18,umol m^-2 s^-1,= converted
+A per plant,0.0112,umol s^-1,Biomass L&H1
+Chamber volume,339,cm^3,Biomass L&H1 (12x3 cm)
+Rosette area (representative),26,cm^2,Biomass L&H1
+Chamber air density,41.6,mol m^-3,Biomass L&H1
+Vernier O2 diel range,6.6-32.8,%,Vernier v2
+Vernier peak O2 evolution,4.2,% h^-1,Vernier v2
+Vernier peak O2 uptake,-1.5,% h^-1,Vernier v2
+Vernier gross O2 flux (area-dep.),63,umol m^-2 s^-1,Vernier v2 + chamber
+"Transpiration (closed, near-sat.)",0.005,mmol H2O m^-2 s^-1,Vernier v2 abs. hum.

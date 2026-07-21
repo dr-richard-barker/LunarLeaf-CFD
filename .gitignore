@@ -5,6 +5,9 @@ dist/
 .DS_Store
 validation/*.csv
 validation/*.xlsx
+validation/raw/
+validation/*.mjs
 scratch_val.*
 scratch_cyl.log
 *.tsbuildinfo
+results/tables/_*.npy
