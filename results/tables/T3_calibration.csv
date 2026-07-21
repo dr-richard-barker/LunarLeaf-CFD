@@ -1,0 +1,9 @@
+quantity,value,units,source
+Leaf length,1.5,cm,assumed (Arabidopsis)
+Grid spacing dx,0.288,mm/cell,= leaf/52
+Time step dt,0.173,ms/step,= D_lat dx^2 / D_phys
+Velocity scale,1.66,m/s per lattice u,= dx/dt
+Earth u_max (leaf),7.7,cm/s,model x scale
+D CO2 / O2 / H2O,1.6 / 2.0 / 2.4,x1e-5 m^2/s,"molecular, air 25C"
+Net assimilation A,3.85,umol CO2 m^-2 s^-1,measured (Table 1)
+Dark respiration R,1.18,umol CO2 m^-2 s^-1,measured (Table 1)

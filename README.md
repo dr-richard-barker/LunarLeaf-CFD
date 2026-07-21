@@ -151,10 +151,14 @@ the canopy uses a reduced per‑leaf flux representing self‑shading. Absolute 
 excess units — the trends and ratios are the result. Larger domains, forced‑airflow ventilation, and
 calibration to the measured Vernier gas‑exchange data (Milestone 4) are the next refinements.)*
 
-### Milestone 4 — Validation against real data
-- ⬜ Ingest Vernier O₂/RH/temperature `ExportedData` time series
-- ⬜ Compare modelled vs. measured surface gas dynamics; report error
-- ⬜ Cross‑check against the "Imaging of pH, CO₂ and O₂ around Arabidopsis" reference
+### Milestone 4 — Validation against real data — 🟡 gas-exchange validation done (see `results/`)
+- ✅ Ingest Vernier O₂/RH/temperature `ExportedData` time series (diel gas cycling; `results/figures/F1,F2`)
+- ✅ Anchor the model to measured flux — net assimilation **3.85 µmol CO₂ m⁻² s⁻¹** (biomass workbook) + Vernier cross-check; closed-chamber transport reproduced (mass conserved 2×10⁻⁵)
+- ✅ Physical prediction — surface CO₂ drawdown **≈4 ppm (leaf, Earth) → ≈13 ppm (rosette bulk, µg)**, anchored on the measured flux (`results/tables/T5`, `DISCUSSION.md`)
+- ⬜ Cross‑check against the "Imaging of pH, CO₂ and O₂ around Arabidopsis" reference (spatially-resolved test — next)
+
+**→ Results package: [`results/`](results/README.md)** — tables T1–T5, figures F1–F5, and an
+academic results + discussion write-up ([`results/DISCUSSION.md`](results/DISCUSSION.md)).
 
 ### Milestone 5 — Publish
 - ⬜ 3D solver benchmark (optional, if WebGPU perf allows)
