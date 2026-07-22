@@ -12,6 +12,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `F3_plume_maps.png` | Model H₂O boundary layer: buoyant plume (leaf, Earth) vs stagnant halo (leaf, µg) vs trapped canopy air (canopy, µg). |
 | `F4_gravity_scale.png` | Left: single-leaf gravity sweep (ΔC ↑, convection ↓ as g ↓). Right: three-scale amplification and the µg penalty. |
 | `F5_chamber_validation.png` | Left: sealed-chamber mass conservation (err 2×10⁻⁵). Right: sustained near-leaf vs bulk gap (boundary layer at chamber scale). |
+| `F6_forced_airflow.png` | Forced ventilation in µg: surface gap ΔC vs fan speed, with Earth-1 g and µg-no-fan reference lines and the ≈ 2.8 cm/s Earth-equivalent point. |
 
 ## Tables (`tables/`)
 | File | Content |
@@ -21,6 +22,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `T3_calibration.csv` | Lattice→physical mapping (dx = 0.288 mm, dt = 0.173 ms, velocity scale, measured flux). |
 | `T4_chamber_accumulation.csv` | Sealed-chamber time series (total mass, near-leaf & bulk probes) underpinning F5. |
 | `T5_physical_prediction.csv` | Surface CO₂ drawdown / O₂ build-up in **ppm**, per scale × gravity, anchored on the measured flux. |
+| `T6_forced_airflow.csv` | Forced-ventilation sweep (µg leaf): ΔC vs fan speed, with the Earth-equivalent speed (≈ 2.8 cm/s). |
 
 ## Field grids (`fields/`)
 `<scenario>_h2o.csv` — H₂O-excess concentration grids (128×96, solid cells = NaN) for `leaf-earth`,
@@ -32,6 +34,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 - **Predicted:** Earth→µg steepens surface gas gaps 1.5–1.8× at every scale (convection `u_max` ∝ √g → 0);
   boundary-layer CO₂ drawdown rises from ≈ 4 ppm (leaf, Earth) to ≈ 13 ppm (rosette bulk, µg), with
   crown pockets ≈ 25 ppm.
+- **Reversible:** a forced airflow of ≈ 2.8 cm/s restores Earth-equivalent surface gradients in µg
+  (single leaf) — an order of magnitude below flight-hardware fan speeds (VEGGIE/APH, 0.1–1 m/s).
 
 ## Reproduce
 ```bash
@@ -42,6 +46,9 @@ node validation/export_cfd.mjs
 # 2) sealed-chamber accumulation
 npx esbuild validation/chamber_sim.ts --bundle --format=esm --platform=node --outfile=validation/chamber_sim.mjs
 node validation/chamber_sim.mjs
+# 2b) forced-airflow sweep (Earth-equivalent fan speed) -> T6
+npx esbuild validation/fan_sweep.ts --bundle --format=esm --platform=node --outfile=validation/fan_sweep.mjs
+node validation/fan_sweep.mjs
 # 3) data analysis + figures (needs Python: pandas, numpy, matplotlib, openpyxl)
 python validation/analyze_data.py      # Vernier + biomass -> T1, F1, F2
 python validation/analyze_model.py     # calibration, F3-F5, T3, T5

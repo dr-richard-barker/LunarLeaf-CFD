@@ -120,6 +120,7 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 - ✅ Rosette preset (fan of overlapping leaves — interior air‑trapping)
 - ✅ Microgreen‑canopy preset (row of upright shoots on soil — within‑canopy stagnation)
 - 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
+- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.8 cm/s nulls the microgravity penalty** (`results/T6`, `F6`). Three in‑app fan presets (3/8/17 cm/s).
 
 #### 5a. First science result — three scales × gravity
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O

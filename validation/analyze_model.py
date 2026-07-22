@@ -117,6 +117,34 @@ b2.grid(alpha=0.25); b2.legend()
 fig.tight_layout(); fig.savefig(f"{FIG}/F5_chamber_validation.png", dpi=130)
 plt.close(fig)
 
+# ---------------------------------------------------------------- F6 forced airflow
+fan = pd.read_csv(f"{TAB}/T6_forced_airflow.csv", comment="#")
+earth_w = float(fan[fan.case == "earth_1g"].dC_H2O_mean.iloc[0])
+ug_w = float(fan[fan.case == "ug_still"].dC_H2O_mean.iloc[0])
+ff = fan[fan.case == "ug_fan"].astype({"fan_cm_s": float, "dC_H2O_mean": float, "dC_CO2_mean": float})
+xs, ys = ff.fan_cm_s.values, ff.dC_H2O_mean.values
+null_cms = np.nan
+for i in range(1, len(xs)):
+    if (ys[i-1] - earth_w) * (ys[i] - earth_w) <= 0:
+        null_cms = xs[i-1] + (earth_w - ys[i-1]) / (ys[i] - ys[i-1]) * (xs[i] - xs[i-1]); break
+
+fig, ax = plt.subplots(figsize=(7.6, 4.6))
+ax.plot(ff.fan_cm_s, ff.dC_H2O_mean, "o-", color="#2a7de1", label="µg + fan: ΔC H$_2$O")
+ax.plot(ff.fan_cm_s, ff.dC_CO2_mean, "s-", color="#e0654e", label="µg + fan: |ΔC CO$_2$|")
+ax.axhline(earth_w, color="#2fbf71", ls="--", lw=1.5, label=f"Earth 1 g (ΔC = {earth_w:.3f})")
+ax.axhline(ug_w, color="#8a5cf6", ls=":", lw=1.5, label=f"µg, no fan (ΔC = {ug_w:.3f})")
+if not np.isnan(null_cms):
+    ax.axvline(null_cms, color="0.4", ls="-.", lw=1)
+    ax.annotate(f"Earth-equivalent\n≈ {null_cms:.1f} cm/s", xy=(null_cms, earth_w),
+                xytext=(null_cms + 4, ug_w * 0.82), fontsize=9,
+                arrowprops=dict(arrowstyle="->", color="0.4"))
+ax.set_xlabel("forced airflow (cm/s)"); ax.set_ylabel("surface gap ΔC (mean, model units)")
+ax.set_title("Forced ventilation nulls the microgravity penalty (single leaf)")
+ax.grid(alpha=0.25); ax.legend(fontsize=8.5)
+fig.tight_layout(); fig.savefig(f"{FIG}/F6_forced_airflow.png", dpi=130)
+plt.close(fig)
+print(f"F6: Earth-equivalent ventilation ≈ {null_cms:.1f} cm/s (nulls the µg penalty)")
+
 # ---------------------------------------------------------------- T5 physical prediction
 G_BL_EARTH = 1.0  # mol m^-2 s^-1, leaf boundary layer, still-air free convection (literature)
 ref = abs(sweep[sweep.scenario == "leaf-earth"].dC_CO2_mean.iloc[0])

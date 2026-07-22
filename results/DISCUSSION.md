@@ -24,7 +24,10 @@ textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rate
    air in its crown (steepest local gradients), and a microgreen stand stagnates as a whole;
 3. anchored on the measured net assimilation flux (3.85 µmol CO₂ m⁻² s⁻¹), the model predicts a
    boundary-layer CO₂ drawdown of **≈ 4 ppm (isolated leaf, Earth) rising to ≈ 13 ppm (rosette bulk,
-   microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`).
+   microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`);
+4. the microgravity penalty is **fully reversible by forced ventilation** — a fan of only **≈ 2.8 cm s⁻¹**
+   restores Earth-equivalent surface gradients for an isolated leaf (`T6`, `F6`), quantifying the design
+   target for spaceflight growth hardware.
 
 The gravity- and scale-dependence is a genuine model *prediction*; the flux magnitude and the
 closed-chamber transport behaviour on which it rests are *validated* against measurement.
@@ -107,6 +110,19 @@ These are the *boundary-layer* contributions to leaf-surface CO₂ depletion; th
 stomatal and mesophyll drops. A few-ppm effect on an isolated Earth-grown leaf becomes a ≥ 10 ppm bulk
 effect — and ≥ 20 ppm in trapped rosette pockets — once low gravity and dense geometry combine.
 
+### 3.6 Forced ventilation nulls the microgravity penalty
+
+Because the penalty is transport-limited, it can be engineered away. Replacing the absent buoyant
+convection with a forced inlet flow (the leaf placed in a ventilation channel, gravity off), we sweep
+fan speed and track the surface gap (`F6`, `T6`). The still-microgravity gap (ΔC = 0.231, model units)
+falls monotonically with airflow and **crosses the Earth-1 g level (0.128) at ≈ 2.8 cm s⁻¹** for water
+vapour; CO₂, with its lower diffusivity and thus thicker concentration boundary layer, reaches parity a
+little higher (≈ 5 cm s⁻¹). Beyond ~8 cm s⁻¹ the forced flow *over-ventilates*, driving the surface
+gaps below their Earth values. The predicted Earth-equivalent speed (a few cm s⁻¹) is well within — and
+an order of magnitude below — the 0.1–1 m s⁻¹ air velocities used in flight hardware such as VEGGIE and
+the Advanced Plant Habitat, giving physical grounds for why those systems restore gas exchange, and a
+lower-bound target for minimal-power ventilation.
+
 ---
 
 ## 4. Discussion
@@ -119,11 +135,13 @@ this is not a fixed penalty but one that **scales with both gravity and canopy a
 denser the planting, the more a still, low-gravity atmosphere throttles gas exchange.
 
 **Implications for space-flight hardware.** Because the effect is transport-limited rather than
-biochemical, it is engineerable. The same solver that quantifies the microgravity penalty can size the
-**forced airflow** required to restore an Earth-equivalent boundary layer — the design rationale behind
-fan-ventilated growth chambers (VEGGIE, APH). The predicted worst case (dense canopy, microgravity)
-identifies where ventilation matters most, and the calibrated velocity scale (Earth free convection
-≈ 8 cm s⁻¹) sets a natural target for the replacement forced flow.
+biochemical, it is engineerable — and §3.6 quantifies the fix: **≈ 2.8 cm s⁻¹ of forced airflow restores
+Earth-equivalent surface gradients** for an isolated leaf, the design rationale behind fan-ventilated
+growth chambers (VEGGIE, APH). The predicted worst case (dense canopy, microgravity) identifies where
+ventilation matters most and will demand higher speeds; the same solver sizes that requirement per
+geometry. That the Earth-equivalent speed sits an order of magnitude below typical hardware airflows
+(0.1–1 m s⁻¹) explains the ample margin those systems carry, and flags an opportunity for lower-power
+operation where canopy density permits.
 
 **Limitations.** The present model is 2-D and uses the Boussinesq approximation; results are kept within
 its validity (u_max < 0.1 lattice units, β·ΔC ≲ 0.5). The stomatal exchange is represented as a surface
@@ -137,8 +155,9 @@ whole-chamber sensor can resolve; the gravity- and scale-dependent gradients rem
 built on validated components.
 
 **Future work.** (i) Couple the surface flux to a stomatal-conductance/photosynthesis model so ΔC feeds
-back on assimilation; (ii) add explicit forced-airflow scenarios to compute the ventilation needed to
-null the microgravity penalty; (iii) enlarge the domain and move to 3-D (WebGPU) to remove the
+back on assimilation; (ii) extend the forced-airflow analysis (now demonstrated for the isolated leaf,
+§3.6) to the rosette and canopy, where trapping will raise the Earth-equivalent speed, and map the full
+speed–geometry ventilation requirement; (iii) enlarge the domain and move to 3-D (WebGPU) to remove the
 chamber-bound conservatism; (iv) calibrate against spatially-resolved surface-gas imaging (e.g.
 planar-optode pH/CO₂/O₂ maps) for a direct test of the predicted gradients.
 

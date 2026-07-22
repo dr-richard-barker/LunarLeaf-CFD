@@ -506,7 +506,7 @@ function stampEllipse(
 }
 
 // --- geometry: single leaf (closed chamber, one horizontal blade) ---
-function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+export function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
   chamberWalls(fluid, sp);
   const isLeaf = new Uint8Array(fluid.size);
   stampEllipse(fluid, isLeaf, fluid.nx / 2, fluid.ny / 2, 26, 4, 0);
@@ -514,7 +514,7 @@ function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charL
 }
 
 // --- geometry: rosette (closed chamber, fan of overlapping leaves) ---
-function rosetteGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+export function rosetteGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
   chamberWalls(fluid, sp);
   const isLeaf = new Uint8Array(fluid.size);
   const cx = fluid.nx / 2;
@@ -531,7 +531,7 @@ function rosetteGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; ch
 }
 
 // --- geometry: microgreen canopy (soil floor, row of upright shoots) ---
-function canopyGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
+export function canopyGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
   const { nx, ny } = fluid;
   const isLeaf = new Uint8Array(fluid.size);
   // Top + side walls: ambient (open room). Bottom is soil (adiabatic), added next.
@@ -560,6 +560,10 @@ function canopyGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; cha
 
 type Geometry = (fluid: LBMFluid, sp: Species) => { isLeaf: Uint8Array; charLen: number };
 
+// Lattice→physical velocity scale from the calibration (results/tables/T3):
+// dx/dt ≈ 1.66 m/s per lattice velocity unit, i.e. 166 cm/s.
+const U_STAR_CM_S = 166;
+
 interface LeafSceneCfg {
   id: string;
   label: string;
@@ -571,6 +575,10 @@ interface LeafSceneCfg {
   /** Per-area flux multiplier (default 1). <1 models canopy self-shading, which
    *  lowers per-leaf assimilation and keeps a dense stand in the Boussinesq regime. */
   sourceScale?: number;
+  /** Forced-airflow speed (lattice units). When set, the left/right chamber walls
+   *  become a ventilation inlet (fresh air at this speed) and outlet — the engineered
+   *  substitute for the buoyant convection that microgravity removes. */
+  forcedU?: number;
 }
 
 /**
@@ -579,12 +587,13 @@ interface LeafSceneCfg {
  * vector, and reports convection strength + the surface gaps (mean and peak — the
  * peak captures the worst trapped/interior spot that rosettes and canopies create).
  */
-function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
+export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
   return () => {
     const { nx, ny } = cfg;
     const nu = 0.02;
+    const U = cfg.forcedU ?? 0;
     const fluid = new LBMFluid(nx, ny, tauFromViscosity(nu));
-    fluid.setEquilibrium(1, 0, 0);
+    fluid.setEquilibrium(1, U, 0);
     fluid.enableForcing();
 
     // Species (excess over ambient); D_CO2 < D_O2 < D_H2O as in air.
@@ -594,8 +603,45 @@ function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     co2.enableSource();
     o2.enableSource();
     h2o.enableSource();
+    const species = [co2, o2, h2o];
 
     const { isLeaf, charLen } = cfg.geometry(fluid, { co2, o2, h2o });
+
+    // Forced airflow: convert the closed chamber into a ventilation channel by
+    // opening the left (inlet) and right (outlet) columns; top/bottom stay walls.
+    if (cfg.forcedU !== undefined) {
+      for (let y = 1; y < ny - 1; y++) {
+        for (const x of [0, nx - 1]) {
+          const c = fluid.index(x, y);
+          fluid.solid[c] = 0;
+          for (const sp of species) if (sp.dirichlet) sp.dirichlet[c] = NaN;
+        }
+      }
+    }
+
+    // Inlet: prescribed velocity + fresh air (zero species excess). Outlet:
+    // zero-gradient. Fluid part runs in postStream (after streaming); the species
+    // part runs in onAfterStep (after the scalar step) so the BC is not overwritten.
+    const fluidInletOutlet = () => {
+      for (let y = 1; y < ny - 1; y++) {
+        const ci = fluid.index(0, y) * 9;
+        for (let i = 0; i < 9; i++) fluid.f[ci + i] = feq(i, 1, U, 0);
+        const co = fluid.index(nx - 1, y) * 9;
+        const cs = fluid.index(nx - 2, y) * 9;
+        for (let i = 0; i < 9; i++) fluid.f[co + i] = fluid.f[cs + i];
+      }
+    };
+    const speciesInletOutlet = () => {
+      for (const sp of species) {
+        for (let y = 1; y < ny - 1; y++) {
+          const ci = fluid.index(0, y) * 5;
+          for (let i = 0; i < 5; i++) sp.g[ci + i] = 0; // fresh air (C = 0)
+          const co = fluid.index(nx - 1, y) * 5;
+          const cs = fluid.index(nx - 2, y) * 5;
+          for (let i = 0; i < 5; i++) sp.g[co + i] = sp.g[cs + i];
+        }
+      }
+    };
 
     // Stomatal fluxes on fluid cells adjacent to the plant surface. Kept small so
     // the surface excess ΔC stays ≪ 1 (Boussinesq small-perturbation regime).
@@ -661,12 +707,13 @@ function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
       renderMode: 'scalar',
       renderScale: cfg.renderScale,
       postStream() {
-        /* walls handled by masks + Dirichlet */
+        if (cfg.forcedU !== undefined) fluidInletOutlet();
       },
       onAfterStep() {
         co2.step();
         o2.step();
         h2o.step();
+        if (cfg.forcedU !== undefined) speciesInletOutlet();
         applyBoussinesqForce(fluid, 0, -gLat, contributors);
       },
       diagnostics(step: number): Readout[] {
@@ -678,15 +725,21 @@ function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         const Sc = nu / 0.05;
         const Ra = ((gLat * Math.abs(w.mean) * charLen ** 3) / (nu * nu)) * Sc;
         const gAbs = cfg.gRatio * GRAVITY.earth;
-        return [
+        const out: Readout[] = [
           { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${cfg.gRatio.toFixed(3)} g)` },
+        ];
+        if (cfg.forcedU !== undefined) {
+          out.push({ label: 'forced airflow', value: `${(U * U_STAR_CM_S).toFixed(1)} cm/s` });
+        }
+        out.push(
           { label: 'steps', value: step.toLocaleString() },
           { label: 'u_max (convection)', value: umax.toExponential(2) },
           { label: 'Rayleigh (H₂O)', value: Ra.toExponential(1) },
           { label: 'ΔC H₂O  mean/peak', value: `${w.mean.toFixed(3)} / ${w.peak.toFixed(3)}` },
           { label: 'ΔC CO₂  mean/peak', value: `${cc.mean.toFixed(3)} / ${cc.peak.toFixed(3)}` },
           { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
-        ];
+        );
+        return out;
       },
     };
   };
@@ -699,6 +752,8 @@ const LEAF_DESC =
   'Single Arabidopsis leaf in a closed chamber — stomatal CO₂ uptake + O₂/H₂O release with solutal buoyancy. Sweep gravity (select each preset, Run ~30k steps) and watch u_max fall and the surface gaps ΔC steepen.';
 const ROSETTE_DESC =
   'A rosette of overlapping leaves. Leaves shade each other’s airflow and trap air near the crown, so the interior surface gaps (ΔC peak) run steeper than an isolated leaf — an effect that worsens as gravity falls.';
+const FAN_DESC =
+  'A leaf in microgravity with forced ventilation — the engineered substitute for the buoyant convection µg removes. As fan speed rises, the inlet flow thins the boundary layer and the surface gaps ΔC fall back toward Earth-1 g levels (compare with “Leaf · Earth”).';
 const CANOPY_DESC =
   'A microgreen “lawn” — a dense row of upright shoots on soil, ambient above. Convection ventilates only the canopy top; the within-canopy air stagnates, and in microgravity the whole stand’s gas gaps blow out.';
 
@@ -752,6 +807,24 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Microgreen canopy · microgravity (0 g)',
     description: CANOPY_DESC,
     build: makeLeafScene({ ...DOM, id: 'canopy-ug', label: 'Microgreen canopy — microgravity (0 g)', gRatio: 0, renderScale: 0.3, sourceScale: 0.3, geometry: canopyGeometry }),
+  },
+  {
+    id: 'leaf-ug-fan-lo',
+    label: 'Leaf · µg + fan 3 cm/s',
+    description: FAN_DESC,
+    build: makeLeafScene({ ...DOM, id: 'leaf-ug-fan-lo', label: 'Leaf — µg + fan ~3 cm/s', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.02 }),
+  },
+  {
+    id: 'leaf-ug-fan-mid',
+    label: 'Leaf · µg + fan 8 cm/s',
+    description: FAN_DESC,
+    build: makeLeafScene({ ...DOM, id: 'leaf-ug-fan-mid', label: 'Leaf — µg + fan ~8 cm/s', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.05 }),
+  },
+  {
+    id: 'leaf-ug-fan-hi',
+    label: 'Leaf · µg + fan 17 cm/s',
+    description: FAN_DESC,
+    build: makeLeafScene({ ...DOM, id: 'leaf-ug-fan-hi', label: 'Leaf — µg + fan ~17 cm/s', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.1 }),
   },
   {
     id: 'cavity',
