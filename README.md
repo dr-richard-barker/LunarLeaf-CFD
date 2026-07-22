@@ -121,6 +121,7 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 - ✅ Microgreen‑canopy preset (row of upright shoots on soil — within‑canopy stagnation)
 - 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
 - ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.8 cm/s nulls the microgravity penalty** (`results/T6`, `F6`). Three in‑app fan presets (3/8/17 cm/s).
+- ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
 
 #### 5a. First science result — three scales × gravity
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O

@@ -1,0 +1,5 @@
+enclosure atmosphere event,time,unit
+BRIC light: CO2 400->~0 ppm (photosynthesis self-limits),7,minutes
+BRIC dark: CO2 400 ppm -> 1% (stress),9.4,hours
+BRIC dark: O2 21% -> 5% (hypoxia),6.5,days
+CARA / VEGGIE: enclosure vents to cabin,bounded,steady near ambient

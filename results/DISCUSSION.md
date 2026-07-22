@@ -27,7 +27,12 @@ textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rate
    microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`);
 4. the microgravity penalty is **fully reversible by forced ventilation** — a fan of only **≈ 2.8 cm s⁻¹**
    restores Earth-equivalent surface gradients for an isolated leaf (`T6`, `F6`), quantifying the design
-   target for spaceflight growth hardware.
+   target for spaceflight growth hardware;
+5. the three ISS plant-growth systems map onto three dish boundary conditions (`§3.7`, `F7`, `T8`):
+   **BRIC** (sealed) suffers both runaway enclosure drift — CO₂ fixed in **~7 min** in light, O₂ hypoxia
+   in **~6.5 days** in the dark — and the steepest surface gradient; **CARA** (micropore tape) vents the
+   enclosure to near-ambient but leaves the microgravity surface boundary layer intact; **VEGGIE** (forced
+   airflow) fixes both.
 
 The gravity- and scale-dependence is a genuine model *prediction*; the flux magnitude and the
 closed-chamber transport behaviour on which it rests are *validated* against measurement.
@@ -123,9 +128,40 @@ an order of magnitude below — the 0.1–1 m s⁻¹ air velocities used in flig
 the Advanced Plant Habitat, giving physical grounds for why those systems restore gas exchange, and a
 lower-bound target for minimal-power ventilation.
 
----
+### 3.7 Spaceflight hardware as boundary conditions: BRIC vs CARA vs VEGGIE
 
-## 4. Discussion
+The three plant-growth systems most used on the ISS differ, in gas-transport terms, only in the
+**boundary condition they impose on the Petri dish** — which the solver represents directly (`F7`, `T7`,
+`T8`). We model each as an *Arabidopsis* leaf in a 60 mm dish in microgravity.
+
+**BRIC — hermetically sealed** (zero-flux walls). With no exchange, the enclosure atmosphere drifts
+without bound (`F7`, left): in the light the leaf consumes CO₂, in the dark it releases CO₂ and consumes
+O₂. A simple mass balance on the small dish reservoir (`T8`) shows how fast this bites: the ~400 ppm of
+CO₂ in a 30 cm³ headspace is fixed by photosynthesis in **≈ 7 minutes**, so a lit sealed dish is
+CO₂-starved almost immediately; in the dark, CO₂ climbs to a stressful 1 % in **≈ 9 hours** and O₂ falls
+to a hypoxic 5 % in **≈ 6.5 days**. On top of this runaway bulk drift, the sealed dish also gives the
+**steepest leaf-surface gradient** of any hardware (`F7`, right) — the boundary layer and the enclosure
+both work against the plant. This reproduces the well-documented BRIC hypoxia/CO₂-accumulation problem
+from first principles.
+
+**CARA — micropore surgical tape** (semi-permeable membrane walls). The gas-permeable tape vents the dish
+to the effectively-infinite cabin reservoir, so the **dish-mean stays bounded a few ppm from ambient**
+(`F7`, left, the levelling blue curve) — consistent with ground measurements showing surgical tape keeps
+plated seedlings at near-ambient CO₂/O₂ while parafilm and plastic wrap deplete CO₂ and trigger thousands
+of stress genes. Critically, though, **the tape does not fix the microgravity boundary layer**: with no
+convection inside the dish, the leaf-surface gradient is essentially that of an open dish (`F7`, right,
+CARA ≈ open). CARA therefore solves the *enclosure-atmosphere* problem but leaves the *surface-diffusion*
+problem intact.
+
+**VEGGIE — light + forced airflow** (active ventilation). Circulating air both vents the enclosure and
+thins the leaf boundary layer, cutting the surface gas gradient **≈ 3×** relative to BRIC/CARA and
+restoring near-Earth values (`F7`, right; the §3.6 mechanism). This is precisely why active air
+circulation, not just a permeable seal, is the design choice for a plant-*growth* (rather than
+short-duration fixation) system.
+
+The progression BRIC → CARA → VEGGIE is thus a ladder of increasing gas-exchange control: sealed (both
+problems) → vented seal (enclosure fixed, surface not) → actively ventilated (both fixed). The model
+makes each rung quantitative.
 
 **Interpretation.** The results give a mechanistic, quantitative account of a long-suspected spaceflight
 stress: without buoyancy-driven convection, plant organs sit in a thickened, poorly-ventilated boundary

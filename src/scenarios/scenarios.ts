@@ -579,6 +579,14 @@ interface LeafSceneCfg {
    *  become a ventilation inlet (fresh air at this speed) and outlet — the engineered
    *  substitute for the buoyant convection that microgravity removes. */
   forcedU?: number;
+  /** Enclosure gas exchange (spaceflight hardware). Undefined → ambient-held walls
+   *  (well-mixed surroundings, the default). 0 → hermetically sealed (BRIC): no
+   *  exchange, gas drifts without bound. 0<k<1 → semi-permeable membrane (CARA
+   *  micropore tape): each step the near-wall excess relaxes toward ambient by k. */
+  membraneK?: number;
+  /** Dark (respiration) instead of light (net photosynthesis): flips the source
+   *  signs and scales by the measured R/A ratio (0.31). */
+  dark?: boolean;
 }
 
 /**
@@ -644,11 +652,12 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     };
 
     // Stomatal fluxes on fluid cells adjacent to the plant surface. Kept small so
-    // the surface excess ΔC stays ≪ 1 (Boussinesq small-perturbation regime).
-    const sScale = cfg.sourceScale ?? 1;
+    // the surface excess ΔC stays ≪ 1 (Boussinesq small-perturbation regime). In the
+    // dark, respiration reverses the signs (CO2 released, O2 consumed) at R/A = 0.31.
+    const sScale = (cfg.sourceScale ?? 1) * (cfg.dark ? -0.31 : 1);
     const S_CO2 = 5e-4 * sScale;
     const S_O2 = 4e-4 * sScale;
-    const S_H2O = 5e-4 * sScale;
+    const S_H2O = 5e-4 * (cfg.sourceScale ?? 1) * (cfg.dark ? 0.31 : 1); // H2O always released
     const surfaceCells: number[] = [];
     for (let x = 1; x < nx - 1; x++) {
       for (let y = 1; y < ny - 1; y++) {
@@ -667,6 +676,46 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         }
       }
     }
+
+    // Enclosure gas exchange (spaceflight hardware). When membraneK is set the
+    // ambient-held chamber walls become either sealed (k=0, BRIC) or a semi-permeable
+    // membrane (0<k<1, CARA tape): clear the wall Dirichlet (→ zero-flux) and collect
+    // the near-wall fluid cells whose excess is relaxed toward ambient each step.
+    const membraneCells: number[] = [];
+    if (cfg.membraneK !== undefined) {
+      for (let x = 0; x < nx; x++) {
+        for (let y = 0; y < ny; y++) {
+          if (x !== 0 && x !== nx - 1 && y !== 0 && y !== ny - 1) continue;
+          const c = fluid.index(x, y);
+          if (co2.dirichlet) co2.dirichlet[c] = NaN;
+          if (o2.dirichlet) o2.dirichlet[c] = NaN;
+          if (h2o.dirichlet) h2o.dirichlet[c] = NaN;
+        }
+      }
+      if (cfg.membraneK > 0) {
+        // Only cells adjacent to the domain border (the taped dish wall) vent —
+        // NOT cells next to the leaf (the leaf is solid too, but it is not a wall).
+        const onBorder = (xx: number, yy: number) => xx === 0 || xx === nx - 1 || yy === 0 || yy === ny - 1;
+        for (let x = 1; x < nx - 1; x++) {
+          for (let y = 1; y < ny - 1; y++) {
+            const c = fluid.index(x, y);
+            if (fluid.solid[c]) continue;
+            if (onBorder(x + 1, y) || onBorder(x - 1, y) || onBorder(x, y + 1) || onBorder(x, y - 1))
+              membraneCells.push(c);
+          }
+        }
+      }
+    }
+    const leak = cfg.membraneK ?? 0;
+    const applyMembrane = () => {
+      const f = 1 - leak;
+      for (const c of membraneCells) {
+        for (const sp of species) {
+          const b = c * 5;
+          for (let i = 0; i < 5; i++) sp.g[b + i] *= f;
+        }
+      }
+    };
 
     // Buoyancy: humid air lighter (β<0); CO2 heavier (β>0, but depleted → lighter);
     // O2 slightly heavier (β>0). Gravity points down (−y), scaled by g/g_earth.
@@ -699,6 +748,28 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
       return m;
     };
 
+    // Whole-enclosure mean excess — for a sealed dish (BRIC) this drifts without
+    // bound; for a vented dish it settles near ambient (0).
+    const domainMean = (field: ScalarField): number => {
+      let sum = 0;
+      let n = 0;
+      for (let c = 0; c < fluid.size; c++) {
+        if (fluid.solid[c]) continue;
+        sum += field.C[c];
+        n++;
+      }
+      return sum / n;
+    };
+
+    const boundaryLabel =
+      cfg.forcedU !== undefined
+        ? 'vented (forced airflow)'
+        : cfg.membraneK === undefined
+          ? 'ambient walls'
+          : cfg.membraneK === 0
+            ? 'sealed (BRIC)'
+            : 'micropore tape (CARA)';
+
     return {
       id: cfg.id,
       label: cfg.label,
@@ -714,6 +785,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         o2.step();
         h2o.step();
         if (cfg.forcedU !== undefined) speciesInletOutlet();
+        if (membraneCells.length) applyMembrane();
         applyBoussinesqForce(fluid, 0, -gLat, contributors);
       },
       diagnostics(step: number): Readout[] {
@@ -726,6 +798,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         const Ra = ((gLat * Math.abs(w.mean) * charLen ** 3) / (nu * nu)) * Sc;
         const gAbs = cfg.gRatio * GRAVITY.earth;
         const out: Readout[] = [
+          { label: 'enclosure', value: boundaryLabel },
           { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${cfg.gRatio.toFixed(3)} g)` },
         ];
         if (cfg.forcedU !== undefined) {
@@ -734,7 +807,13 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         out.push(
           { label: 'steps', value: step.toLocaleString() },
           { label: 'u_max (convection)', value: umax.toExponential(2) },
-          { label: 'Rayleigh (H₂O)', value: Ra.toExponential(1) },
+        );
+        if (cfg.membraneK !== undefined || cfg.dark) {
+          out.push({ label: 'dish-mean CO₂ excess', value: domainMean(co2).toFixed(3) });
+        } else {
+          out.push({ label: 'Rayleigh (H₂O)', value: Ra.toExponential(1) });
+        }
+        out.push(
           { label: 'ΔC H₂O  mean/peak', value: `${w.mean.toFixed(3)} / ${w.peak.toFixed(3)}` },
           { label: 'ΔC CO₂  mean/peak', value: `${cc.mean.toFixed(3)} / ${cc.peak.toFixed(3)}` },
           { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
@@ -754,6 +833,12 @@ const ROSETTE_DESC =
   'A rosette of overlapping leaves. Leaves shade each other’s airflow and trap air near the crown, so the interior surface gaps (ΔC peak) run steeper than an isolated leaf — an effect that worsens as gravity falls.';
 const FAN_DESC =
   'A leaf in microgravity with forced ventilation — the engineered substitute for the buoyant convection µg removes. As fan speed rises, the inlet flow thins the boundary layer and the surface gaps ΔC fall back toward Earth-1 g levels (compare with “Leaf · Earth”).';
+const BRIC_DESC =
+  'BRIC spaceflight hardware — a hermetically SEALED Petri dish in µg. No gas exchange with the cabin, so the enclosure atmosphere drifts without bound: in light the leaf depletes its own CO₂ (carbon starvation); in the dark respiration consumes O₂ and builds CO₂ (hypoxia). Watch “dish-mean CO₂ excess” run away — it never reaches steady state.';
+const CARA_DESC =
+  'CARA spaceflight hardware — a Petri dish sealed with gas-permeable micropore surgical tape in µg. The tape vents the dish toward the cabin, so the dish-mean stays bounded near ambient — but with no convection inside, a diffusive boundary layer still steepens the gases at the leaf surface. Compare its dish-mean (bounded) with BRIC (runaway).';
+const VEGGIE_DESC =
+  'VEGGIE spaceflight hardware — light + forced airflow actively ventilating the growth volume in µg. The circulated air thins the leaf boundary layer as well as venting the enclosure, restoring near-Earth surface gas gradients. (If the dish stayed taped, internal gradients would resemble CARA; VEGGIE’s design intent is to ventilate the plants directly.)';
 const CANOPY_DESC =
   'A microgreen “lawn” — a dense row of upright shoots on soil, ambient above. Convection ventilates only the canopy top; the within-canopy air stagnates, and in microgravity the whole stand’s gas gaps blow out.';
 
@@ -825,6 +910,30 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Leaf · µg + fan 17 cm/s',
     description: FAN_DESC,
     build: makeLeafScene({ ...DOM, id: 'leaf-ug-fan-hi', label: 'Leaf — µg + fan ~17 cm/s', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.1 }),
+  },
+  {
+    id: 'hw-bric-light',
+    label: 'Hardware · BRIC sealed (light)',
+    description: BRIC_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-bric-light', label: 'BRIC — sealed dish, µg, light', gRatio: 0, renderScale: 0.5, geometry: leafGeometry, membraneK: 0 }),
+  },
+  {
+    id: 'hw-bric-dark',
+    label: 'Hardware · BRIC sealed (dark)',
+    description: BRIC_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-bric-dark', label: 'BRIC — sealed dish, µg, dark (respiration)', gRatio: 0, renderScale: 0.5, geometry: leafGeometry, membraneK: 0, dark: true }),
+  },
+  {
+    id: 'hw-cara',
+    label: 'Hardware · CARA micropore tape',
+    description: CARA_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-cara', label: 'CARA — micropore-taped dish, µg, light', gRatio: 0, renderScale: 0.3, geometry: leafGeometry, membraneK: 0.01 }),
+  },
+  {
+    id: 'hw-veggie',
+    label: 'Hardware · VEGGIE vented',
+    description: VEGGIE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-veggie', label: 'VEGGIE — vented + light, µg', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.05 }),
   },
   {
     id: 'cavity',
