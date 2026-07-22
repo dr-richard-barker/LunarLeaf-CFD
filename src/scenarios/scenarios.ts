@@ -693,9 +693,10 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         }
       }
       if (cfg.membraneK > 0) {
-        // Only cells adjacent to the domain border (the taped dish wall) vent —
-        // NOT cells next to the leaf (the leaf is solid too, but it is not a wall).
-        const onBorder = (xx: number, yy: number) => xx === 0 || xx === nx - 1 || yy === 0 || yy === ny - 1;
+        // Only cells adjacent to the taped dish wall vent — the lid and sides, NOT
+        // the base (y=0 is sealed agar/soil) and NOT cells next to the leaf (the
+        // leaf is solid too, but it is not a wall).
+        const onBorder = (xx: number, yy: number) => xx === 0 || xx === nx - 1 || yy === ny - 1;
         for (let x = 1; x < nx - 1; x++) {
           for (let y = 1; y < ny - 1; y++) {
             const c = fluid.index(x, y);
@@ -934,6 +935,30 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Hardware · VEGGIE vented',
     description: VEGGIE_DESC,
     build: makeLeafScene({ ...DOM, id: 'hw-veggie', label: 'VEGGIE — vented + light, µg', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, forcedU: 0.05 }),
+  },
+  {
+    id: 'hw-rosette-bric',
+    label: 'Rosette · BRIC sealed',
+    description: BRIC_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-rosette-bric', label: 'Rosette — BRIC sealed, µg', gRatio: 0, renderScale: 0.6, geometry: rosetteGeometry, membraneK: 0 }),
+  },
+  {
+    id: 'hw-rosette-veggie',
+    label: 'Rosette · VEGGIE vented',
+    description: VEGGIE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-rosette-veggie', label: 'Rosette — vented + light, µg', gRatio: 0, renderScale: 0.18, geometry: rosetteGeometry, forcedU: 0.05 }),
+  },
+  {
+    id: 'hw-canopy-bric',
+    label: 'Canopy · BRIC sealed',
+    description: BRIC_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-canopy-bric', label: 'Canopy — BRIC sealed, µg', gRatio: 0, renderScale: 0.7, geometry: canopyGeometry, sourceScale: 0.3, membraneK: 0 }),
+  },
+  {
+    id: 'hw-canopy-veggie',
+    label: 'Canopy · VEGGIE vented',
+    description: VEGGIE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-canopy-veggie', label: 'Canopy — vented + light, µg', gRatio: 0, renderScale: 0.3, geometry: canopyGeometry, sourceScale: 0.3, forcedU: 0.05 }),
   },
   {
     id: 'cavity',

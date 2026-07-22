@@ -14,6 +14,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `F5_chamber_validation.png` | Left: sealed-chamber mass conservation (err 2×10⁻⁵). Right: sustained near-leaf vs bulk gap (boundary layer at chamber scale). |
 | `F6_forced_airflow.png` | Forced ventilation in µg: surface gap ΔC vs fan speed, with Earth-1 g and µg-no-fan reference lines and the ≈ 2.8 cm/s Earth-equivalent point. |
 | `F7_hardware_compare.png` | Spaceflight hardware (BRIC/CARA/VEGGIE) as dish boundary conditions: enclosure CO₂ drift vs time (left) and leaf-surface gradient by hardware (right). |
+| `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left) and required airflow ≈ 3/11/21 cm/s (right). |
+| `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy — the enclosure penalty widens with density. |
 
 ## Tables (`tables/`)
 | File | Content |
@@ -26,6 +28,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `T6_forced_airflow.csv` | Forced-ventilation sweep (µg leaf): ΔC vs fan speed, with the Earth-equivalent speed (≈ 2.8 cm/s). |
 | `T7_hardware_timeseries.csv` | BRIC/CARA/VEGGIE model time series: dish-mean CO₂ excess + leaf-surface gap vs step. |
 | `T8_enclosure_timescales.csv` | Analytic sealed-dish (BRIC) atmosphere timescales: CO₂ depletion (min), CO₂ stress (h), O₂ hypoxia (days). |
+| `T9_fan_by_scale.csv` | Forced-airflow sweep for leaf/rosette/canopy + Earth-equivalent speed per scale (≈ 2.6 / 11 / 21 cm/s). |
+| `T10_hardware_by_scale.csv` | BRIC/CARA/VEGGIE surface gradient + dish-mean CO₂ across the three scales. |
 
 ## Field grids (`fields/`)
 `<scenario>_h2o.csv` — H₂O-excess concentration grids (128×96, solid cells = NaN) for `leaf-earth`,
@@ -41,6 +45,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
   (single leaf) — an order of magnitude below flight-hardware fan speeds (VEGGIE/APH, 0.1–1 m/s).
 - **Hardware:** BRIC (sealed) → CO₂ fixed in ~7 min (light) / O₂ hypoxia in ~6.5 days (dark) + steepest
   surface gradient; CARA (tape) vents the enclosure but not the µg surface layer; VEGGIE (airflow) fixes both.
+- **Scale-dependent:** the ventilation to null the µg penalty rises **≈ 2.6 → 11 → 21 cm/s** for
+  leaf → rosette → canopy; a single fan speed (or a permeable seal) that suffices for a leaf under-serves a canopy.
 
 ## Reproduce
 ```bash
@@ -57,10 +63,14 @@ node validation/fan_sweep.mjs
 # 2c) spaceflight-hardware comparison (BRIC/CARA/VEGGIE) -> T7
 npx esbuild validation/hardware_sim.ts --bundle --format=esm --platform=node --outfile=validation/hardware_sim.mjs
 node validation/hardware_sim.mjs
+# 2d) fan + hardware across leaf/rosette/canopy -> T9, T10  (~30 min)
+npx esbuild validation/scales.ts --bundle --format=esm --platform=node --outfile=validation/scales.mjs
+node validation/scales.mjs
 # 3) data analysis + figures (needs Python: pandas, numpy, matplotlib, openpyxl)
 python validation/analyze_data.py      # Vernier + biomass -> T1, F1, F2
 python validation/analyze_model.py     # calibration, F3-F6, T3, T5
 python validation/hardware_analysis.py # BRIC/CARA/VEGGIE -> F7, T8
+python validation/scales_analysis.py   # fan + hardware by scale -> F8, F9
 ```
 Raw source data (`validation/raw/`, incl. the third-party Chew/Millar workbook) is referenced by
 provenance and not committed; place the CSV/xlsx files there to re-run step 3.

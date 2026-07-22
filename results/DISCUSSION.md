@@ -25,9 +25,9 @@ textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rate
 3. anchored on the measured net assimilation flux (3.85 µmol CO₂ m⁻² s⁻¹), the model predicts a
    boundary-layer CO₂ drawdown of **≈ 4 ppm (isolated leaf, Earth) rising to ≈ 13 ppm (rosette bulk,
    microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`);
-4. the microgravity penalty is **fully reversible by forced ventilation** — a fan of only **≈ 2.8 cm s⁻¹**
-   restores Earth-equivalent surface gradients for an isolated leaf (`T6`, `F6`), quantifying the design
-   target for spaceflight growth hardware;
+4. the microgravity penalty is **fully reversible by forced ventilation**, but the required airflow **scales
+   steeply with planting density** — **≈ 2.6 / 11 / 21 cm s⁻¹** to restore Earth-equivalent surface gradients
+   for a **leaf / rosette / canopy** (`T6`, `F6`, `F8`) — so a single fan speed cannot serve all densities;
 5. the three ISS plant-growth systems map onto three dish boundary conditions (`§3.7`, `F7`, `T8`):
    **BRIC** (sealed) suffers both runaway enclosure drift — CO₂ fixed in **~7 min** in light, O₂ hypoxia
    in **~6.5 days** in the dark — and the steepest surface gradient; **CARA** (micropore tape) vents the
@@ -162,6 +162,32 @@ short-duration fixation) system.
 The progression BRIC → CARA → VEGGIE is thus a ladder of increasing gas-exchange control: sealed (both
 problems) → vented seal (enclosure fixed, surface not) → actively ventilated (both fixed). The model
 makes each rung quantitative.
+
+### 3.8 Ventilation and enclosure requirements scale with planting density
+
+Extending the fan sweep (§3.6) and the hardware comparison (§3.7) to all three plant scales exposes a
+result with direct hardware consequences (`F8`, `F9`, `T9`, `T10`): **the ventilation needed to null the
+microgravity penalty rises steeply with planting density.** The Earth-equivalent airflow is
+**≈ 2.6 cm s⁻¹ for an isolated leaf, ≈ 11 cm s⁻¹ for a rosette, and ≈ 21 cm s⁻¹ for a microgreen canopy**
+(`F8`) — an ~8× increase. The canopy is the hardest to ventilate: side airflow skims the top of the stand
+while the within-canopy air stays comparatively stagnant, so its ΔC-vs-speed curve flattens and only
+approaches the Earth level near the solver's low-Mach limit (higher speeds went numerically unstable — a
+hint that a real dense canopy needs vigorous, likely turbulent, through-canopy flow, not laminar over-flow).
+
+The hardware comparison inherits this scale dependence (`F9`, `T10`). Across all three scales, **BRIC and
+CARA give nearly the same steep leaf-surface gradient** — the tape vents the *enclosure* but not the *µg
+surface layer* — while **a single VEGGIE fan speed (~8 cm s⁻¹) that restores a leaf (ΔC 0.10) barely helps
+a rosette (0.32) or canopy (0.31)**, because 8 cm s⁻¹ is well below their 11 and 21 cm s⁻¹ requirements.
+The enclosure-drift side worsens too: the sealed (BRIC) rosette depletes its dish CO₂ ~2.5× faster than a
+single leaf, and even the taped (CARA) rosette carries a larger residual dish offset (`T10`,
+`dishmean_CO2`). **Denser plantings therefore demand disproportionately more gas-exchange engineering** —
+a fixed ventilation setting tuned on sparse plants will under-serve a canopy, and a permeable seal that
+keeps a single plate near-ambient will not, on its own, relieve the surface boundary layer of a dense
+stand in microgravity.
+
+---
+
+## 4. Discussion
 
 **Interpretation.** The results give a mechanistic, quantitative account of a long-suspected spaceflight
 stress: without buoyancy-driven convection, plant organs sit in a thickened, poorly-ventilated boundary
