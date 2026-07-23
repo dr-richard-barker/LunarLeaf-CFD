@@ -1,8 +1,11 @@
 # LunarLeaf-CFD — Results package
 
 Validation of the solver against measured *Arabidopsis* gas-exchange data, and the first
-gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full narrative:
-[`DISCUSSION.md`](DISCUSSION.md).
+gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
+
+**Assembled manuscript:** [`MANUSCRIPT.md`](MANUSCRIPT.md) (full paper, figures embedded) ·
+[`manuscript/manuscript.tex`](manuscript/manuscript.tex) (npj-style LaTeX draft, compile instructions in
+[`manuscript/README.md`](manuscript/README.md)). Working results + discussion narrative: [`DISCUSSION.md`](DISCUSSION.md).
 
 ## Figures (`figures/`)
 | File | Content |
