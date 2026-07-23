@@ -1,0 +1,26 @@
+{
+  "title": "LunarLeaf-CFD: a validated in-browser CFD model of gravity-dependent gas-exchange boundary layers around Arabidopsis",
+  "upload_type": "software",
+  "description": "<p>A browser-based lattice-Boltzmann model that solves incompressible flow, multi-species (CO2/O2/H2O) advection-diffusion and Boussinesq buoyancy under an adjustable gravity vector. The solver is validated against four numerical benchmarks (lid-driven cavity, cylinder wake, natural-convection cavity, pure diffusion) and anchored to measured Arabidopsis whole-plant-chamber gas exchange.</p><p>It quantifies how reduced gravity thickens the leaf gas-exchange boundary layer and steepens O2/CO2/H2O gradients across three scales (single leaf, rosette, microgreen canopy); the forced airflow needed to counteract the microgravity penalty at each scale; the three ISS plant-growth systems (BRIC sealed, CARA micropore tape, VEGGIE ventilated) as dish boundary conditions; and, with CO2-limited photosynthesis, the resulting carbon-gain deficit. Includes the full results package and a draft manuscript.</p><p>Source code is MIT-licensed; the manuscript and figures under results/ are CC-BY-4.0. Raw third-party measurement data are not redistributed and are referenced by provenance.</p>",
+  "creators": [
+    {
+      "name": "Barker, Richard J.",
+      "affiliation": "MadWest / AstroBotany International Research Initiative (AIRI)"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "microgravity",
+    "spaceflight biology",
+    "gas exchange",
+    "boundary layer",
+    "Arabidopsis",
+    "computational fluid dynamics",
+    "lattice-Boltzmann",
+    "photosynthesis",
+    "VEGGIE",
+    "BRIC",
+    "astrobotany"
+  ]
+}

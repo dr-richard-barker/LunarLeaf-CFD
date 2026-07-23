@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use LunarLeaf-CFD, please cite it as below."
+title: "LunarLeaf-CFD: a validated in-browser CFD model of gravity-dependent gas-exchange boundary layers around Arabidopsis"
+abstract: >-
+  A browser-based lattice-Boltzmann model that solves incompressible flow,
+  multi-species (CO2/O2/H2O) advection-diffusion and Boussinesq buoyancy under an
+  adjustable gravity vector, validated against four numerical benchmarks and
+  anchored to measured Arabidopsis gas exchange. Quantifies how reduced gravity
+  thickens the leaf gas-exchange boundary layer across leaf, rosette and canopy
+  scales; the forced airflow needed to counteract it; the three ISS growth systems
+  (BRIC/CARA/VEGGIE) as boundary conditions; and CO2-limited photosynthesis to
+  link transport to carbon gain.
+type: software
+authors:
+  - given-names: Richard
+    name-particle: J.
+    family-names: Barker
+    email: admin@cosecloud.com
+    affiliation: "MadWest / AstroBotany International Research Initiative (AIRI)"
+# Additional authors to be added.
+version: 0.1.0
+date-released: "2026-07-23"
+license: MIT
+repository-code: "https://github.com/dr-richard-barker/LunarLeaf-CFD"
+keywords:
+  - microgravity
+  - spaceflight biology
+  - gas exchange
+  - boundary layer
+  - Arabidopsis
+  - computational fluid dynamics
+  - lattice-Boltzmann
+  - photosynthesis
+  - VEGGIE
+  - BRIC

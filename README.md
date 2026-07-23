@@ -167,8 +167,13 @@ academic results + discussion write-up ([`results/DISCUSSION.md`](results/DISCUS
 
 ### Milestone 5 — Publish
 - ⬜ 3D solver benchmark (optional, if WebGPU perf allows)
-- ⬜ Zenodo release (see checklist §7)
-- ⬜ *npj Microgravity* manuscript (see checklist §8)
+- 🟡 Zenodo release — repo packaged & Zenodo-ready (`LICENSE`, `.zenodo.json`, `CITATION.cff` added); tag a release + link the GitHub↔Zenodo webhook to mint the DOI
+- 🟡 *npj Microgravity* manuscript — draft assembled ([`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`.docx`](results/MANUSCRIPT.docx), [LaTeX](results/manuscript/manuscript.tex)); finalise authors/refs
+
+## License & citation
+Source code: **MIT** (`LICENSE`). Manuscript text and figures under `results/` (`MANUSCRIPT.md`,
+`DISCUSSION.md`, `manuscript/`, `figures/`): **CC-BY-4.0**. Raw third-party measurement data are not
+redistributed — referenced by provenance. To cite, see [`CITATION.cff`](CITATION.cff).
 
 ---
 
