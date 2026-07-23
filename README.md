@@ -4,6 +4,9 @@
 > measuring the movement of air and the O₂ / CO₂ / H₂O concentration gradients that form around
 > plant tissue — and how those change when gravity changes (1 g → Mars 0.38 g → Moon 0.17 g → µg).**
 
+### ▶ [Launch the live demo](https://dr-richard-barker.github.io/LunarLeaf-CFD/) — no install; pick a scenario and press Run
+*(deployed from `main` via GitHub Pages; a visible browser tab is needed since background tabs pause the animation loop.)*
+
 Part of the **AstroBotany / AIRI** family and the **Lunar Leaf** line of work
 (see [`O2_and_CO2_calculations_LUNAR_LEAF-`](https://github.com/dr-richard-barker/O2_and_CO2_calculations_LUNAR_LEAF-)).
 This repository consolidates and supersedes three earlier Google AI Studio prototypes
