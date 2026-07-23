@@ -123,6 +123,7 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 - ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.8 cm/s nulls the microgravity penalty** (`results/T6`, `F6`). Three in‑app fan presets (3/8/17 cm/s).
 - ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
 - ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.6 / 11 / 21 cm/s** (leaf/rosette/canopy); BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
+- ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression 1–4% (most in rosette crown); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). 3 feedback presets → 26 scenarios.
 
 #### 5a. First science result — three scales × gravity
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O

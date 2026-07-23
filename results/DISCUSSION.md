@@ -32,7 +32,12 @@ textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rate
    **BRIC** (sealed) suffers both runaway enclosure drift — CO₂ fixed in **~7 min** in light, O₂ hypoxia
    in **~6.5 days** in the dark — and the steepest surface gradient; **CARA** (micropore tape) vents the
    enclosure to near-ambient but leaves the microgravity surface boundary layer intact; **VEGGIE** (forced
-   airflow) fixes both.
+   airflow) fixes both;
+6. with photosynthesis **CO₂-limited (closed loop)** (`§3.9`, `F10`), the boundary-layer depletion
+   self-suppresses assimilation by 1–4 % spatially (most in the trapped rosette crown), and over a 12 h
+   photoperiod a **sealed BRIC dish fixes only ≈ 1 % of the Earth carbon** (photosynthesis collapses in
+   minutes) versus **≈ 90 % taped (CARA)** and **≈ 100 % ventilated (VEGGIE)** — the bridge from transport
+   physics to carbon gain.
 
 The gravity- and scale-dependence is a genuine model *prediction*; the flux magnitude and the
 closed-chamber transport behaviour on which it rests are *validated* against measurement.
@@ -185,6 +190,32 @@ a fixed ventilation setting tuned on sparse plants will under-serve a canopy, an
 keeps a single plate near-ambient will not, on its own, relieve the surface boundary layer of a dense
 stand in microgravity.
 
+### 3.9 Closing the loop: CO₂-limited photosynthesis
+
+The results above impose a fixed assimilation flux. But photosynthesis is CO₂-limited, so the very
+depletion the boundary layer creates should feed back and suppress the flux. We close this loop two ways.
+
+**Spatially (in the solver).** Making the leaf's CO₂ uptake follow a compensation-point + saturation
+response of the *local* surface CO₂ (`T12`), the boundary-layer depletion self-limits assimilation by
+**≈ 1–4 %** at steady state — and, tellingly, the suppression tracks the transport story: it is smallest
+under ventilation (VEGGIE, net A = 99.3 % of potential), larger for a bare µg leaf (98.0 %), and largest
+in the **trapped rosette crown (96.5 %)**, where the air is most stagnant. The model now *computes* net
+assimilation rather than assuming it, and the gravity/scale ordering carries through to a growth-relevant
+quantity.
+
+**Over a photoperiod (0-D enclosure model).** Coupling the same CO₂ response to the enclosure mass balance
+and the µg boundary-layer conductance (`F10`, `T11`) exposes the consequence that matters for a mission.
+In a **sealed BRIC dish the feedback is catastrophic**: as the small CO₂ reservoir is fixed, the leaf-
+surface concentration falls to the compensation point within minutes, photosynthesis **collapses to
+essentially zero, and only ≈ 1 % of the Earth carbon is fixed over a 12 h photoperiod.** The **micropore-
+taped CARA dish sustains ≈ 90 %** — the tape resupplies CO₂, though the µg boundary layer still shaves a
+few percent — and the **ventilated VEGGIE system ≈ 100 %.** The transport limitations quantified in §3.3–
+§3.8 are therefore not merely gradients: they throttle carbon gain, mildly where air moves and almost
+completely where it is sealed and still.
+
+This is the mechanistic bridge from the physics to the phenotype: a plant in a sealed, microgravity
+enclosure is not only stressed at its surface — it is starved of the carbon substrate it needs to grow.
+
 ---
 
 ## 4. Discussion
@@ -206,9 +237,10 @@ geometry. That the Earth-equivalent speed sits an order of magnitude below typic
 operation where canopy density permits.
 
 **Limitations.** The present model is 2-D and uses the Boussinesq approximation; results are kept within
-its validity (u_max < 0.1 lattice units, β·ΔC ≲ 0.5). The stomatal exchange is represented as a surface
-source/sink rather than a coupled stomatal-conductance model, and the dense canopy uses a reduced
-per-leaf flux to represent self-shading. Absolute ΔC values are reported in lattice excess units and
+its validity (u_max < 0.1 lattice units, β·ΔC ≲ 0.5). Photosynthesis is now CO₂-limited (§3.9) through a
+rectangular-hyperbola response, but stomatal *conductance* is not yet dynamic (transpiration is held
+CO₂-independent) and the CO₂-response and tape-permeance parameters are reasonable assumptions rather than
+fits; the dense canopy uses a reduced per-leaf flux to represent self-shading. Absolute ΔC values are reported in lattice excess units and
 converted to ppm through a single literature-anchored conductance; the µg boundary layer is further
 bounded by the finite chamber, so the reported gravity ratios are **conservative lower bounds** — a
 larger domain would widen the Earth–µg gap. Finally, the Vernier and biomass datasets validate the
@@ -216,12 +248,13 @@ larger domain would widen the Earth–µg gap. Finally, the Vernier and biomass 
 whole-chamber sensor can resolve; the gravity- and scale-dependent gradients remain model predictions
 built on validated components.
 
-**Future work.** (i) Couple the surface flux to a stomatal-conductance/photosynthesis model so ΔC feeds
-back on assimilation; (ii) extend the forced-airflow analysis (now demonstrated for the isolated leaf,
-§3.6) to the rosette and canopy, where trapping will raise the Earth-equivalent speed, and map the full
-speed–geometry ventilation requirement; (iii) enlarge the domain and move to 3-D (WebGPU) to remove the
-chamber-bound conservatism; (iv) calibrate against spatially-resolved surface-gas imaging (e.g.
-planar-optode pH/CO₂/O₂ maps) for a direct test of the predicted gradients.
+**Future work.** (i) Make stomatal conductance dynamic (CO₂- and humidity-responsive) so transpiration and
+assimilation co-vary, building on the CO₂-limited photosynthesis now in place (§3.9); (ii) enlarge the
+domain and move to 3-D (WebGPU) to remove the chamber-bound conservatism and let a dense canopy develop the
+turbulent through-flow its ventilation really needs; (iii) calibrate against spatially-resolved surface-gas
+imaging (e.g. planar-optode pH/CO₂/O₂ maps) for a direct test of the predicted gradients; (iv) couple to a
+whole-plant carbon-balance model to translate the per-photoperiod carbon deficits (§3.9) into growth-rate
+predictions across mission durations.
 
 ---
 

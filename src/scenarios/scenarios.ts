@@ -587,6 +587,11 @@ interface LeafSceneCfg {
   /** Dark (respiration) instead of light (net photosynthesis): flips the source
    *  signs and scales by the measured R/A ratio (0.31). */
   dark?: boolean;
+  /** Ambient CO2 in model units. When set, closes the biology loop: the leaf's
+   *  CO2 uptake / O2 release become CO2-limited (a compensation-point + saturation
+   *  response), so boundary-layer depletion self-limits photosynthesis. Set so the
+   *  open-leaf surface drawdown is a realistic ~2% of ambient. */
+  co2Ambient?: number;
 }
 
 /**
@@ -676,6 +681,30 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         }
       }
     }
+
+    // Photosynthesis feedback: assimilation is CO2-limited, so the local uptake
+    // scales with a rectangular-hyperbola CO2 response (compensation point Γ,
+    // half-saturation K) normalised to 1 at ambient. As the boundary layer depletes
+    // surface CO2, A falls; below Γ it stops. O2 release tracks A; transpiration
+    // (H2O) is left CO2-independent. `aEff` is the surface-mean A as a fraction of
+    // the light-saturated potential — the closed-loop growth-relevant output.
+    const Ca = cfg.co2Ambient ?? 0;
+    const GAMMA = 0.125 * Ca; // CO2 compensation point (~50/400 of ambient)
+    const KC = 0.75 * Ca; // half-saturation (~300/400 of ambient)
+    const mAmbient = Ca > 0 ? (Ca - GAMMA) / (Ca - GAMMA + KC) : 1;
+    let aEff = 1;
+    const updatePhotosynthesis = () => {
+      if (!(Ca > 0) || cfg.dark) return;
+      let sum = 0;
+      for (const c of surfaceCells) {
+        const cAbs = Ca + co2.C[c]; // co2.C is excess (negative near a lit leaf)
+        const m = cAbs <= GAMMA ? 0 : (cAbs - GAMMA) / (cAbs - GAMMA + KC) / mAmbient;
+        co2.source![c] = -S_CO2 * m;
+        o2.source![c] = S_O2 * m;
+        sum += m;
+      }
+      aEff = sum / surfaceCells.length;
+    };
 
     // Enclosure gas exchange (spaceflight hardware). When membraneK is set the
     // ambient-held chamber walls become either sealed (k=0, BRIC) or a semi-permeable
@@ -782,6 +811,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         if (cfg.forcedU !== undefined) fluidInletOutlet();
       },
       onAfterStep() {
+        updatePhotosynthesis(); // CO2-limit the source before it is applied
         co2.step();
         o2.step();
         h2o.step();
@@ -819,6 +849,9 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
           { label: 'ΔC CO₂  mean/peak', value: `${cc.mean.toFixed(3)} / ${cc.peak.toFixed(3)}` },
           { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
         );
+        if (cfg.co2Ambient !== undefined && !cfg.dark) {
+          out.push({ label: 'net assimilation (% potential)', value: (aEff * 100).toFixed(1) });
+        }
         return out;
       },
     };
@@ -840,6 +873,8 @@ const CARA_DESC =
   'CARA spaceflight hardware — a Petri dish sealed with gas-permeable micropore surgical tape in µg. The tape vents the dish toward the cabin, so the dish-mean stays bounded near ambient — but with no convection inside, a diffusive boundary layer still steepens the gases at the leaf surface. Compare its dish-mean (bounded) with BRIC (runaway).';
 const VEGGIE_DESC =
   'VEGGIE spaceflight hardware — light + forced airflow actively ventilating the growth volume in µg. The circulated air thins the leaf boundary layer as well as venting the enclosure, restoring near-Earth surface gas gradients. (If the dish stayed taped, internal gradients would resemble CARA; VEGGIE’s design intent is to ventilate the plants directly.)';
+const FB_DESC =
+  'Closed-loop photosynthesis: the leaf’s CO₂ uptake is now CO₂-limited (compensation point + saturation), so the boundary-layer CO₂ depletion the model builds up feeds back to suppress assimilation. Watch “net assimilation (% potential)” — it falls as the boundary layer thickens (µg) and where air is trapped (rosette crown), and is highest under ventilation.';
 const CANOPY_DESC =
   'A microgreen “lawn” — a dense row of upright shoots on soil, ambient above. Convection ventilates only the canopy top; the within-canopy air stagnates, and in microgravity the whole stand’s gas gaps blow out.';
 
@@ -959,6 +994,24 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Canopy · VEGGIE vented',
     description: VEGGIE_DESC,
     build: makeLeafScene({ ...DOM, id: 'hw-canopy-veggie', label: 'Canopy — vented + light, µg', gRatio: 0, renderScale: 0.3, geometry: canopyGeometry, sourceScale: 0.3, forcedU: 0.05 }),
+  },
+  {
+    id: 'fb-leaf-earth',
+    label: 'Feedback · Leaf Earth (1 g)',
+    description: FB_DESC,
+    build: makeLeafScene({ ...DOM, id: 'fb-leaf-earth', label: 'Leaf — Earth, CO₂-limited photosynthesis', gRatio: 1, renderScale: 0.12, geometry: leafGeometry, co2Ambient: 8 }),
+  },
+  {
+    id: 'fb-leaf-ug',
+    label: 'Feedback · Leaf µg (0 g)',
+    description: FB_DESC,
+    build: makeLeafScene({ ...DOM, id: 'fb-leaf-ug', label: 'Leaf — µg, CO₂-limited photosynthesis', gRatio: 0, renderScale: 0.12, geometry: leafGeometry, co2Ambient: 8 }),
+  },
+  {
+    id: 'fb-rosette-ug',
+    label: 'Feedback · Rosette µg (0 g)',
+    description: FB_DESC,
+    build: makeLeafScene({ ...DOM, id: 'fb-rosette-ug', label: 'Rosette — µg, CO₂-limited photosynthesis', gRatio: 0, renderScale: 0.18, geometry: rosetteGeometry, co2Ambient: 8 }),
   },
   {
     id: 'cavity',

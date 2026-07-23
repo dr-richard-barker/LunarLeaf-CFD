@@ -16,6 +16,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `F7_hardware_compare.png` | Spaceflight hardware (BRIC/CARA/VEGGIE) as dish boundary conditions: enclosure CO₂ drift vs time (left) and leaf-surface gradient by hardware (right). |
 | `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left) and required airflow ≈ 3/11/21 cm/s (right). |
 | `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy — the enclosure penalty widens with density. |
+| `F10_photosynthesis_feedback.png` | Closed-loop CO₂-limited photosynthesis: net assimilation vs time (BRIC collapses in minutes) and 12 h carbon fixed (BRIC 1% / CARA 90% / VEGGIE 100% of Earth). |
 
 ## Tables (`tables/`)
 | File | Content |
@@ -30,6 +31,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
 | `T8_enclosure_timescales.csv` | Analytic sealed-dish (BRIC) atmosphere timescales: CO₂ depletion (min), CO₂ stress (h), O₂ hypoxia (days). |
 | `T9_fan_by_scale.csv` | Forced-airflow sweep for leaf/rosette/canopy + Earth-equivalent speed per scale (≈ 2.6 / 11 / 21 cm/s). |
 | `T10_hardware_by_scale.csv` | BRIC/CARA/VEGGIE surface gradient + dish-mean CO₂ across the three scales. |
+| `T11_photosynthesis_feedback.csv` | 0-D closed-loop model: start/end net assimilation + 12 h carbon (% of Earth) per enclosure. |
+| `T12_feedback_spatial.csv` | Solver closed-loop net assimilation (% of potential) by gravity / scale / hardware. |
 
 ## Field grids (`fields/`)
 `<scenario>_h2o.csv` — H₂O-excess concentration grids (128×96, solid cells = NaN) for `leaf-earth`,
@@ -47,6 +50,9 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients. Full 
   surface gradient; CARA (tape) vents the enclosure but not the µg surface layer; VEGGIE (airflow) fixes both.
 - **Scale-dependent:** the ventilation to null the µg penalty rises **≈ 2.6 → 11 → 21 cm/s** for
   leaf → rosette → canopy; a single fan speed (or a permeable seal) that suffices for a leaf under-serves a canopy.
+- **Closed loop:** with CO₂-limited photosynthesis, boundary-layer depletion self-suppresses assimilation
+  1–4% (most in the trapped rosette crown); over a 12 h photoperiod a **sealed BRIC dish fixes ~1%** of the
+  Earth carbon (photosynthesis collapses in minutes) vs **~90% (CARA)** and **~100% (VEGGIE)**.
 
 ## Reproduce
 ```bash
@@ -71,6 +77,9 @@ python validation/analyze_data.py      # Vernier + biomass -> T1, F1, F2
 python validation/analyze_model.py     # calibration, F3-F6, T3, T5
 python validation/hardware_analysis.py # BRIC/CARA/VEGGIE -> F7, T8
 python validation/scales_analysis.py   # fan + hardware by scale -> F8, F9
+python validation/feedback_0d.py       # 0-D closed-loop photosynthesis -> F10, T11
+# CFD closed-loop check (net assimilation by gravity/scale/hardware) -> T12:
+# npx esbuild validation/feedback_test.ts --bundle --format=esm --platform=node --outfile=validation/feedback_test.mjs && node validation/feedback_test.mjs 8
 ```
 Raw source data (`validation/raw/`, incl. the third-party Chew/Millar workbook) is referenced by
 provenance and not committed; place the CSV/xlsx files there to re-run step 3.
