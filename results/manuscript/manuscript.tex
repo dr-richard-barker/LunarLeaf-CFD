@@ -77,7 +77,7 @@ stomatal and mesophyll conductances, limits gas exchange.
 In microgravity there is no buoyancy: density differences no longer drive motion, so in still air the only transport is
 molecular diffusion. The unstirred boundary layer is expected to thicken and the surface-to-bulk gradients of \co{},
 \oo{} and water vapour to steepen. This has long been proposed as a mechanism contributing to the altered morphology,
-gas exchange and stress signatures of spaceflight-grown plants\citep{kitaya2003,porterfield2002,musgrave}, and it is
+gas exchange and stress signatures of spaceflight-grown plants\citep{kitaya2003,porterfield2002}, and it is
 the stated rationale for the forced-ventilation design of modern growth hardware. Yet the effect resists direct
 measurement---no whole-chamber sensor resolves the sub-millimetre boundary layer---so a physically grounded model is
 valuable for interpreting results and designing hardware.
@@ -229,7 +229,7 @@ higher speeds exceeded the low-Mach limit).}
 
 \subsection{Spaceflight hardware as boundary conditions}
 The three ISS systems differ, in gas-transport terms, only in the boundary condition on the dish (Figs.~\ref{fig:hw},
-\ref{fig:hwscale}). \textbf{BRIC}---hermetically sealed\citep{paul2013}---imposes zero-flux walls: the enclosure
+\ref{fig:hwscale}). \textbf{BRIC}---hermetically sealed\citep{correll2013}---imposes zero-flux walls: the enclosure
 atmosphere drifts without bound (Fig.~\ref{fig:hw}a), and a mass balance (Table~\ref{tab:times}) shows the
 $\sim$400\,ppm \co{} in a 30\,cm\textsuperscript{3} headspace is fixed in $\approx$7\,min (light), while in the dark
 \co{} reaches 1\,\% in $\approx$9\,h and \oo{} falls to a hypoxic 5\,\% in $\approx$6.5\,d. \textbf{CARA}
@@ -313,7 +313,9 @@ guideline: a setting tuned on sparse plants under-serves a dense stand. Framing 
 gas-exchange control---sealed, vented seal, actively ventilated---and adding the photosynthesis feedback converts these
 into a growth currency: a sealed dish fixes almost no carbon over a photoperiod. This offers a parsimonious, physics-based
 contributor to the reduced growth and stress transcriptomes of sealed-hardware spaceflight
-experiments\citep{paul2013,parafilm}, complementary to gravisensing- and light-driven responses\citep{cara}.
+experiments\citep{correll2013,parafilm}, complementary to gravisensing- and light-driven responses\citep{cara}.
+Consistent with a transport-limited mechanism, whole-stand gas exchange in microgravity is unchanged at
+saturating \co\citep{monje2005}---exactly the regime in which the boundary-layer \co{} limitation is relieved.
 
 \paragraph{Limitations.} The model is 2-D and Boussinesq (kept within validity, $u_{\max}<0.1$, $\beta\,\Delta C\lesssim0.5$).
 Photosynthesis is \co-limited but stomatal \emph{conductance} is not yet dynamic; the \co-response and tape-permeance
@@ -360,16 +362,16 @@ The authors declare no competing interests.
 
 %------------------------------------------------------------------ References
 \begin{thebibliography}{10}\small
-\bibitem{kitaya2003} Kitaya, Y. \textit{et al.} Gas exchange and boundary-layer resistance of plant leaves under altered gravity and forced convection. \textit{Adv. Space Res.} (2003).
-\bibitem{porterfield2002} Porterfield, D.~M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. \textit{Ann. Bot.} (2002).
-\bibitem{musgrave} Musgrave, M.~E. \textit{et al.} Gas exchange and plant metabolism in the spaceflight environment. \textit{Plant Physiol.} (review).
-\bibitem{ghia1982} Ghia, U., Ghia, K.~N. \& Shin, C.~T. High-Re solutions for incompressible flow using the Navier--Stokes equations and a multigrid method. \textit{J. Comput. Phys.} \textbf{48}, 387--411 (1982).
-\bibitem{devahldavis1983} de Vahl Davis, G. Natural convection of air in a square cavity: a benchmark numerical solution. \textit{Int. J. Numer. Methods Fluids} \textbf{3}, 249--264 (1983).
-\bibitem{chew2017} Chew, Y.~H., Millar, A.~J. \textit{et al.} Whole-plant-chamber carbon-balance dataset for \textit{Arabidopsis thaliana}. \textit{bioRxiv} (2017) and associated data workbook.
-\bibitem{paul2013} Paul, A.-L. \textit{et al.} Organ-specific remodeling of the \textit{Arabidopsis} transcriptome in response to spaceflight (BRIC hardware). \textit{BMC Plant Biol.} (2013). PMC3750915.
-\bibitem{sealingfilm} Beware of sealing film of Petri dishes! --- sealing method alters the expression of a large number of genes; surgical tape maintains near-ambient \co/\oo. PMC12193506.
-\bibitem{parafilm} Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. PMC6529517.
-\bibitem{cara} Light has a principal role in the \textit{Arabidopsis} transcriptomic response to the spaceflight environment (CARA). PMC11303767.
+\bibitem{kitaya2003} Kitaya, Y., Tsuruyama, J., Shibuya, T., Yoshida, M. \& Kiyota, M. Effects of air current speed on gas exchange in plant leaves and plant canopies. \textit{Adv. Space Res.} \textbf{31}, 177--182 (2003). doi:10.1016/S0273-1177(02)00747-0.
+\bibitem{porterfield2002} Porterfield, D.~M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. \textit{J. Plant Growth Regul.} \textbf{21}, 177--190 (2002). doi:10.1007/s003440010054.
+\bibitem{ghia1982} Ghia, U., Ghia, K.~N. \& Shin, C.~T. High-Re solutions for incompressible flow using the Navier--Stokes equations and a multigrid method. \textit{J. Comput. Phys.} \textbf{48}, 387--411 (1982). doi:10.1016/0021-9991(82)90058-4.
+\bibitem{devahldavis1983} de Vahl Davis, G. Natural convection of air in a square cavity: a bench mark numerical solution. \textit{Int. J. Numer. Methods Fluids} \textbf{3}, 249--264 (1983). doi:10.1002/fld.1650030305.
+\bibitem{chew2017} Chew, Y.~H., Seaton, D.~D., Mengin, V., Flis, A., Mugford, S.~T., Smith, A.~M., Stitt, M. \& Millar, A.~J. Linking circadian time to growth rate quantitatively via carbon metabolism. \textit{bioRxiv} 105437 (2017). doi:10.1101/105437. [Whole-plant-chamber gas-exchange dataset used here.]
+\bibitem{correll2013} Correll, M.~J., Pyle, T.~P., Millar, K.~D.~L., Sun, Y., Yao, J., Edelmann, R.~E. \& Kiss, J.~Z. Transcriptome analyses of \textit{Arabidopsis thaliana} seedlings grown in space: implications for gravity-responsive genes (BRIC hardware). \textit{Planta} \textbf{238}, 519--533 (2013). doi:10.1007/s00425-013-1909-x.
+\bibitem{cara} Zhou, M., Ferl, R.~J. \& Paul, A.-L. Light has a principal role in the \textit{Arabidopsis} transcriptomic response to the spaceflight environment (CARA). \textit{npj Microgravity} \textbf{10}, 82 (2024). doi:10.1038/s41526-024-00417-0.
+\bibitem{sealingfilm} Ma, Y., Li, F., Wang, X., Sun, Q., Wang, R. \& Zhao, J. Beware of sealing film of Petri dishes!---alters the expression of a large number of genes. \textit{Int. J. Mol. Sci.} \textbf{26}, 5484 (2025). doi:10.3390/ijms26125484.
+\bibitem{parafilm} Xu, L., Li, S., Shabala, S., Jian, T. \& Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. \textit{Front. Plant Sci.} \textbf{10}, 637 (2019). doi:10.3389/fpls.2019.00637.
+\bibitem{monje2005} Monje, O., Stutte, G.~W. \& Chapman, D.~K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating \co{} concentration. \textit{Planta} \textbf{222}, 336--345 (2005). doi:10.1007/s00425-005-1529-1.
 \end{thebibliography}
 
 \end{document}

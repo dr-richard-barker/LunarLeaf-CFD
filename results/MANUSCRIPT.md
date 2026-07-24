@@ -48,7 +48,7 @@ In microgravity there is no buoyancy. Density differences no longer generate mot
 only transport left is molecular diffusion. The unstirred boundary layer around a plant organ is expected to
 thicken, and the surface‑to‑bulk gradients of CO₂, O₂ and water vapour to steepen. This has been proposed
 for decades as a mechanism contributing to the altered morphology, gas exchange and stress signatures of
-spaceflight‑grown plants¹⁻³, and it is the stated rationale for the forced‑ventilation design of modern
+spaceflight‑grown plants [1,2], and it is the stated rationale for the forced‑ventilation design of modern
 plant‑growth hardware. Yet the effect is difficult to measure directly: no whole‑chamber sensor resolves
 the sub‑millimetre boundary layer, and flight opportunities are scarce. A physically grounded, quantitative
 model is therefore valuable both to interpret existing results and to design hardware.
@@ -71,9 +71,9 @@ spatial, gravity‑ and scale‑dependent gradients).
 ### Solver validation
 
 Before any biology, the incompressible‑flow + advection–diffusion solver was verified against four
-independent benchmarks (Table 1). It reproduces the Ghia *et al.*⁴ lid‑driven‑cavity centreline profiles at
+independent benchmarks (Table 1). It reproduces the Ghia *et al.* [3] lid‑driven‑cavity centreline profiles at
 Re 100 (L2 = 0.011), the Kármán vortex‑shedding Strouhal number of a confined cylinder (St = 0.192), the
-de Vahl Davis⁵ differentially‑heated‑cavity Nusselt number at Ra 10⁴ (Nu = 2.242 vs 2.238, 0.18 % error),
+de Vahl Davis [4] differentially‑heated‑cavity Nusselt number at Ra 10⁴ (Nu = 2.242 vs 2.238, 0.18 % error),
 and the analytic error‑function profile for pure diffusion (L2 ≈ 0). Gate 3 is decisive: reproducing the
 natural‑convection benchmark to 0.18 % confirms that the buoyancy/gravity coupling is quantitatively
 correct, so scaling the gravity vector to zero genuinely collapses convection to the diffusion limit
@@ -83,15 +83,15 @@ certified by gate 4.
 
 | Gate | Benchmark | Reference | Model | Result |
 |---|---|---|---|---|
-| 1 | Lid‑driven cavity, Re 100 | Ghia *et al.* (1982)⁴ | L2 = 0.011 | ✓ |
+| 1 | Lid‑driven cavity, Re 100 | Ghia *et al.* (1982) [3] | L2 = 0.011 | ✓ |
 | 2 | Cylinder wake, Re 100 | St ≈ 0.16 (unconfined) | St = 0.192 (confined) | ✓ |
-| 3 | Natural‑convection cavity, Ra 10⁴ | de Vahl Davis (1983)⁵ Nu = 2.238 | Nu = 2.242 | ✓ |
+| 3 | Natural‑convection cavity, Ra 10⁴ | de Vahl Davis (1983) [4] Nu = 2.238 | Nu = 2.242 | ✓ |
 | 4 | Pure diffusion | ½·erfc analytic | L2 ≈ 0 | ✓ |
 
 ### Measured gas exchange anchors the model
 
 Two independent measurements fix the physical stomatal flux (Fig. 1; Table 2). A whole‑plant‑chamber
-dataset⁶ gives a net CO₂ assimilation of 1.38 µmol CO₂ h⁻¹ cm⁻² = **3.85 µmol m⁻² s⁻¹** for Col wild‑type,
+dataset [5] gives a net CO₂ assimilation of 1.38 µmol CO₂ h⁻¹ cm⁻² = **3.85 µmol m⁻² s⁻¹** for Col wild‑type,
 with dark respiration 1.18 µmol m⁻² s⁻¹ (R/A = 0.31) — textbook‑typical for *Arabidopsis*. An independent
 4.8‑day Vernier whole‑chamber trace (Fig. 1a) shows the expected closed‑system signature: strong diel O₂
 cycling (6.6–32.8 %) and humidity swings driven by photosynthesis and respiration. These fix the model's
@@ -111,9 +111,9 @@ gas‑exchange fluxes are derived.
 
 | Quantity | Value | Units | Source |
 |---|---|---|---|
-| Net CO₂ assimilation A | 1.38 (3.85) | µmol h⁻¹ cm⁻² (µmol m⁻² s⁻¹) | Chamber⁶ |
-| Dark respiration R | 0.43 (1.18) | µmol h⁻¹ cm⁻² (µmol m⁻² s⁻¹) | Chamber⁶ |
-| Chamber volume / area | 339 / 26 | cm³ / cm² | Chamber⁶ |
+| Net CO₂ assimilation A | 1.38 (3.85) | µmol h⁻¹ cm⁻² (µmol m⁻² s⁻¹) | Chamber [5] |
+| Dark respiration R | 0.43 (1.18) | µmol h⁻¹ cm⁻² (µmol m⁻² s⁻¹) | Chamber [5] |
+| Chamber volume / area | 339 / 26 | cm³ / cm² | Chamber [5] |
 | Vernier O₂ diel range | 6.6–32.8 | % | Vernier |
 
 ### Calibration and closed‑chamber transport
@@ -201,14 +201,14 @@ cm s⁻¹ (canopy value extrapolated; higher speeds exceeded the low‑Mach limi
 ### Spaceflight hardware as boundary conditions
 
 The three most‑used ISS plant systems differ, in gas‑transport terms, only in the boundary condition they
-impose on the Petri dish (Fig. 8; Fig. 9). **BRIC** — hermetically sealed⁷ — imposes zero‑flux walls: the
+impose on the Petri dish (Fig. 8; Fig. 9). **BRIC** — hermetically sealed [6] — imposes zero‑flux walls: the
 enclosure atmosphere drifts without bound (Fig. 8a), and a simple mass balance on the small dish reservoir
 (Table 5) shows the ~400 ppm of CO₂ in a 30 cm³ headspace is fixed by photosynthesis in ≈ 7 minutes (light),
 while in the dark CO₂ reaches a stressful 1 % in ≈ 9 hours and O₂ falls to a hypoxic 5 % in ≈ 6.5 days.
 BRIC also gives the steepest leaf‑surface gradient of any hardware (Fig. 8b). **CARA** — gas‑permeable
 micropore surgical tape⁸ — vents the dish to the effectively‑infinite cabin, so the dish‑mean stays a few
 ppm from ambient (consistent with ground measurements that surgical tape keeps plated seedlings near‑ambient
-while parafilm and plastic wrap deplete CO₂ and trigger thousands of stress genes⁸,⁹); but it does not fix
+while parafilm and plastic wrap deplete CO₂ and trigger thousands of stress genes [8,9]); but it does not fix
 the microgravity boundary layer, so the leaf‑surface gradient remains that of an open dish (Fig. 9).
 **VEGGIE** — light + forced airflow — vents the enclosure *and* thins the leaf boundary layer, cutting the
 surface gradient ~3× toward Earth values. Across all three scales, BRIC ≈ CARA at the leaf surface, and a
@@ -284,8 +284,8 @@ the three ISS systems as a ladder of increasing gas‑exchange control — seale
 surface layer), vented seal (enclosure fixed, surface not), actively ventilated (both fixed) — and the
 photosynthesis feedback converts these into a growth currency: a sealed dish fixes almost no carbon over a
 photoperiod. This offers a parsimonious, physics‑based contributor to the reduced growth and stress
-transcriptomes reported for sealed‑hardware spaceflight experiments⁷,⁹, complementary to gravisensing‑ and
-light‑driven responses.
+transcriptomes reported for sealed‑hardware spaceflight experiments [6,9], complementary to gravisensing‑ and
+light‑driven responses [7]. Consistent with a transport-limited mechanism, whole-stand gas exchange in microgravity is unchanged at saturating CO₂ [10] — exactly the regime in which the boundary-layer CO₂ limitation is relieved.
 
 **Limitations.** The model is 2‑D and uses the Boussinesq approximation; results are kept within its
 validity (u_max < 0.1 lattice units, β·ΔC ≲ 0.5). Photosynthesis is CO₂‑limited through a rectangular‑
@@ -341,7 +341,7 @@ layer conductance (Earth free convection vs microgravity diffusion) and the encl
 photoperiod.
 
 **Data sources.** Measured gas exchange: Vernier whole‑chamber logs and a whole‑plant‑chamber biomass/gas‑
-exchange workbook⁶. All model code, the validation harness and the analysis scripts are in the LunarLeaf‑CFD
+exchange workbook [5]. All model code, the validation harness and the analysis scripts are in the LunarLeaf‑CFD
 repository; runs are 30 000 (or 22 000) steps to quasi‑steady state.
 
 ---
@@ -350,7 +350,7 @@ repository; runs are 30 000 (or 22 000) steps to quasi‑steady state.
 
 Model source, validation harness, analysis scripts and this results package are in the LunarLeaf‑CFD
 repository. Measured gas‑exchange data comprise Vernier whole‑chamber logs and the whole‑plant‑chamber
-workbook of Chew, Y.H. & Millar, A.J.⁶; raw third‑party data are referenced by provenance and not
+workbook of Chew, Y.H. & Millar, A.J. [5]; raw third‑party data are referenced by provenance and not
 redistributed here.
 
 ## Author contributions
@@ -371,24 +371,13 @@ completed.)*
 
 ## References
 
-*Preliminary reference list — citations to be finalised.*
-
-1. Kitaya, Y. *et al.* Gas exchange and boundary‑layer resistance of plant leaves under altered gravity and
-   forced convection. *Adv. Space Res.* (2003).
-2. Porterfield, D. M. The biophysical limitations in physiological transport and exchange in plants grown in
-   microgravity. *Ann. Bot.* (2002).
-3. Musgrave, M. E. *et al.* Gas exchange and plant metabolism in the spaceflight environment. *Plant Physiol.*
-4. Ghia, U., Ghia, K. N. & Shin, C. T. High‑Re solutions for incompressible flow using the Navier–Stokes
-   equations and a multigrid method. *J. Comput. Phys.* **48**, 387–411 (1982).
-5. de Vahl Davis, G. Natural convection of air in a square cavity: a benchmark numerical solution.
-   *Int. J. Numer. Methods Fluids* **3**, 249–264 (1983).
-6. Chew, Y. H., Millar, A. J. *et al.* Whole‑plant‑chamber carbon‑balance dataset for *Arabidopsis thaliana*.
-   *bioRxiv* (2017) and associated data workbook.
-7. Paul, A.‑L. *et al.* Organ‑specific remodeling of the *Arabidopsis* transcriptome in response to
-   spaceflight (BRIC hardware). *BMC Plant Biol.* (2013). PMC3750915.
-8. Beware of sealing film of Petri dishes! — sealing method alters the expression of a large number of
-   genes; surgical tape maintains near‑ambient CO₂/O₂. PMC12193506.
-9. Plants grown in parafilm‑wrapped Petri dishes are stressed and possess altered gene‑expression profiles.
-   PMC6529517.
-10. Light has a principal role in the *Arabidopsis* transcriptomic response to the spaceflight environment
-    (CARA). PMC11303767.
+1. Kitaya, Y., Tsuruyama, J., Shibuya, T., Yoshida, M. & Kiyota, M. Effects of air current speed on gas exchange in plant leaves and plant canopies. *Adv. Space Res.* **31**, 177–182 (2003). doi:10.1016/S0273-1177(02)00747-0.
+2. Porterfield, D. M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. *J. Plant Growth Regul.* **21**, 177–190 (2002). doi:10.1007/s003440010054.
+3. Ghia, U., Ghia, K. N. & Shin, C. T. High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method. *J. Comput. Phys.* **48**, 387–411 (1982). doi:10.1016/0021-9991(82)90058-4.
+4. de Vahl Davis, G. Natural convection of air in a square cavity: a bench mark numerical solution. *Int. J. Numer. Methods Fluids* **3**, 249–264 (1983). doi:10.1002/fld.1650030305.
+5. Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., Smith, A. M., Stitt, M. & Millar, A. J. Linking circadian time to growth rate quantitatively via carbon metabolism. *bioRxiv* 105437 (2017). doi:10.1101/105437. *(Whole-plant-chamber gas-exchange dataset used here.)*
+6. Correll, M. J., Pyle, T. P., Millar, K. D. L., Sun, Y., Yao, J., Edelmann, R. E. & Kiss, J. Z. Transcriptome analyses of *Arabidopsis thaliana* seedlings grown in space: implications for gravity-responsive genes (BRIC hardware). *Planta* **238**, 519–533 (2013). doi:10.1007/s00425-013-1909-x.
+7. Zhou, M., Ferl, R. J. & Paul, A.-L. Light has a principal role in the *Arabidopsis* transcriptomic response to the spaceflight environment (CARA). *npj Microgravity* **10**, 82 (2024). doi:10.1038/s41526-024-00417-0.
+8. Ma, Y., Li, F., Wang, X., Sun, Q., Wang, R. & Zhao, J. Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484.
+9. Xu, L., Li, S., Shabala, S., Jian, T. & Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
+10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.

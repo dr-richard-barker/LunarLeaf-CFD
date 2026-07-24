@@ -278,8 +278,13 @@ redistributed here.
 
 ## 7. Key references
 
-- U. Ghia, K.N. Ghia, C.T. Shin (1982), *J. Comput. Phys.* **48**, 387 — lid-driven cavity benchmark.
-- G. de Vahl Davis (1983), *Int. J. Numer. Methods Fluids* **3**, 249 — natural-convection benchmark.
-- Y. Kitaya et al. (2003), *Adv. Space Res.* — plant boundary layers and forced convection under altered gravity.
-- D.M. Porterfield (2002), *Ann. Bot.* — microgravity effects on plant gas exchange and the boundary layer.
-- Y.H. Chew, A.J. Millar et al. (2017), *bioRxiv* — whole-plant-chamber *Arabidopsis* carbon-balance dataset.
+1. Kitaya, Y. *et al.* Effects of air current speed on gas exchange in plant leaves and plant canopies. *Adv. Space Res.* **31**, 177–182 (2003). doi:10.1016/S0273-1177(02)00747-0. — air movement, boundary-layer resistance and its loss under microgravity.
+2. Porterfield, D. M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. *J. Plant Growth Regul.* **21**, 177–190 (2002). doi:10.1007/s003440010054.
+3. Ghia, U., Ghia, K. N. & Shin, C. T. High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method. *J. Comput. Phys.* **48**, 387–411 (1982). doi:10.1016/0021-9991(82)90058-4. — lid-driven cavity benchmark.
+4. de Vahl Davis, G. Natural convection of air in a square cavity: a bench mark numerical solution. *Int. J. Numer. Methods Fluids* **3**, 249–264 (1983). doi:10.1002/fld.1650030305. — natural-convection benchmark.
+5. Chew, Y. H. *et al.* (incl. Millar, A. J.). Linking circadian time to growth rate quantitatively via carbon metabolism. *bioRxiv* 105437 (2017). doi:10.1101/105437. — the whole-plant-chamber gas-exchange dataset used here.
+6. Correll, M. J. *et al.* Transcriptome analyses of *Arabidopsis thaliana* seedlings grown in space: implications for gravity-responsive genes (BRIC hardware). *Planta* **238**, 519–533 (2013). doi:10.1007/s00425-013-1909-x.
+7. Zhou, M., Ferl, R. J. & Paul, A.-L. Light has a principal role in the *Arabidopsis* transcriptomic response to the spaceflight environment (CARA). *npj Microgravity* **10**, 82 (2024). doi:10.1038/s41526-024-00417-0.
+8. Ma, Y. *et al.* Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484. — surgical tape holds near-ambient CO₂/O₂; parafilm/PE deplete CO₂.
+9. Xu, L. *et al.* Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
+10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.
