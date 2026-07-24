@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LunarLeaf-CFD · M1 Solver Bench</title>
     <link rel="icon" href="/cose/cose-logo.png" />
-    <link rel="stylesheet" href="/cose/cose-theme.css" />
-  </head>
-  <body data-site-id="LunarLeaf-CFD" data-cose-themetoggle="off" data-brand-logo="cose/cose-logo.png">
+    <link rel="stylesheet" href="/cose/cose-chrome.css" />
+    <link rel="stylesheet" href="/cose/cose-map.css" />
+  <style id="cose-about-style">
+      .cose-about{max-width:1100px;margin:0 auto;padding:20px;border-top:1px solid var(--line);
+        color:var(--muted);font-size:14px;line-height:1.6}
+      .cose-about strong{color:var(--ink,#e6e9f2)} .cose-about a{color:var(--accent)}
+    </style>
+</head>
+  <body data-site-id="LunarLeaf-CFD" data-brand-logo="cose/cose-logo.png">
     <div id="root"></div>
+    <footer class="cose-about">
+      <p><strong>LunarLeaf-CFD</strong> is a browser-based fluid-dynamics workbench for modelling and
+      visualising the airflow and O<sub>2</sub> / CO<sub>2</sub> / H<sub>2</sub>O concentration gradients
+      that form around plant tissue — and how they change as gravity changes
+      (1&nbsp;g&nbsp;&rarr; Mars 0.38&nbsp;g&nbsp;&rarr; Moon 0.17&nbsp;g&nbsp;&rarr; microgravity).
+      Part of the AstroBotany / AIRI family and the Lunar&nbsp;Leaf line of work.
+      <a href="https://github.com/dr-richard-barker/LunarLeaf-CFD">Code &amp; docs on GitHub</a>.</p>
+    </footer>
+
     <script type="module" src="/src/main.tsx"></script>
     <script src="/cose/sites.js"></script>
     <script src="/cose/theme.js"></script>
