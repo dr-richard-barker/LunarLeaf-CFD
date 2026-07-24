@@ -48,7 +48,7 @@ In microgravity there is no buoyancy. Density differences no longer generate mot
 only transport left is molecular diffusion. The unstirred boundary layer around a plant organ is expected to
 thicken, and the surface‑to‑bulk gradients of CO₂, O₂ and water vapour to steepen. This has been proposed
 for decades as a mechanism contributing to the altered morphology, gas exchange and stress signatures of
-spaceflight‑grown plants [1,2], and it is the stated rationale for the forced‑ventilation design of modern
+spaceflight‑grown plants [1,2,11], and it is the stated rationale for the forced‑ventilation design of modern
 plant‑growth hardware. Yet the effect is difficult to measure directly: no whole‑chamber sensor resolves
 the sub‑millimetre boundary layer, and flight opportunities are scarce. A physically grounded, quantitative
 model is therefore valuable both to interpret existing results and to design hardware.
@@ -285,7 +285,7 @@ surface layer), vented seal (enclosure fixed, surface not), actively ventilated 
 photosynthesis feedback converts these into a growth currency: a sealed dish fixes almost no carbon over a
 photoperiod. This offers a parsimonious, physics‑based contributor to the reduced growth and stress
 transcriptomes reported for sealed‑hardware spaceflight experiments [6,9], complementary to gravisensing‑ and
-light‑driven responses [7]. Consistent with a transport-limited mechanism, whole-stand gas exchange in microgravity is unchanged at saturating CO₂ [10] — exactly the regime in which the boundary-layer CO₂ limitation is relieved.
+light‑driven responses [7]. Consistent with a transport-limited mechanism, whole-stand gas exchange in microgravity is unchanged at saturating CO₂ [10] — exactly the regime in which the boundary-layer CO₂ limitation is relieved. Notably, a meta-analysis of 15 *Arabidopsis* spaceflight transcriptome experiments found that flight hardware and lighting impose some of the largest confounding effects on the response, with hypoxia and oxidative-stress signatures among its conserved features [11]; the present model provides a physical basis for that hardware dependence, and its BRIC-specific O₂ drawdown (§3.7) is consistent with the hypoxia signatures reported for sealed-canister experiments.
 
 **Limitations.** The model is 2‑D and uses the Boussinesq approximation; results are kept within its
 validity (u_max < 0.1 lattice units, β·ΔC ≲ 0.5). Photosynthesis is CO₂‑limited through a rectangular‑
@@ -381,3 +381,4 @@ completed.)*
 8. Ma, Y., Li, F., Wang, X., Sun, Q., Wang, R. & Zhao, J. Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484.
 9. Xu, L., Li, S., Shabala, S., Jian, T. & Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
 10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.
+11. Barker, R., Kruse, C. P. S., Johnson, C., Saravia-Butler, A., Fogle, H., Chang, H.-S., Trane, R. M., Kinscherf, N., Villacampa, A., Manzano, A., Herranz, R., Davin, L. B., Lewis, N. G., Perera, I., Wolverton, C., Gupta, P., Jaiswal, P., Reinsch, S. S., Wyatt, S. & Gilroy, S. Meta-analysis of the space flight and microgravity response of the *Arabidopsis* plant transcriptome. *npj Microgravity* **9**, 21 (2023). doi:10.1038/s41526-023-00247-6.

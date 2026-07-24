@@ -225,7 +225,11 @@ stress: without buoyancy-driven convection, plant organs sit in a thickened, poo
 layer that is simultaneously CO₂-starved (suppressing photosynthesis), O₂-enriched (promoting
 photorespiration), and humid (reducing transpirational cooling and nutrient transport). The model shows
 this is not a fixed penalty but one that **scales with both gravity and canopy architecture**: the
-denser the planting, the more a still, low-gravity atmosphere throttles gas exchange.
+denser the planting, the more a still, low-gravity atmosphere throttles gas exchange. This dovetails with a
+meta-analysis of 15 *Arabidopsis* spaceflight transcriptome experiments, which found flight hardware and
+lighting among the largest confounding effects and hypoxia/oxidative-stress signatures among the conserved
+responses [11]: the present model supplies a physical mechanism for that hardware dependence, and its
+BRIC-specific O₂ drawdown (§3.7) is consistent with the reported hypoxia signatures.
 
 **Implications for space-flight hardware.** Because the effect is transport-limited rather than
 biochemical, it is engineerable — and §3.6 quantifies the fix: **≈ 2.8 cm s⁻¹ of forced airflow restores
@@ -288,3 +292,4 @@ redistributed here.
 8. Ma, Y. *et al.* Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484. — surgical tape holds near-ambient CO₂/O₂; parafilm/PE deplete CO₂.
 9. Xu, L. *et al.* Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
 10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.
+11. Barker, R. *et al.* (incl. Gilroy, S.). Meta-analysis of the space flight and microgravity response of the *Arabidopsis* plant transcriptome. *npj Microgravity* **9**, 21 (2023). doi:10.1038/s41526-023-00247-6. — 15 spaceflight experiments; hardware/lighting drive much of the variation; conserved hypoxia and oxidative-stress signatures.
