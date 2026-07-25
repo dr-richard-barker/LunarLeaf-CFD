@@ -98,8 +98,8 @@ Status legend: ✅ done · 🟡 in progress · ⬜ not started
 - ✅ Incompressible flow solver (D2Q9 LBM, BGK) — validated on cavity + cylinder (gates 1 & 2)
 - ✅ Scalar advection–diffusion for CO₂/O₂/H₂O — D2Q5 `ScalarField`, correct diffusivities, Dirichlet + zero-flux walls; **gate 4 (erfc limit) passes**
 - ✅ Boussinesq buoyancy coupled to a gravity vector (µg → 1 g) — `applyBoussinesqForce` + presets; **gate 3 (natural convection, Nu vs Ra) passes at 0.18% error** — the buoyancy coupling is proven
-- ⬜ Leaf boundary as source/sink (stomatal flux BCs) — `ScalarField.source` hook ready; wire with the leaf geometry in M2/M3
-- 🟡 Report Gr, Ra, Re, Sh, Nu, δ, g_bl each run — Re/Gr/Ra/Pe/Sc + Nu (natconv) + St (cylinder) reported; δ, Sh, g_bl come with the leaf scenario
+- ✅ Leaf boundary as source/sink (stomatal flux BCs) — CO₂ sink + O₂/H₂O source wired onto the leaf/rosette/canopy surface cells in `makeLeafScene`, coupled to solutal buoyancy, with CO₂-limited photosynthesis feedback and the spaceflight enclosures (BRIC/CARA/VEGGIE)
+- ✅ Report Gr, Ra, Re, Sh, Nu, δ, g_bl each run — Re/Gr/Ra/Pe/Sc + Nu (natconv) + St (cylinder); the leaf scenarios now also derive **g_bl (mol m⁻² s⁻¹), the diffusive film δ (mm) and Sherwood Sh** from the simulated flux + surface gap. g_bl reproduces the literature Earth single-leaf anchor (1.0 mol m⁻² s⁻¹) and then falls with gravity (Mars 0.85 → Moon 0.72 → µg 0.49), δ thickening 0.67 → 1.35 mm — a model output, no longer an assumed constant
 
 #### Milestone 1 validation results (headless, reproducible)
 | Gate | Benchmark | Reference | Measured | Status |

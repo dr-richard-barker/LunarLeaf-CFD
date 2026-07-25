@@ -9,11 +9,13 @@ import { LBMFluid } from './LBMFluid';
  * The diffusivity D is set through the relaxation time: D = cs² (tauC − 1/2)
  * with cs² = 1/3 for this D2Q5 set (weights 1/3, 1/6×4). Solid cells default to
  * a zero-flux (Neumann) wall via bounce-back; a leaf surface source/sink is
- * applied as a per-cell source term S (Milestone 1 biology coupling).
+ * applied as a per-cell source term S (the Milestone 1 biology coupling).
  *
- * This module is wired but not yet attached to a validation scenario — the
- * pure-diffusion (u = 0) error-function check (validation gate 4) is the next
- * step on top of it.
+ * In use across the solver: the pure-diffusion (u = 0) error-function check
+ * (validation gate 4) exercises the transport core, and the Arabidopsis
+ * leaf/rosette/canopy scenarios drive `source` as the stomatal CO₂ sink / O₂ +
+ * H₂O source, from which the boundary-layer conductance g_bl, film thickness δ
+ * and Sherwood number Sh are derived (see `makeLeafScene`).
  */
 
 // D2Q5 velocities: rest, +x, +y, -x, -y

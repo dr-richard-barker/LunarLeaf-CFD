@@ -563,6 +563,25 @@ type Geometry = (fluid: LBMFluid, sp: Species) => { isLeaf: Uint8Array; charLen:
 // Lattice→physical velocity scale from the calibration (results/tables/T3):
 // dx/dt ≈ 1.66 m/s per lattice velocity unit, i.e. 166 cm/s.
 const U_STAR_CM_S = 166;
+const DX_M = 0.288e-3; // m per lattice cell (T3 calibration: leaf 1.5 cm / 52 cells)
+
+// --- Boundary-layer transport diagnostics (g_bl, δ, Sh) ---------------------
+// The stomatal source/sink drives a flux across a diffusive film; the film's
+// conductance g_bl is the quantity gas-exchange physiology uses and the exact
+// value that sets the CO2 concentration reaching Rubisco (Cc) in the subcellular
+// photorespiration coupling. It is *derived from the simulated field*, not assumed:
+// g_bl = K · |S| / |ΔC|, where |S| is the applied surface flux and |ΔC| the model
+// surface gap. K is pinned to the documented Earth single-leaf calibration —
+// |ΔC_CO2| = 0.161 (T2) ↔ g_bl = 1.0 mol m⁻² s⁻¹ (manuscript §Calibration / T5) —
+// so the anchor is reproduced at 1 g and g_bl then varies with gravity, geometry
+// and ventilation. Because the flux is identical across scenarios, g_bl ∝ 1/|ΔC|:
+// as g → 0 convection dies, |ΔC| grows, g_bl falls and the film δ thickens.
+const S_CO2_BASE = 5e-4; // base stomatal CO2 flux (lattice units), light, unshaded
+const GBL_REF = 1.0; // mol m⁻² s⁻¹, Earth single leaf (literature-anchored)
+const DC_CO2_REF = 0.161; // |ΔC_CO2| mean at that reference (T2_model_sweep)
+const K_GBL = (GBL_REF * DC_CO2_REF) / S_CO2_BASE; // = 322 mol m⁻² s⁻¹ per (flux/ΔC)
+const D_CO2_PHYS = 1.6e-5; // m² s⁻¹ (molecular CO2 in air, 25 °C; T3)
+const MOLAR_DENSITY = 41.6; // mol m⁻³ (chamber air; T1)
 
 interface LeafSceneCfg {
   id: string;
@@ -660,7 +679,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     // the surface excess ΔC stays ≪ 1 (Boussinesq small-perturbation regime). In the
     // dark, respiration reverses the signs (CO2 released, O2 consumed) at R/A = 0.31.
     const sScale = (cfg.sourceScale ?? 1) * (cfg.dark ? -0.31 : 1);
-    const S_CO2 = 5e-4 * sScale;
+    const S_CO2 = S_CO2_BASE * sScale;
     const S_O2 = 4e-4 * sScale;
     const S_H2O = 5e-4 * (cfg.sourceScale ?? 1) * (cfg.dark ? 0.31 : 1); // H2O always released
     const surfaceCells: number[] = [];
@@ -849,6 +868,27 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
           { label: 'ΔC CO₂  mean/peak', value: `${cc.mean.toFixed(3)} / ${cc.peak.toFixed(3)}` },
           { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
         );
+
+        // Model-derived boundary-layer transport for CO2 (film theory). g_bl is
+        // the conductance that, in series with stomatal + mesophyll conductances,
+        // sets the CO2 reaching Rubisco (Cc) — the handoff to the photorespiration
+        // model. δ = D / g_bl is the diffusive film thickness; Sh = L / δ. All three
+        // are reported once the surface gap has built up (skipped in the transient).
+        let sAbs = 0;
+        for (const c of surfaceCells) sAbs += Math.abs(co2.source![c]);
+        sAbs /= surfaceCells.length || 1;
+        const dCco2 = Math.abs(cc.mean);
+        if (dCco2 > 5e-3 && sAbs > 0) {
+          const gbl = (K_GBL * sAbs) / dCco2; // mol m⁻² s⁻¹
+          const gblMS = gbl / MOLAR_DENSITY; // m s⁻¹
+          const deltaMM = (D_CO2_PHYS / gblMS) * 1e3; // δ = D / g_bl, in mm
+          const Sh = (charLen * DX_M) / (deltaMM * 1e-3); // L / δ, dimensionless
+          out.push(
+            { label: 'g_bl CO₂', value: `${gbl.toFixed(3)} mol m⁻² s⁻¹` },
+            { label: 'δ film (CO₂)', value: `${deltaMM.toFixed(2)} mm` },
+            { label: 'Sherwood Sh', value: Sh.toFixed(1) },
+          );
+        }
         if (cfg.co2Ambient !== undefined && !cfg.dark) {
           out.push({ label: 'net assimilation (% potential)', value: (aEff * 100).toFixed(1) });
         }
