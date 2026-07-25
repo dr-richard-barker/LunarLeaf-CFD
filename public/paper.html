@@ -6,8 +6,20 @@
   <title>LunarLeaf-CFD — Gravity-dependent gas-exchange boundary layers in Arabidopsis</title>
   <meta name="description" content="A validated in-browser CFD model of how microgravity thickens the leaf gas-exchange boundary layer across leaf, rosette and canopy scales, and links spaceflight hardware (BRIC/CARA/VEGGIE) to plant carbon gain." />
   <link rel="icon" href="cose/cose-logo.png" />
-  <link rel="stylesheet" href="cose/cose-theme.css" />
+  <!-- shared CoSE chrome + map, hosted centrally (matches the rest of the site family) -->
+  <link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-chrome.css" />
+  <link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-map.css" />
   <style>
+    /* CoSE palette for THIS page's own content (the hosted chrome CSS only skins
+       the rail/topbar). Light default + dark via OS preference and the toggle. */
+    :root{ --bg:#ffffff; --fg:#1a2230; --muted:#5a6473; --line:#e5e9f0;
+      --card:#f7f9fc; --accent:#3B6EA5; --accent2:#3FB6A8; --rail:288px }
+    @media (prefers-color-scheme:dark){ :root{ --bg:#0f141b; --fg:#e6ebf2; --muted:#9aa6b6;
+      --line:#2b3543; --card:#161d27; --accent:#6ea3d8; --accent2:#54c9ba } }
+    html[data-theme="light"]{ --bg:#ffffff; --fg:#1a2230; --muted:#5a6473; --line:#e5e9f0;
+      --card:#f7f9fc; --accent:#3B6EA5; --accent2:#3FB6A8; color-scheme:light }
+    html[data-theme="dark"]{ --bg:#0f141b; --fg:#e6ebf2; --muted:#9aa6b6; --line:#2b3543;
+      --card:#161d27; --accent:#6ea3d8; --accent2:#54c9ba; color-scheme:dark }
     *{box-sizing:border-box}
     html,body{margin:0}
     body{background:var(--bg);color:var(--fg);
@@ -242,7 +254,7 @@
     </footer>
   </div>
 
-  <script src="cose/sites.js"></script>
-  <script src="cose/theme.js"></script>
+  <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/sites.js"></script>
+  <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/theme.js"></script>
 </body>
 </html>
