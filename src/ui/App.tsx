@@ -90,6 +90,7 @@ export default function App() {
         <p className="sub">
           Real 2D D2Q9 Lattice-Boltzmann engine with textbook validation gates. Physics is
           solved, not faked — this is the trustworthy core the leaf/rosette/canopy tools build on.
+          {" "}<a className="paper-link" href="paper.html">📄 Read the paper &amp; results →</a>
         </p>
       </header>
 

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunarLeaf-CFD — Gravity-dependent gas-exchange boundary layers in Arabidopsis</title>
+  <meta name="description" content="A validated in-browser CFD model of how microgravity thickens the leaf gas-exchange boundary layer across leaf, rosette and canopy scales, and links spaceflight hardware (BRIC/CARA/VEGGIE) to plant carbon gain." />
+  <link rel="icon" href="cose/cose-logo.png" />
+  <link rel="stylesheet" href="cose/cose-theme.css" />
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{background:var(--bg);color:var(--fg);
+      font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:900px;margin:0 auto;padding:3.4rem 1.25rem 4rem}
+    /* hero */
+    .hero{padding:1.2rem 0 1.6rem;border-bottom:1px solid var(--line);margin-bottom:1.4rem}
+    .kicker{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);font-weight:700}
+    h1{font-size:2rem;line-height:1.2;margin:.4rem 0 .5rem;letter-spacing:-.01em}
+    .lede{font-size:1.12rem;color:var(--muted);margin:.2rem 0 1rem;max-width:44em}
+    .chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0 1rem}
+    .chip{font-size:.78rem;padding:.28rem .6rem;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--card)}
+    .cta{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.5rem}
+    .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.62rem 1rem;border-radius:9px;
+      font-weight:600;font-size:.95rem;border:1px solid transparent;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.primary:hover{filter:brightness(1.06);text-decoration:none}
+    .btn.ghost{background:var(--card);border-color:var(--line);color:var(--fg)}
+    .btn.ghost:hover{filter:brightness(.98);text-decoration:none}
+    /* sections */
+    main section{margin:2.2rem 0}
+    h2{font-size:1.32rem;margin:0 0 .6rem;letter-spacing:-.01em;scroll-margin-top:4rem}
+    h2 .n{display:inline-block;min-width:1.7em;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700}
+    h3{font-size:1.02rem;margin:1.2rem 0 .3rem;color:var(--fg)}
+    p{margin:.5rem 0}
+    /* stat cards */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;margin:1rem 0}
+    .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem}
+    .stat b{display:block;font-size:1.5rem;line-height:1.15;color:var(--accent);letter-spacing:-.01em}
+    .stat span{display:block;font-size:.86rem;color:var(--muted);margin-top:.25rem}
+    /* figures */
+    figure{margin:1.2rem 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.8rem;overflow:hidden}
+    figure img{display:block;width:100%;height:auto;border-radius:6px;background:#0b0d17}
+    figcaption{font-size:.85rem;color:var(--muted);margin-top:.6rem;line-height:1.5}
+    figcaption b{color:var(--fg)}
+    /* validation table */
+    table{width:100%;border-collapse:collapse;font-size:.9rem;margin:.8rem 0}
+    th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+    th{color:var(--accent);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+    td.ok{color:var(--accent2);font-weight:700}
+    /* citation / code */
+    .cite{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+      border-radius:8px;padding:.8rem 1rem;font-size:.86rem;color:var(--muted);margin:.8rem 0}
+    .cite code{color:var(--fg);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.85em}
+    .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.7rem;margin:1rem 0}
+    .lk{display:block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.8rem .9rem}
+    .lk:hover{filter:brightness(.98);text-decoration:none}
+    .lk b{display:block;color:var(--fg)}
+    .lk span{font-size:.84rem;color:var(--muted)}
+    footer.site{border-top:1px solid var(--line);margin-top:2.5rem;padding-top:1.2rem;color:var(--muted);font-size:.88rem}
+    .note{font-size:.82rem;color:var(--muted);font-style:italic}
+  </style>
+</head>
+<body data-site-id="LunarLeaf-CFD" data-brand-logo="cose/cose-logo.png" data-brand-url="https://cosecloud.com/">
+
+  <div class="wrap">
+    <header class="hero">
+      <div class="kicker">LunarLeaf-CFD · Astrobotany / AIRI</div>
+      <h1>Gravity, geometry and enclosure control the gas-exchange boundary layer of <em>Arabidopsis</em></h1>
+      <p class="lede">A validated, in-browser computational fluid-dynamics model of how the loss of buoyant
+        convection in microgravity thickens the leaf boundary layer and steepens O<sub>2</sub>/CO<sub>2</sub>/H<sub>2</sub>O
+        gradients — from a single leaf to a canopy to real spaceflight growth hardware — and what that does to carbon gain.</p>
+      <div class="chips">
+        <span class="chip">Lattice-Boltzmann CFD</span>
+        <span class="chip">4 numerical benchmarks</span>
+        <span class="chip">Anchored to measured gas exchange</span>
+        <span class="chip">BRIC · CARA · VEGGIE</span>
+        <span class="chip">npj Microgravity-style draft</span>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="./">▶ Launch the live model</a>
+        <a class="btn ghost" href="LunarLeaf-CFD-manuscript.docx">📄 Full manuscript (Word)</a>
+        <a class="btn ghost" href="https://github.com/dr-richard-barker/LunarLeaf-CFD" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </header>
+
+    <main>
+      <section id="abstract">
+        <h2><span class="n">01</span>Overview</h2>
+        <p>Plants grown in spaceflight show stress phenotypes whose mechanistic basis is debated. A long-suspected
+          contributor is the loss of buoyancy-driven convection in microgravity, which should thicken the unstirred
+          boundary layer around plant organs and steepen the gas gradients that govern exchange — but no whole-chamber
+          sensor resolves the sub-millimetre boundary layer. We test the idea with a browser-based lattice-Boltzmann
+          model that solves incompressible flow, multi-species (CO<sub>2</sub>/O<sub>2</sub>/H<sub>2</sub>O)
+          advection–diffusion and Boussinesq buoyancy under an adjustable gravity vector. The solver is validated
+          against four textbook benchmarks and anchored to measured <em>Arabidopsis</em> whole-plant-chamber gas
+          exchange (net assimilation 3.85&nbsp;µmol&nbsp;CO<sub>2</sub>&nbsp;m<sup>−2</sup>&nbsp;s<sup>−1</sup>). We
+          separate what the data <em>validate</em> (flux magnitude, closed-chamber transport) from what the model
+          <em>predicts</em> (the spatial, gravity- and scale-dependent gradients).</p>
+      </section>
+
+      <section id="findings">
+        <h2><span class="n">02</span>Key findings</h2>
+        <div class="stats">
+          <div class="stat"><b>1.5–1.8×</b><span>Steeper surface gas gaps from Earth to microgravity, at every scale (convection ∝ √g → 0).</span></div>
+          <div class="stat"><b>2.6 → 11 → 21 cm/s</b><span>Forced airflow needed to null the µg penalty for a leaf → rosette → canopy — denser stands need far more ventilation.</span></div>
+          <div class="stat"><b>~1% vs ~100%</b><span>12-h carbon fixed in a sealed BRIC dish vs a ventilated VEGGIE system, once photosynthesis is CO<sub>2</sub>-limited.</span></div>
+          <div class="stat"><b>~7 min / ~6.5 d</b><span>Sealed-dish CO<sub>2</sub> exhausted in light / O<sub>2</sub> to hypoxia in the dark (analytic mass balance).</span></div>
+        </div>
+      </section>
+
+      <section id="validation">
+        <h2><span class="n">03</span>A trustworthy solver, anchored to real data</h2>
+        <p>Before any biology, the solver reproduces four independent benchmarks; setting <em>g</em>&nbsp;=&nbsp;0 then
+          genuinely collapses convection to the diffusion limit.</p>
+        <table>
+          <thead><tr><th>Gate</th><th>Benchmark</th><th>Reference</th><th>Model</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Lid-driven cavity, Re 100</td><td>Ghia et&nbsp;al. (1982)</td><td class="ok">L2 = 0.011 ✓</td></tr>
+            <tr><td>2</td><td>Cylinder wake, Re 100</td><td>Kármán shedding</td><td class="ok">St = 0.192 ✓</td></tr>
+            <tr><td>3</td><td>Natural convection, Ra 10⁴</td><td>de Vahl Davis (1983), Nu = 2.238</td><td class="ok">Nu = 2.242 ✓</td></tr>
+            <tr><td>4</td><td>Pure diffusion</td><td>½·erfc analytic</td><td class="ok">L2 ≈ 0 ✓</td></tr>
+          </tbody>
+        </table>
+        <figure>
+          <img src="figures/F5_chamber_validation.png" alt="Closed-chamber mass conservation and the sustained surface-to-bulk concentration gap." loading="lazy" />
+          <figcaption><b>Closed-chamber validation.</b> Sealed-chamber gas matches the imposed flux exactly (mass
+            conserved to 2×10⁻⁵), and a persistent near-leaf vs far-wall gap develops — the boundary layer at chamber scale.</figcaption>
+        </figure>
+      </section>
+
+      <section id="gravity">
+        <h2><span class="n">04</span>Gravity thickens the boundary layer — geometry amplifies it</h2>
+        <p>As gravity falls, the buoyant plume that ventilates the leaf on Earth disappears and a thicker, symmetric
+          diffusive halo forms; the surface gas gaps steepen. Denser architectures trap air and make it worse: the
+          rosette crown shows the steepest local gradients, a microgreen canopy the highest bulk gradient.</p>
+        <figure>
+          <img src="figures/F3_plume_maps.png" alt="Water-vapour boundary layer: buoyant plume on Earth, stagnant halo in microgravity, trapped canopy air." loading="lazy" />
+          <figcaption><b>Water-vapour boundary layer.</b> Buoyant plume (leaf, Earth) → symmetric stagnant halo (leaf,
+            microgravity) → trapped within-canopy air (microgreen canopy, microgravity).</figcaption>
+        </figure>
+        <figure>
+          <img src="figures/F4_gravity_scale.png" alt="Single-leaf gravity sweep and the three-scale amplification." loading="lazy" />
+          <figcaption><b>Gravity and scale.</b> Left: surface gaps rise and convection falls as gravity decreases.
+            Right: the microgravity penalty amplifies from leaf to rosette to canopy.</figcaption>
+        </figure>
+      </section>
+
+      <section id="ventilation">
+        <h2><span class="n">05</span>Forced airflow reverses it — but the requirement scales with density</h2>
+        <p>Because the penalty is transport-limited, it is engineerable: a fan substitutes for the missing buoyant
+          convection. An isolated leaf needs only ≈&nbsp;2.6&nbsp;cm/s, but a rosette needs ≈&nbsp;11 and a dense canopy
+          ≈&nbsp;21&nbsp;cm/s — an ~8× increase. A single ventilation setting tuned on sparse plants under-serves a canopy.</p>
+        <figure>
+          <img src="figures/F6_forced_airflow.png" alt="Surface gap versus fan speed for a single leaf in microgravity." loading="lazy" />
+          <figcaption><b>Ventilation nulls the µg penalty (single leaf).</b> Surface gap vs fan speed, with the
+            ≈&nbsp;2.6&nbsp;cm/s Earth-equivalent point.</figcaption>
+        </figure>
+        <figure>
+          <img src="figures/F8_fan_by_scale.png" alt="Earth-equivalent ventilation speed rises steeply with planting density." loading="lazy" />
+          <figcaption><b>Ventilation requirement scales with density.</b> Earth-equivalent airflow ≈&nbsp;2.6&nbsp;/&nbsp;11&nbsp;/&nbsp;21&nbsp;cm/s for leaf&nbsp;/&nbsp;rosette&nbsp;/&nbsp;canopy.</figcaption>
+        </figure>
+      </section>
+
+      <section id="hardware">
+        <h2><span class="n">06</span>Spaceflight hardware as boundary conditions</h2>
+        <p>The three most-used ISS plant systems differ, in transport terms, only in the boundary condition they impose
+          on the Petri dish. <b>BRIC</b> (hermetically sealed) drifts toward hypoxia and gives the steepest surface
+          gradient; <b>CARA</b> (gas-permeable micropore tape) vents the enclosure near ambient but leaves the µg
+          boundary layer intact; <b>VEGGIE</b> (forced airflow) fixes both. Across all three scales, one VEGGIE fan
+          speed that restores a leaf barely helps a rosette or canopy.</p>
+        <figure>
+          <img src="figures/F7_hardware_compare.png" alt="Enclosure CO2 drift over time and the leaf-surface gradient by hardware." loading="lazy" />
+          <figcaption><b>Hardware as dish boundary conditions.</b> BRIC's enclosure atmosphere drifts without bound;
+            the taped dish holds near ambient. Right: leaf-surface gradient by hardware.</figcaption>
+        </figure>
+        <figure>
+          <img src="figures/F9_hardware_by_scale.png" alt="BRIC/CARA/VEGGIE leaf-surface gradient across leaf, rosette and canopy." loading="lazy" />
+          <figcaption><b>Hardware × plant scale.</b> BRIC ≈ CARA at the leaf surface at every scale; one VEGGIE fan
+            speed under-serves denser stands.</figcaption>
+        </figure>
+      </section>
+
+      <section id="carbon">
+        <h2><span class="n">07</span>From transport physics to carbon gain</h2>
+        <p>Closing the loop with CO<sub>2</sub>-limited photosynthesis, the boundary-layer depletion self-suppresses
+          assimilation (most in the trapped rosette crown). Over a 12-h photoperiod the consequence is stark: a sealed
+          BRIC dish exhausts its CO<sub>2</sub> within minutes and fixes only ≈&nbsp;1% of the Earth carbon, while a
+          taped CARA dish sustains ≈&nbsp;90% and a ventilated VEGGIE system ≈&nbsp;100%. A plant in a sealed,
+          microgravity enclosure is not just stressed at its surface — it is starved of carbon substrate.</p>
+        <figure>
+          <img src="figures/F10_photosynthesis_feedback.png" alt="Net assimilation over a photoperiod and 12-hour carbon fixed by hardware." loading="lazy" />
+          <figcaption><b>Closed-loop CO<sub>2</sub>-limited photosynthesis.</b> The sealed BRIC dish's photosynthesis
+            collapses within minutes; 12-h carbon fixed is ≈&nbsp;1% (BRIC) vs ≈&nbsp;90% (CARA) vs ≈&nbsp;100% (VEGGIE) of Earth.</figcaption>
+        </figure>
+        <p class="note">This dovetails with a transcriptome meta-analysis of 15 <em>Arabidopsis</em> spaceflight
+          experiments (Barker et&nbsp;al., <em>npj Microgravity</em> 2023), which found flight hardware and lighting among
+          the largest confounding effects and hypoxia/oxidative-stress signatures among the conserved responses — the
+          model supplies a physical mechanism for that hardware dependence.</p>
+      </section>
+
+      <section id="anchor">
+        <h2><span class="n">08</span>Measured gas exchange</h2>
+        <p>The model's stomatal flux is fixed by measurement, not assumed: a whole-plant-chamber dataset and an
+          independent Vernier chamber trace over 4.8&nbsp;days that shows the expected diel O<sub>2</sub>/humidity cycling.</p>
+        <figure>
+          <img src="figures/F1_vernier_timeseries.png" alt="Vernier whole-chamber trace: O2, temperature, relative and absolute humidity over 4.8 days." loading="lazy" />
+          <figcaption><b>Measured whole-chamber gas exchange.</b> Diel O<sub>2</sub> cycling and humidity swings driven
+            by photosynthesis and respiration, over 4.8&nbsp;days.</figcaption>
+        </figure>
+      </section>
+
+      <section id="get">
+        <h2><span class="n">09</span>Read, run &amp; reuse</h2>
+        <div class="links">
+          <a class="lk" href="./"><b>▶ Live model</b><span>Run the solver in your browser — 26 scenarios, no install.</span></a>
+          <a class="lk" href="LunarLeaf-CFD-manuscript.docx"><b>📄 Manuscript (Word)</b><span>Full paper with all figures &amp; tables.</span></a>
+          <a class="lk" href="https://github.com/dr-richard-barker/LunarLeaf-CFD/blob/main/results/MANUSCRIPT.md" target="_blank" rel="noopener"><b>Manuscript (online)</b><span>Read the markdown version on GitHub.</span></a>
+          <a class="lk" href="https://github.com/dr-richard-barker/LunarLeaf-CFD/tree/main/results/manuscript" target="_blank" rel="noopener"><b>LaTeX source</b><span>npj-Microgravity-style .tex + figures.</span></a>
+          <a class="lk" href="https://github.com/dr-richard-barker/LunarLeaf-CFD/tree/main/results" target="_blank" rel="noopener"><b>Results package</b><span>All figures (F1–F10) &amp; data tables (T1–T12).</span></a>
+          <a class="lk" href="https://github.com/dr-richard-barker/LunarLeaf-CFD" target="_blank" rel="noopener"><b>Source code</b><span>MIT-licensed solver, validation harness &amp; scripts.</span></a>
+        </div>
+      </section>
+
+      <section id="cite">
+        <h2><span class="n">10</span>Cite</h2>
+        <div class="cite">
+          Barker, R.&nbsp;J. <em>et&nbsp;al.</em> <b>LunarLeaf-CFD: a validated in-browser CFD model of
+          gravity-dependent gas-exchange boundary layers around <em>Arabidopsis</em>.</b> (2026).
+          <code>github.com/dr-richard-barker/LunarLeaf-CFD</code> — see <code>CITATION.cff</code>.
+          <br /><span class="note">Manuscript author list, affiliations and a Zenodo DOI are being finalised.</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site">
+      LunarLeaf-CFD — part of the AstroBotany International Research Initiative (AIRI). Code MIT-licensed;
+      manuscript &amp; figures CC-BY-4.0. Measured gas-exchange data courtesy of Y.H.&nbsp;Chew &amp; A.J.&nbsp;Millar.
+    </footer>
+  </div>
+
+  <script src="cose/sites.js"></script>
+  <script src="cose/theme.js"></script>
+</body>
+</html>

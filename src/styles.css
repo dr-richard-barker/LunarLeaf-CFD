@@ -194,3 +194,10 @@ select {
   border-radius: 4px;
   font-size: 11px;
 }
+
+.sub .paper-link {
+  color: var(--accent, #5ec8ff);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sub .paper-link:hover { text-decoration: underline; }
