@@ -3,7 +3,10 @@
 > **A browser‑based, user‑friendly fluid‑dynamics workbench for modelling, visualising and
 > measuring the movement of air and the O₂ / CO₂ / H₂O concentration gradients that form around
 > plant tissue — and how those change when gravity changes (1 g → Mars 0.38 g → Moon 0.17 g → µg).**
-
+>
+ 
+![Microgravity_Stagnation_in_Spaceflight_Plants](https://github.com/dr-richard-barker/LunarLeaf-CFD/blob/main/Microgravity_Stagnation_in_Spaceflight_Plants.png))
+> 
 ### ▶ [Launch the live demo](https://dr-richard-barker.github.io/LunarLeaf-CFD/) — no install; pick a scenario and press Run
 *(deployed from `main` via GitHub Pages; a visible browser tab is needed since background tabs pause the animation loop.)*
 
