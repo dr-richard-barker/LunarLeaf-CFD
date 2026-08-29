@@ -6,6 +6,11 @@ import { computeDimensionless } from '../solver/diagnostics/dimensionless';
 import { ghiaL2Error } from '../solver/diagnostics/ghia';
 import { StrouhalProbe } from '../solver/diagnostics/strouhal';
 import { diffusionStep } from '../solver/diagnostics/analytic';
+import { loft } from '../leaf/loft';
+import { longitudinalSection, transverseSection } from '../leaf/section';
+import { getLeafAsset } from '../leaf/registry';
+import { polygonSDF } from '../leaf/sdf';
+import { DeformParams, NEUTRAL_DEFORM, Vec2 } from '../leaf/types';
 
 export type RenderMode = 'speed' | 'vorticity' | 'scalar';
 
@@ -505,6 +510,57 @@ function stampEllipse(
   }
 }
 
+/**
+ * Rasterise an arbitrary closed section polygon (millimetres) onto the lattice.
+ *
+ * The polygon is centred on its own bounding box at (cx, cy) and filled by a sign
+ * test against its signed distance field — the same level-set form NeuraLeaf uses
+ * for its base shape, evaluated exactly from the polygon rather than sampled from
+ * pixels. Returns the number of cells filled so the caller can refuse a geometry
+ * that fell through the lattice.
+ */
+function stampPolygon(
+  fluid: LBMFluid,
+  isLeaf: Uint8Array,
+  poly: readonly Vec2[],
+  cx: number,
+  cy: number,
+  cellsPerMm: number,
+): number {
+  let minA = Infinity;
+  let maxA = -Infinity;
+  let minB = Infinity;
+  let maxB = -Infinity;
+  for (const [a, b] of poly) {
+    if (a < minA) minA = a;
+    if (a > maxA) maxA = a;
+    if (b < minB) minB = b;
+    if (b > maxB) maxB = b;
+  }
+  const midA = (minA + maxA) / 2;
+  const midB = (minB + maxB) / 2;
+
+  const x0 = Math.max(0, Math.floor(cx + (minA - midA) * cellsPerMm) - 1);
+  const x1 = Math.min(fluid.nx - 1, Math.ceil(cx + (maxA - midA) * cellsPerMm) + 1);
+  const y0 = Math.max(0, Math.floor(cy + (minB - midB) * cellsPerMm) - 1);
+  const y1 = Math.min(fluid.ny - 1, Math.ceil(cy + (maxB - midB) * cellsPerMm) + 1);
+
+  let filled = 0;
+  for (let x = x0; x <= x1; x++) {
+    for (let y = y0; y <= y1; y++) {
+      const a = midA + (x - cx) / cellsPerMm;
+      const b = midB + (y - cy) / cellsPerMm;
+      if (polygonSDF(poly, a, b) <= 0) {
+        const c = fluid.index(x, y);
+        fluid.solid[c] = 1;
+        isLeaf[c] = 1;
+        filled++;
+      }
+    }
+  }
+  return filled;
+}
+
 // --- geometry: single leaf (closed chamber, one horizontal blade) ---
 export function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array; charLen: number } {
   chamberWalls(fluid, sp);
@@ -558,12 +614,104 @@ export function canopyGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Arr
   return { isLeaf, charLen: 26 };
 }
 
-type Geometry = (fluid: LBMFluid, sp: Species) => { isLeaf: Uint8Array; charLen: number };
+interface GeometryResult {
+  isLeaf: Uint8Array;
+  charLen: number;
+  /** Extra diagnostic rows the geometry wants surfaced (resolution caveats, etc). */
+  notes?: Readout[];
+}
+
+type Geometry = (fluid: LBMFluid, sp: Species) => GeometryResult;
 
 // Lattice→physical velocity scale from the calibration (results/tables/T3):
 // dx/dt ≈ 1.66 m/s per lattice velocity unit, i.e. 166 cm/s.
 const U_STAR_CM_S = 166;
 const DX_M = 0.288e-3; // m per lattice cell (T3 calibration: leaf 1.5 cm / 52 cells)
+const CELLS_PER_MM = 1 / (DX_M * 1e3); // 3.47 cells per mm
+
+/**
+ * Blade thickness used by the asset-backed geometries, in lattice cells.
+ *
+ * A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under one cell — it
+ * would fall straight through the lattice. The existing `leafGeometry` ellipse already
+ * makes this compromise silently (b = 4 → 8 cells → 2.3 mm, about 11× life size); the
+ * asset geometries make it explicit, match it by default so the comparison against the
+ * calibration is like for like, and report the inflation factor in the diagnostics.
+ * What the model resolves is therefore the blade's *presence and curvature*, not its
+ * true thickness — which is the right trade, since the boundary layer is set by the
+ * former and is orders of magnitude thicker than the latter.
+ */
+const REF_THICKNESS_CELLS = 8;
+
+export interface AssetGeometryCfg {
+  assetId: string;
+  /** Pose knobs layered on top of the asset's own fitted deformation. */
+  deform?: Partial<Omit<DeformParams, 'thicknessScale'>>;
+  /**
+   * Which cut through the blade the 2D vertical slice represents.
+   *   'longitudinal' — along the midrib; reduces to the ellipse for a flat leaf, so
+   *                    it is the like-for-like comparison against the calibration.
+   *   'transverse'   — across the blade; the plane cupping and curl live in, and the
+   *                    only one where the curl sweep means anything.
+   */
+  cut?: 'longitudinal' | 'transverse';
+  thicknessCells?: number;
+}
+
+/**
+ * Build a closed-chamber geometry from a leaf asset instead of an ellipse.
+ *
+ * Comparisons are only meaningful *within* one cut and one thickness: a longitudinal
+ * cut has a 15 mm chord and a transverse cut an 8 mm one, so their characteristic
+ * lengths, Rayleigh numbers and Sherwood numbers are not interchangeable.
+ */
+export function assetLeafGeometry(cfg: AssetGeometryCfg): Geometry {
+  return (fluid: LBMFluid, sp: Species): GeometryResult => {
+    chamberWalls(fluid, sp);
+    const isLeaf = new Uint8Array(fluid.size);
+
+    const asset = getLeafAsset(cfg.assetId);
+    const cut = cfg.cut ?? 'longitudinal';
+    const thicknessCells = cfg.thicknessCells ?? REF_THICKNESS_CELLS;
+    const thicknessScale = thicknessCells / CELLS_PER_MM / asset.thicknessMm;
+    const deform: DeformParams = { ...NEUTRAL_DEFORM, ...cfg.deform, thicknessScale };
+
+    const posed = loft(asset, deform);
+    const section = cut === 'transverse' ? transverseSection(posed) : longitudinalSection(posed);
+    if (section.polygon.length < 3) {
+      throw new Error(`leaf asset '${cfg.assetId}': ${cut} cut produced no section`);
+    }
+
+    const filled = stampPolygon(
+      fluid,
+      isLeaf,
+      section.polygon,
+      fluid.nx / 2,
+      fluid.ny / 2,
+      CELLS_PER_MM,
+    );
+    if (filled < 16) {
+      throw new Error(
+        `leaf asset '${cfg.assetId}': ${cut} cut filled only ${filled} cells — too thin to resolve`,
+      );
+    }
+
+    const chordCells = section.chordMm * CELLS_PER_MM;
+    const heightCells = section.heightMm * CELLS_PER_MM;
+    return {
+      isLeaf,
+      charLen: chordCells,
+      notes: [
+        { label: 'leaf geometry', value: `${asset.id}${asset.provisional ? ' (provisional)' : ''}` },
+        { label: 'section', value: `${cut} · ${chordCells.toFixed(0)} × ${heightCells.toFixed(1)} cells` },
+        {
+          label: 'blade thickness',
+          value: `${thicknessCells} cells (${(thicknessCells / CELLS_PER_MM).toFixed(2)} mm; ${thicknessScale.toFixed(0)}× life size)`,
+        },
+      ],
+    };
+  };
+}
 
 // --- Boundary-layer transport diagnostics (g_bl, δ, Sh) ---------------------
 // The stomatal source/sink drives a flux across a diffusive film; the film's
@@ -637,7 +785,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     h2o.enableSource();
     const species = [co2, o2, h2o];
 
-    const { isLeaf, charLen } = cfg.geometry(fluid, { co2, o2, h2o });
+    const { isLeaf, charLen, notes: geometryNotes } = cfg.geometry(fluid, { co2, o2, h2o });
 
     // Forced airflow: convert the closed chamber into a ventilation channel by
     // opening the left (inlet) and right (outlet) columns; top/bottom stay walls.
@@ -848,6 +996,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         const Ra = ((gLat * Math.abs(w.mean) * charLen ** 3) / (nu * nu)) * Sc;
         const gAbs = cfg.gRatio * GRAVITY.earth;
         const out: Readout[] = [
+          ...(geometryNotes ?? []),
           { label: 'enclosure', value: boundaryLabel },
           { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${cfg.gRatio.toFixed(3)} g)` },
         ];
@@ -917,6 +1066,12 @@ const FB_DESC =
   'Closed-loop photosynthesis: the leaf’s CO₂ uptake is now CO₂-limited (compensation point + saturation), so the boundary-layer CO₂ depletion the model builds up feeds back to suppress assimilation. Watch “net assimilation (% potential)” — it falls as the boundary layer thickens (µg) and where air is trapped (rosette crown), and is highest under ventilation.';
 const CANOPY_DESC =
   'A microgreen “lawn” — a dense row of upright shoots on soil, ambient above. Convection ventilates only the canopy top; the within-canopy air stagnates, and in microgravity the whole stand’s gas gaps blow out.';
+
+const SHAPE_DESC =
+  'The same single-leaf chamber, but the blade is a real leaf outline cut along its midrib instead of an ellipse. Chord (52 cells) and thickness (8 cells) match “Leaf · Earth/µg” exactly, so the difference is down to the outline alone — a tapered blade with a narrow base and a rounded tip, not a symmetric ellipse. Measured (T14): the real outline conducts LESS than the ellipse — g_bl 0.944 vs 1.001 at 1 g (−5.7%) and 0.474 vs 0.494 in µg (−4.0%). The ellipse has been flattering the leaf by a few percent. NOTE: the shipped outline is a provisional analytic stand-in until the NeuraLeaf fitting pipeline has been run on real imagery; the readout says so.';
+
+const CURL_DESC =
+  'Curl × gravity. The cut runs ACROSS the blade — the plane cupping actually lives in — so a curled leaf appears as a U that traps air underneath. Measured (T14): curl costs about the same in blade-MEAN conductance at either gravity (×0.81 at 1 g, ×0.84 in µg), so curl and gravity do NOT compound on the mean. They do compound on the WORST SPOT: the peak surface gap runs −0.208 → −0.326 at 1 g but −0.309 → −0.498 in µg, so a curled blade in µg sits at 2.4× the peak CO₂ gap of a flat blade at 1 g. CAVEAT: the curled section is 35 cells wide against the flat one\'s 27, because the blade thickness has to be inflated ~11× to be resolvable at all and that fattens a tilted margin sideways. Curl is therefore not the only variable here — treat these as indicative until the blade is resolved on a finer lattice. Not comparable with the longitudinal-cut scenarios either, which have a different characteristic length.';
 
 const DOM = { nx: 128, ny: 96 };
 
@@ -1052,6 +1207,42 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Feedback · Rosette µg (0 g)',
     description: FB_DESC,
     build: makeLeafScene({ ...DOM, id: 'fb-rosette-ug', label: 'Rosette — µg, CO₂-limited photosynthesis', gRatio: 0, renderScale: 0.18, geometry: rosetteGeometry, co2Ambient: 8 }),
+  },
+  {
+    id: 'shape-flat-earth',
+    label: 'Shape · real outline, Earth (1 g)',
+    description: SHAPE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'shape-flat-earth', label: 'Leaf outline — Earth (1 g)', gRatio: 1, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat' }) }),
+  },
+  {
+    id: 'shape-flat-ug',
+    label: 'Shape · real outline, µg (0 g)',
+    description: SHAPE_DESC,
+    build: makeLeafScene({ ...DOM, id: 'shape-flat-ug', label: 'Leaf outline — microgravity (0 g)', gRatio: 0, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat' }) }),
+  },
+  {
+    id: 'curl-none-earth',
+    label: 'Curl · flat blade, Earth (1 g)',
+    description: CURL_DESC,
+    build: makeLeafScene({ ...DOM, id: 'curl-none-earth', label: 'Transverse cut, flat — Earth (1 g)', gRatio: 1, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat', cut: 'transverse' }) }),
+  },
+  {
+    id: 'curl-strong-earth',
+    label: 'Curl · curled blade, Earth (1 g)',
+    description: CURL_DESC,
+    build: makeLeafScene({ ...DOM, id: 'curl-strong-earth', label: 'Transverse cut, curl 0.8 — Earth (1 g)', gRatio: 1, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat', cut: 'transverse', deform: { curl: 0.8 } }) }),
+  },
+  {
+    id: 'curl-none-ug',
+    label: 'Curl · flat blade, µg (0 g)',
+    description: CURL_DESC,
+    build: makeLeafScene({ ...DOM, id: 'curl-none-ug', label: 'Transverse cut, flat — microgravity (0 g)', gRatio: 0, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat', cut: 'transverse' }) }),
+  },
+  {
+    id: 'curl-strong-ug',
+    label: 'Curl · curled blade, µg (0 g)',
+    description: CURL_DESC,
+    build: makeLeafScene({ ...DOM, id: 'curl-strong-ug', label: 'Transverse cut, curl 0.8 — microgravity (0 g)', gRatio: 0, renderScale: 0.12, geometry: assetLeafGeometry({ assetId: 'provisional-mature-flat', cut: 'transverse', deform: { curl: 0.8 } }) }),
   },
   {
     id: 'cavity',

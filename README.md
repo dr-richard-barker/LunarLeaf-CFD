@@ -113,6 +113,62 @@ Gate 3 is the decisive one: it proves gravity correctly drives buoyant convectio
 
 Run the interactive bench with `npm install && npm run dev` → pick a scenario, press **Run**, watch the diagnostics/gate panel. (Use a visible browser tab — background tabs throttle `requestAnimationFrame` to zero; long runs are best driven headlessly.)
 
+All four gates also run headlessly in one shot, which is what you want after touching anything the solver reaches:
+
+```bash
+npx esbuild validation/gates.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/gates.mjs && node validation/gates.mjs
+```
+
+#### Leaf geometry — `src/leaf/`
+
+The blade was an ellipse (`stampEllipse`, a = 26, b = 4 cells). `src/leaf/` replaces it with real
+leaf geometry, following the shape/deformation split of **NeuraLeaf**
+([Yang et al., ICCV 2025, arXiv:2507.12714](https://arxiv.org/abs/2507.12714)): a flattened 2D base
+shape (outline + midrib) kept apart from the 3D deformation (midrib profile + transverse camber), so
+one outline can be re-posed without refitting anything.
+
+The 2D domain here is a **vertical slice**, so what it needs is a cut *through* the blade, not the
+top-down silhouette — `section.ts` provides both the longitudinal cut (along the midrib; reduces to
+the old ellipse for a flat leaf) and the transverse cut (across the blade, where cupping and curl live).
+
+`stampEllipse` stays: it is the published calibration reference and T1–T13 depend on it. Shape results
+land in a separate table.
+
+```bash
+# geometry invariants (SDF signs, watertight shell, section extents)
+npx esbuild validation/leaf_checks.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_checks.mjs && node validation/leaf_checks.mjs
+
+# visual contact sheet of every asset: outline, both cuts, and a curl sweep
+npx esbuild validation/leaf_preview.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_preview.mjs && node validation/leaf_preview.mjs
+```
+
+⚠️ The shipped leaves are **provisional analytic stand-ins**, not fits to imagery. See
+[`src/leaf/assets/PROVENANCE.md`](src/leaf/assets/PROVENANCE.md) and
+[`tools/neuraleaf/README.md`](tools/neuraleaf/README.md) for the pipeline that replaces them with real
+outlines from your own plate photographs.
+
+#### First shape result — T14
+
+```bash
+npx esbuild validation/export_shape.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/export_shape.mjs && node validation/export_shape.mjs
+```
+
+Two independently controlled groups in [`results/tables/T14_shape_sweep.csv`](results/tables/T14_shape_sweep.csv).
+Do **not** compare across them — the longitudinal cut has a 52-cell chord and the transverse cut a
+27-cell one, so their characteristic lengths and Sherwood numbers are on different scales by construction.
+
+| finding | measurement |
+|---|---|
+| **A real outline conducts less than the ellipse.** Chord and thickness matched at 52 × 8 cells, so the outline is the only variable. | g_bl 1.001 → **0.944** at 1 g (−5.7%); 0.494 → **0.474** in µg (−4.0%) |
+| **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.812 at 1 g, ×0.835 in µg |
+| **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.309 → **−0.498** in µg: **2.4×** the flat-blade 1 g peak |
+
+⚠️ **Caveat on the curl group.** A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under
+one lattice cell — it would fall straight through. Thickness is therefore inflated to 8 cells (~11×
+life size), matching what `stampEllipse` already did silently. That inflation fattens a *tilted* margin
+sideways, so the curled section is 35 cells wide against the flat one's 27 and the curl comparison is
+not perfectly controlled. Treat the curl rows as indicative until the blade is resolved on a finer lattice.
+
 ### Milestone 2 — User‑friendly GUI (professional‑package features)
 - ⬜ Import 3D models (STL / OBJ / GLB / PLY) + parametric leaf‑shape generator
 - ⬜ Auto‑voxelise geometry to solver grid; domain & mesh controls
@@ -238,12 +294,18 @@ LunarLeaf_CFD/
 ├── src/                          ← the consolidated app (Milestone 1 scaffolded)
 │   ├── solver/lbm/               ← d2q9, LBMFluid, ScalarField, buoyancy
 │   ├── solver/diagnostics/       ← dimensionless numbers, Ghia reference, Strouhal probe
+│   ├── leaf/                     ← leaf geometry: outline SDF, loft, cross-sections, asset library
+│   │   └── assets/               ← leaf JSONs + PROVENANCE.md (read this before trusting one)
 │   ├── scenarios/                ← cavity + cylinder validation cases
 │   ├── render/                   ← colormaps + field rasteriser
 │   ├── sim/                      ← SimulationController (RAF loop)
 │   └── ui/                       ← App.tsx debug bench
 ├── index.html · package.json · vite.config.ts · tsconfig.json
 ├── legacy/                       ← the three AI‑Studio prototypes (to import for credit/reference)
+├── tools/
+│   ├── leaf-assets/              ← generator for the provisional stand-in leaves
+│   ├── neuraleaf/                ← plate photo → real leaf asset pipeline (see its README)
+│   └── sync-leaf-module.sh       ← push src/leaf/ to AeroLeaf CFD
 ├── validation/                   ← measured datasets + comparison notebooks (to add)
 ├── .zenodo.json                  ← (to add)
 └── CITATION.cff                  ← (to add)

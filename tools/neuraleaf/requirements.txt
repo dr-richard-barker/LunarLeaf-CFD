@@ -1,0 +1,11 @@
+# Steps 1-2 (segment_plate.py, export_assets.py) — no machine learning, no GPU.
+# These are the versions the pipeline was verified against on Python 3.9.
+numpy>=1.24
+scipy>=1.11
+pillow>=10.0
+matplotlib>=3.7      # marching-squares contour tracing + the QC overlay
+
+# Step 3 (fit_leaves.py) additionally needs a NeuraLeaf checkout and ITS stack:
+#   Python 3.9, torch==2.0.1+cu118, pytorch3d, a CUDA GPU
+# Deliberately NOT pinned here — install them inside the NeuraLeaf environment,
+# per https://github.com/Yrainy0615/NeuraLeaf. Nothing from that repo is vendored.
