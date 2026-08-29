@@ -230,11 +230,24 @@ def export_tracing(args) -> int:
             **({"timestamp": timestamp} if timestamp else {}),
             **({"ageHours": age_hours} if age_hours is not None else {}),
         }
+        cal = doc.get("calibration") or {}
+        cal_desc = "scale supplied on the command line"
+        if cal.get("method"):
+            cal_desc = f"scale by {cal['method']} against {cal.get('knownMm')} mm"
+            if cal.get("arcSpanDeg") is not None:
+                cal_desc += f", {cal['arcSpanDeg']}° of arc"
         notes = [
             f"Outline HAND-TRACED in tools/leaf-tracer from {doc.get('image', 'an image')} "
-            f"at {px_per_mm:.3f} px/mm (scale set by two-point calibration, not inferred).",
+            f"at {px_per_mm:.3f} px/mm ({cal_desc}; not inferred from the image).",
             "Profile and camber are FLAT: a top-down tracing carries no out-of-plane information.",
         ]
+        # A three-point circle fit over a short arc barely constrains the curvature; the
+        # tracer warns at the time, and the warning has to survive into the asset.
+        if cal.get("arcSpanDeg") is not None and cal["arcSpanDeg"] < 120:
+            notes.append(
+                f"WEAK CALIBRATION: the circle was fitted over only {cal['arcSpanDeg']}° of arc, "
+                "which can be more than 10% out. Every millimetre here inherits that error."
+            )
         asset, length, width, area = build_asset(
             pts, px_per_mm, asset_id, args.label or leaf.get("label", asset_id),
             args.points, args.thickness_mm, provenance, notes,

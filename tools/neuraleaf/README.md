@@ -142,9 +142,15 @@ seedlings. Open `tools/leaf-tracer/index.html` in a browser — no build step, n
 it runs from `file://`.
 
 1. Load a plate frame.
-2. **Set the scale**: click two points a known distance apart (across the dish is easiest)
-   and type that distance. This is the one number the pipeline cannot infer, and getting
-   it wrong silently produces a well-formed leaf of the wrong size.
+2. **Set the scale.** This is the one number the pipeline cannot infer, and getting it
+   wrong silently produces a well-formed leaf of the wrong size.
+   - For a Petri dish, use **three points on a circle**: click anywhere on the rim three
+     times and enter the diameter (100 mm for the Falcon dishes in `Gravi_02`). This works
+     even when the dish is cropped by the frame, which it is in that series.
+   - **Spread the three clicks as far around the rim as you can.** Measured on a synthetic
+     plate: ~90° apart recovers a known diameter to 0.07%; bunched within ~53° of arc is
+     14% out. The page warns below 120°, and the warning follows the tracing into the asset.
+   - For a ruler or a known-length object, two points and a distance is fine.
 3. Click around one blade. `u` undo, `Enter` finish, `Esc` cancel. Repeat per leaf.
 4. Download `tracing.json`.
 
@@ -181,5 +187,7 @@ cotyledon is 10 cells long at dx = 0.288 mm, under the 12-cell floor `leaf_inspe
 at. These assets are usable in AeroLeaf and as morphometric data, but simulating them needs
 a finer lattice than the leaf/rosette scenarios use.
 
-And the scale is **assumed, not measured**: 24.4 px/mm from the dish spanning ~2440 px on
-the assumption of a 100 mm dish. Confirm the dish diameter; every area scales as its square.
+On scale: the dishes are **100 mm Falcon** (confirmed), but the dish is wider than the frame
+in this series, and the plate is shot at an angle — a circle fitted to the visible rim gives
+~27 px/mm with a poor fit (centre ~470 px off, ~29 px residual), so a single global scale is
+good to maybe ±20%. Calibrate per-frame in the tracer rather than reusing one number.

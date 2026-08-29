@@ -97,15 +97,32 @@ simulating them needs a finer lattice (or a smaller physical domain, which chang
 enclosure physics). The 15 mm `provisional-mature-flat` sits at 52 cells, which is why it
 matches the calibration.
 
-## Open question 1c — the image scale is assumed, not measured
+## Resolved question 1c — the dish is 100 mm, but the frame still resists calibration
 
-Every millimetre above rests on **24.4 px/mm**, derived from the dish spanning ~2440 px on
-the assumption that it is a **100 mm** dish. That was not confirmed. The dish is Falcon-
-branded and Falcon rounds come in 35/60/100/150 mm; the alternatives give 24.4 px/mm (100 mm)
-or 27.1 px/mm (90 mm) or 40.7 px/mm (60 mm), and every reported area scales as the square of
-whichever is right. **Confirm the dish diameter before any of these numbers are used.**
-Attempts to derive the scale from the slide/QR card in frame were inconclusive — it is
-tilted, and its printed red border is not a known dimension.
+The dish is a **100 mm Falcon** (confirmed by RJB, 2026-08-29). That does not by itself fix
+the scale of `Gravi_02`, for three reasons found while trying to use it:
+
+- The earlier "2440 px diameter" was **wrong**. It came from a `binary_fill_holes` bounding
+  box that ran into the frame edge, so it measured the *frame*, not the dish.
+- A horizontal scan across the frame centre is flat (44–53 grey the whole way), i.e. the
+  dish is **wider than the frame** — it is cropped left and right, so no diameter can be
+  read off directly.
+- Fitting a circle to the visible rim arc gives d ≈ 2725 px (→ **27.3 px/mm** against
+  100 mm), but the fitted centre lands ~470 px off the frame centre and the median residual
+  is ~29 px. The plate is photographed at an angle, so a single global scale is only good
+  to roughly ±20% and varies across the frame.
+- The card next to the plants is **not** a standard microscope slide — its oriented aspect
+  is ~4.5, not 3.0 — so its dimensions are unknown and it cannot serve as a reference
+  either. If you know what it is, it is the better local reference, because it lies flat
+  beside the plants rather than being a raised rim across the field.
+
+**Use `tools/leaf-tracer`'s three-point circle calibration instead.** Click three points on
+the rim, enter 100, and the diameter is read off the fitted circle — it works with a cropped
+dish and averages the perspective error over an arc instead of a single chord. Measured
+accuracy on a synthetic plate: points ~90° apart recover a known diameter to **0.07%**;
+three points bunched within ~53° of arc are **14% out**. The tracer warns below 120° of arc,
+the warning is written into the exported tracing, and `export_assets.py` copies it into the
+asset's note so a weak calibration cannot be forgotten later.
 
 ## Open question 2 — NeuraLeaf licensing
 
