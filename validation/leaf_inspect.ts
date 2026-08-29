@@ -67,6 +67,33 @@ if (Math.abs(baseY) > 0.05 * traits.lengthMm) {
 if (traits.aspectRatio < 0.5 || traits.aspectRatio > 8) {
   warn.push(`aspect ratio ${traits.aspectRatio.toFixed(2)} is unusual for a leaf — check the scale and orientation`);
 }
+// Size is checked against the lattice this asset will actually be simulated on rather
+// than against a guess at what species it is. A botched px-per-mm calibration — the most
+// likely error in the pipeline, since the scale is set by hand — shows up here as a leaf
+// that cannot be resolved or cannot fit, which is the consequence that matters anyway.
+const DX_MM = 0.288; // T3 calibration: 1.5 cm leaf spans 52 cells
+const DOMAIN_CELLS = 128;
+const cells = traits.lengthMm / DX_MM;
+console.log(
+  `  on the lattice   ${cells.toFixed(0)} cells long at dx = ${DX_MM} mm ` +
+    `(domain is ${DOMAIN_CELLS} × 96)`,
+);
+if (cells < 12) {
+  warn.push(
+    `only ${cells.toFixed(0)} lattice cells long — too small to resolve in the standard ` +
+      'domain. Either the scale is wrong, or this needs a finer lattice than the leaf/rosette scenarios use.',
+  );
+} else if (cells > DOMAIN_CELLS * 0.8) {
+  warn.push(
+    `${cells.toFixed(0)} lattice cells long — will not fit the ${DOMAIN_CELLS}-cell domain ` +
+      'with room for a boundary layer. Check the scale, or use a larger domain.',
+  );
+}
+if (asset.thicknessMm > traits.lengthMm * 0.2) {
+  warn.push(
+    `thickness ${asset.thicknessMm} mm is more than a fifth of the blade length — check the units`,
+  );
+}
 if (polygonSDF(asset.outline, 0, traits.lengthMm * 0.6) >= 0) {
   warn.push('the point 60% along the midrib is OUTSIDE the outline — orientation is probably wrong');
 }

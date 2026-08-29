@@ -32,9 +32,11 @@ in the LunarLeaf scenario readouts. **No published number should rest on them.**
    and correctly ignores the roots, the QR card and the dish.
 2. `export_assets.py` — one mask → an asset JSON with a real, correctly scaled outline,
    midrib and EXIF-derived timestamp. Verified end-to-end.
-3. `build_series.py` — tracks one component across a timelapse and writes an asset per
+3. `tools/leaf-tracer/index.html` — hand-trace leaves thresholding cannot separate;
+   feeds `export_assets.py --tracing`, which runs the identical geometry code.
+4. `build_series.py` — tracks one component across a timelapse and writes an asset per
    frame plus `age_series.csv`. Tested on Gravi_02; see open question 1b for what it found.
-4. `fit_leaves.py` — *optional*. Adds the out-of-plane pose that a top-down silhouette
+5. `fit_leaves.py` — *optional*. Adds the out-of-plane pose that a top-down silhouette
    cannot contain, using NeuraLeaf. See the caveats below.
 
 Validate anything new with `node validation/leaf_inspect.mjs <asset.json>` before adding
@@ -71,7 +73,8 @@ separate leaves from each other.
 
 So per-leaf outlines from this footage need one of:
 
-- **manual annotation** of a handful of frames, or
+- **manual annotation** — `tools/leaf-tracer/`, a dependency-free browser page that
+  collects clicked outlines and feeds `export_assets.py --tracing`; or
 - **NeuraLeaf's base-shape prior** via `fit_leaves.py` — which is exactly the job that
   prior exists to do, and is blocked on the licence question below.
 
@@ -84,6 +87,15 @@ projected shoot area 9.08 → 13.73 mm² over 18 h (+51%), then falling to 10.79
 with bounding length and width crossing over mid-series. The crossover and the late decline
 look like reorientation and leaf folding rather than growth — unsurprising in a
 gravitropism experiment where the plate may have been re-oriented.
+
+## Open question 1d — these leaves are too small for the standard lattice
+
+A real 2.6 mm cotyledon is **10 lattice cells** long at dx = 0.288 mm. `leaf_inspect.mjs`
+warns under 12 cells, and it is right to: the leaf/rosette/canopy scenarios cannot resolve
+a blade that small. Assets at this scale are fine in AeroLeaf and as morphometric data, but
+simulating them needs a finer lattice (or a smaller physical domain, which changes the
+enclosure physics). The 15 mm `provisional-mature-flat` sits at 52 cells, which is why it
+matches the calibration.
 
 ## Open question 1c — the image scale is assumed, not measured
 

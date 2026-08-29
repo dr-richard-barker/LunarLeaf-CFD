@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaf tracer — LunarLeaf-CFD</title>
+<style>
+  :root {
+    --bg: #0f1622; --panel: #161f2e; --line: #2a3648;
+    --text: #e6edf6; --dim: #9fb0c8; --accent: #8fd07f; --warn: #e0a458;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text);
+         display: grid; grid-template-columns: 320px 1fr; height: 100vh; overflow: hidden; }
+  aside { background: var(--panel); border-right: 1px solid var(--line); padding: 16px;
+          overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font-size: 15px; margin: 0; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
+       margin: 0 0 6px; font-weight: 600; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  button { font: inherit; background: #21314a; color: var(--text); border: 1px solid var(--line);
+           border-radius: 5px; padding: 6px 10px; cursor: pointer; }
+  button:hover:not(:disabled) { background: #2b3e5c; }
+  button:disabled { opacity: .4; cursor: default; }
+  button.primary { background: #2f6b3a; border-color: #3f8a4d; }
+  button.primary:hover:not(:disabled) { background: #397f46; }
+  input[type=number], input[type=text] { font: inherit; width: 100%; background: #0d1420;
+           color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px; }
+  label { display: block; font-size: 12px; color: var(--dim); margin-bottom: 3px; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .muted { color: var(--dim); font-size: 12px; }
+  .warn { color: var(--warn); font-size: 12px; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  li { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+       border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; font-size: 13px; }
+  li button { padding: 2px 7px; font-size: 12px; }
+  main { position: relative; overflow: hidden; }
+  canvas { display: block; cursor: crosshair; }
+  #hint { position: absolute; left: 12px; top: 12px; background: rgba(15,22,34,.85);
+          border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font-size: 12px;
+          color: var(--dim); pointer-events: none; max-width: 60ch; }
+  kbd { background: #21314a; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px;
+        font: 11px/1.6 ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<aside>
+  <div>
+    <h1>Leaf tracer</h1>
+    <p class="muted" style="margin:6px 0 0">
+      Trace individual leaves that thresholding cannot separate. Exports a tracing file for
+      <code>export_assets.py --tracing</code>, which runs the same orientation and midrib code
+      as the automatic path — this page only collects points.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>1 · Image</h2>
+    <input type="file" id="imgFile" accept="image/*">
+    <p class="muted" id="imgInfo" style="margin:8px 0 0">No image loaded.</p>
+  </div>
+
+  <div class="card">
+    <h2>2 · Scale</h2>
+    <p class="muted" style="margin:0 0 8px">
+      Click two points a known distance apart — across the dish is easiest — then enter that
+      distance. Nothing here is inferred from the image.
+    </p>
+    <button id="calibBtn" disabled>Pick two calibration points</button>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label for="knownMm">known distance (mm)</label>
+        <input type="number" id="knownMm" value="100" min="0.1" step="0.1">
+      </div>
+      <div>
+        <label>px per mm</label>
+        <input type="text" id="pxPerMm" value="—" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Trace a leaf</h2>
+    <p class="muted" style="margin:0 0 8px">
+      Click around one blade. Order does not matter beyond going around once — the exporter
+      re-orients it. <kbd>u</kbd> undo · <kbd>Enter</kbd> finish · <kbd>Esc</kbd> cancel
+    </p>
+    <label for="leafLabel">label for the next leaf</label>
+    <input type="text" id="leafLabel" placeholder="e.g. plant 2, left cotyledon">
+    <div class="row" style="margin-top:8px">
+      <button id="startBtn" disabled>Start tracing</button>
+      <button id="finishBtn" disabled>Finish</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Traced leaves (<span id="count">0</span>)</h2>
+    <ul id="list"></ul>
+    <p class="muted" id="empty" style="margin:6px 0 0">Nothing traced yet.</p>
+  </div>
+
+  <div class="card">
+    <h2>4 · Export</h2>
+    <label for="seriesName">series</label>
+    <input type="text" id="seriesName" placeholder="e.g. Gravi_02">
+    <label for="frameNo" style="margin-top:8px">frame number (optional)</label>
+    <input type="number" id="frameNo" placeholder="e.g. 90">
+    <button class="primary" id="exportBtn" style="margin-top:10px; width:100%" disabled>
+      Download tracing.json
+    </button>
+    <p class="warn" id="exportWarn" style="margin:8px 0 0"></p>
+  </div>
+</aside>
+
+<main>
+  <canvas id="cv"></canvas>
+  <div id="hint">Load a plate image to begin. Drag to pan, scroll to zoom.</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    img: null, imgName: '',
+    view: { x: 0, y: 0, scale: 1 },   // image px -> screen
+    mode: 'idle',                      // idle | calibrate | trace
+    current: [],                       // points of the in-progress polygon, image px
+    calib: [],
+    pxPerMm: null,
+    leaves: [],                        // { label, points }
+    drag: null,
+    needsFit: false,
+  };
+
+  // --- view -----------------------------------------------------------------
+  function resize() {
+    const r = cv.parentElement.getBoundingClientRect();
+    const dpr = devicePixelRatio || 1;
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    cv.style.width = r.width + 'px';
+    cv.style.height = r.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (state.img && state.needsFit) fitImage();
+    draw();
+  }
+  addEventListener('resize', resize);
+
+  const toScreen = (p) => [p[0] * state.view.scale + state.view.x, p[1] * state.view.scale + state.view.y];
+  const toImage = (sx, sy) => [(sx - state.view.x) / state.view.scale, (sy - state.view.y) / state.view.scale];
+
+  function fitImage() {
+    const r = cv.parentElement.getBoundingClientRect();
+    // A hidden pane, a collapsed window or a print view all report zero here. Fitting to
+    // that gives scale 0, and every screen->image conversion afterwards is a division by
+    // zero, so the tracing silently fills with NaN. Fall back to 1:1 and re-fit once the
+    // canvas has a real size.
+    if (r.width < 1 || r.height < 1) {
+      state.view = { x: 0, y: 0, scale: 1 };
+      state.needsFit = true;
+      return;
+    }
+    const s = Math.min(r.width / state.img.width, r.height / state.img.height) * 0.95;
+    state.view.scale = s;
+    state.view.x = (r.width - state.img.width * s) / 2;
+    state.view.y = (r.height - state.img.height * s) / 2;
+    state.needsFit = false;
+  }
+
+  function draw() {
+    const r = cv.parentElement.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    if (!state.img) return;
+
+    ctx.imageSmoothingEnabled = state.view.scale < 2;
+    ctx.drawImage(state.img, state.view.x, state.view.y,
+                  state.img.width * state.view.scale, state.img.height * state.view.scale);
+
+    // Finished leaves.
+    state.leaves.forEach((leaf, i) => drawPoly(leaf.points, true, `${i + 1}`));
+    // In-progress polygon.
+    if (state.mode === 'trace' && state.current.length) drawPoly(state.current, false, null);
+    // Calibration pair.
+    if (state.calib.length) {
+      ctx.strokeStyle = '#e0a458';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      state.calib.forEach((p, i) => {
+        const [x, y] = toScreen(p);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.stroke();
+      state.calib.forEach((p) => dot(p, '#e0a458'));
+    }
+  }
+
+  function drawPoly(pts, closed, tag) {
+    if (!pts.length) return;
+    ctx.strokeStyle = closed ? '#8fd07f' : '#7fb0d0';
+    ctx.fillStyle = closed ? 'rgba(143,208,127,.18)' : 'rgba(127,176,208,.12)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const [x, y] = toScreen(p);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    if (closed) ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    pts.forEach((p) => dot(p, closed ? '#8fd07f' : '#7fb0d0'));
+    if (tag) {
+      const [x, y] = toScreen(pts[0]);
+      ctx.fillStyle = '#e6edf6';
+      ctx.font = '600 12px system-ui, sans-serif';
+      ctx.fillText(tag, x + 8, y - 8);
+    }
+  }
+
+  function dot(p, colour) {
+    const [x, y] = toScreen(p);
+    ctx.fillStyle = colour;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // --- input ----------------------------------------------------------------
+  cv.addEventListener('mousedown', (e) => {
+    if (!state.img) return;
+    if (e.button === 0 && state.mode === 'idle') {
+      state.drag = { x: e.clientX, y: e.clientY, vx: state.view.x, vy: state.view.y };
+    }
+  });
+  addEventListener('mousemove', (e) => {
+    if (!state.drag) return;
+    state.view.x = state.drag.vx + (e.clientX - state.drag.x);
+    state.view.y = state.drag.vy + (e.clientY - state.drag.y);
+    draw();
+  });
+  addEventListener('mouseup', () => { state.drag = null; });
+
+  cv.addEventListener('click', (e) => {
+    if (!state.img || state.mode === 'idle') return;
+    const r = cv.getBoundingClientRect();
+    const p = toImage(e.clientX - r.left, e.clientY - r.top);
+    if (state.mode === 'calibrate') {
+      state.calib.push(p);
+      if (state.calib.length === 2) {
+        const d = Math.hypot(state.calib[0][0] - state.calib[1][0], state.calib[0][1] - state.calib[1][1]);
+        const mm = parseFloat($('knownMm').value);
+        if (mm > 0) {
+          state.pxPerMm = d / mm;
+          $('pxPerMm').value = state.pxPerMm.toFixed(3);
+        }
+        state.mode = 'idle';
+        hint('Scale set. Now label a leaf and press “Start tracing”.');
+      }
+    } else {
+      state.current.push(p);
+      $('finishBtn').disabled = state.current.length < 3;
+    }
+    refresh();
+  });
+
+  cv.addEventListener('wheel', (e) => {
+    if (!state.img) return;
+    e.preventDefault();
+    const r = cv.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const before = toImage(mx, my);
+    const k = Math.exp(-e.deltaY * 0.0015);
+    state.view.scale = Math.min(40, Math.max(0.05, state.view.scale * k));
+    const after = toImage(mx, my);
+    state.view.x += (after[0] - before[0]) * state.view.scale;
+    state.view.y += (after[1] - before[1]) * state.view.scale;
+    draw();
+  }, { passive: false });
+
+  addEventListener('keydown', (e) => {
+    if (state.mode !== 'trace') return;
+    if (e.key === 'u') { state.current.pop(); refresh(); }
+    else if (e.key === 'Enter') finish();
+    else if (e.key === 'Escape') { state.current = []; state.mode = 'idle'; refresh(); }
+  });
+
+  // --- actions --------------------------------------------------------------
+  $('imgFile').addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      state.img = img;
+      state.imgName = file.name;
+      $('imgInfo').textContent = `${file.name} — ${img.width} × ${img.height} px`;
+      fitImage();
+      ['calibBtn', 'startBtn'].forEach((id) => ($(id).disabled = false));
+      hint('Set the scale first, then trace. Drag to pan, scroll to zoom.');
+      refresh();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  $('calibBtn').addEventListener('click', () => {
+    state.calib = [];
+    state.mode = 'calibrate';
+    hint('Click the two points that are the known distance apart.');
+    refresh();
+  });
+
+  $('startBtn').addEventListener('click', () => {
+    state.current = [];
+    state.mode = 'trace';
+    hint('Click around one blade. u = undo, Enter = finish, Esc = cancel.');
+    refresh();
+  });
+
+  $('finishBtn').addEventListener('click', finish);
+
+  function finish() {
+    if (state.current.length < 3) return;
+    state.leaves.push({
+      label: $('leafLabel').value.trim() || `leaf ${state.leaves.length + 1}`,
+      points: state.current.map((p) => [Math.round(p[0] * 100) / 100, Math.round(p[1] * 100) / 100]),
+    });
+    state.current = [];
+    state.mode = 'idle';
+    $('leafLabel').value = '';
+    hint('Leaf added. Label the next one and press “Start tracing”, or export.');
+    refresh();
+  }
+
+  function refresh() {
+    const list = $('list');
+    list.innerHTML = '';
+    state.leaves.forEach((leaf, i) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.textContent = `${i + 1}. ${leaf.label} (${leaf.points.length} pts)`;
+      const del = document.createElement('button');
+      del.textContent = 'remove';
+      del.onclick = () => { state.leaves.splice(i, 1); refresh(); };
+      li.append(span, del);
+      list.append(li);
+    });
+    $('count').textContent = state.leaves.length;
+    $('empty').style.display = state.leaves.length ? 'none' : '';
+    $('finishBtn').disabled = !(state.mode === 'trace' && state.current.length >= 3);
+    $('startBtn').disabled = !state.img || state.mode === 'trace';
+
+    const ready = state.leaves.length > 0;
+    $('exportBtn').disabled = !ready;
+    $('exportWarn').textContent = !ready ? ''
+      : state.pxPerMm ? '' : 'No scale set — export will be in pixels and export_assets.py will refuse it.';
+    draw();
+  }
+
+  function hint(text) { document.getElementById('hint').textContent = text; }
+
+  $('exportBtn').addEventListener('click', () => {
+    // Never let a corrupt tracing reach export_assets.py — it would turn NaN into
+    // confident millimetres. This is the last place the bad numbers are still obvious.
+    const bad = state.leaves.filter((l) => l.points.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1])));
+    if (bad.length) {
+      alert(
+        `Refusing to export: ${bad.length} traced leaf/leaves contain non-finite coordinates.\n\n` +
+        'This happens when the canvas had no size while you were tracing — resize the window and trace again.'
+      );
+      return;
+    }
+    if (state.pxPerMm !== null && !Number.isFinite(state.pxPerMm)) {
+      alert('Refusing to export: the calibration produced a non-finite scale. Set the scale again.');
+      return;
+    }
+    const frame = $('frameNo').value;
+    const payload = {
+      format: 'lunarleaf-tracing-1',
+      image: state.imgName,
+      imageSizePx: [state.img.width, state.img.height],
+      pxPerMm: state.pxPerMm,
+      series: $('seriesName').value.trim() || 'traced',
+      ...(frame !== '' ? { frame: Number(frame) } : {}),
+      tracedAt: new Date().toISOString(),
+      note: 'Outlines traced by hand in tools/leaf-tracer. Points are image pixels.',
+      leaves: state.leaves,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tracing.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  resize();
+})();
+</script>
+</body>
+</html>

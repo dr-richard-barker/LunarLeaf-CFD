@@ -1,6 +1,6 @@
 # Real leaf geometry from your own plate images
 
-Four scripts that turn Petri-dish photographs into leaf assets for `src/leaf/assets/`,
+Four scripts and a browser page that turn Petri-dish photographs into leaf assets for `src/leaf/assets/`,
 replacing the ellipse the solver has used as a stand-in for a blade.
 
 Steps 1, 2 and 4 need only numpy, scipy, pillow and matplotlib, use no machine learning,
@@ -8,10 +8,11 @@ and are verified end-to-end against `Gravitropism_flashlapse_/`. Step 3 is optio
 the only one that involves NeuraLeaf.
 
 ```
-segment_plate.py    plate photo   →  per-component masks + QC overlay
-export_assets.py    one mask      →  asset JSON (outline, midrib, traits, timestamp)
-fit_leaves.py       mask + asset  →  adds the 3D pose the silhouette cannot contain  [optional]
-build_series.py     a timelapse   →  one asset per frame + age_series.csv
+segment_plate.py       plate photo   →  per-component masks + QC overlay
+export_assets.py       one mask      →  asset JSON (outline, midrib, traits, timestamp)
+fit_leaves.py          mask + asset  →  adds the 3D pose the silhouette cannot contain  [optional]
+build_series.py        a timelapse   →  one asset per frame + age_series.csv
+../leaf-tracer/        a browser     →  hand-traced outlines, when thresholding cannot split them
 ```
 
 **Before anything else, read "What the local imagery can and cannot support" at the bottom.**
@@ -134,6 +135,37 @@ asset** for a cluster; `--force-cluster-asset` overrides that and marks the resu
 provisional and labelled a plant silhouette. The morphometrics still go to the CSV, and
 those are real plant-level data.
 
+## 5. When thresholding cannot separate the leaves — `tools/leaf-tracer/`
+
+This is the case on `Gravi_02` (see §4), and it is the normal case for overlapping
+seedlings. Open `tools/leaf-tracer/index.html` in a browser — no build step, no server,
+it runs from `file://`.
+
+1. Load a plate frame.
+2. **Set the scale**: click two points a known distance apart (across the dish is easiest)
+   and type that distance. This is the one number the pipeline cannot infer, and getting
+   it wrong silently produces a well-formed leaf of the wrong size.
+3. Click around one blade. `u` undo, `Enter` finish, `Esc` cancel. Repeat per leaf.
+4. Download `tracing.json`.
+
+Then run it through the same exporter the automatic path uses:
+
+```bash
+python3 tools/neuraleaf/export_assets.py \
+  --tracing ~/Downloads/tracing.json --out src/leaf/assets \
+  --source-image ~/Documents/Gravitropism_flashlapse_/Gravi_02_0090.jpg \
+  --t0 "2017-06-12T17:44:26"
+```
+
+The page deliberately does **no geometry** — it only collects points. Orientation, midrib,
+winding and traits all happen in `export_assets.py`, so hand-traced and auto-segmented
+leaves go through identical code and are directly comparable. The exporter refuses a
+tracing with no scale or with non-finite coordinates.
+
+`leaf_inspect.mjs` reports the blade's size **in lattice cells** and warns when it is under
+12 (unresolvable) or over ~100 (will not fit the 128-cell domain). That is the check that
+catches a botched calibration, and it is how the cotyledon-resolution limit below was found.
+
 ## What the local imagery can and cannot support
 
 `Gravitropism_flashlapse_/` is 96 frames at 15 min cadence spanning **23.79 h** — a
@@ -142,7 +174,12 @@ labelled *"hours since imaging start"*, not leaf ageing or senescence. For a rea
 axis see the CyVerse candidates listed in `TIMELAPSE_PIPELINE_STATUS.md`.
 
 It also cannot yield **per-leaf** outlines by thresholding alone (see above) — that needs
-manual annotation or the NeuraLeaf shape prior.
+`tools/leaf-tracer/` or the NeuraLeaf shape prior.
+
+And at this scale the leaves are **too small for the standard lattice**: a real 2.6 mm
+cotyledon is 10 cells long at dx = 0.288 mm, under the 12-cell floor `leaf_inspect` warns
+at. These assets are usable in AeroLeaf and as morphometric data, but simulating them needs
+a finer lattice than the leaf/rosette scenarios use.
 
 And the scale is **assumed, not measured**: 24.4 px/mm from the dish spanning ~2440 px on
 the assumption of a 100 mm dish. Confirm the dish diameter; every area scales as its square.

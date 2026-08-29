@@ -132,12 +132,139 @@ def exif_timestamp(path: str) -> str | None:
     return None
 
 
+def build_asset(
+    outline_px: np.ndarray,
+    px_per_mm: float,
+    asset_id: str,
+    label: str,
+    points: int,
+    thickness_mm: float,
+    provenance: dict,
+    note_parts: list[str],
+    margin: float = 0.0,
+) -> tuple[dict, float, float, float]:
+    """Outline in pixels -> a finished asset dict, plus (length, width, area) in mm.
+
+    Shared by the mask path and the hand-traced path so both go through exactly the same
+    orientation, midrib and winding logic. The tracer page deliberately does no geometry
+    of its own for this reason — it only collects points.
+    """
+    outline_px = resample_closed(outline_px, points)
+    outline_mm = orient(outline_px / px_per_mm)
+
+    x, y = outline_mm[:, 0], outline_mm[:, 1]
+    if np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)) < 0:
+        outline_mm = outline_mm[::-1]
+
+    length = float(outline_mm[:, 1].max())
+    width = float(np.ptp(outline_mm[:, 0]))
+    area = polygon_area(outline_mm)
+
+    asset = {
+        "id": asset_id,
+        "label": label,
+        "provisional": False,
+        "source": {**provenance, "note": " ".join(note_parts)},
+        "outline": [[round(float(a), 4), round(float(b), 4)] for a, b in outline_mm],
+        "midrib": chord_midpoints(outline_mm),
+        "profile": [[0, 0], [1, 0]],
+        "camber": [[-1, round(margin, 4)], [0, 0], [1, round(margin, 4)]],
+        "thicknessMm": thickness_mm,
+    }
+    return asset, length, width, area
+
+
+def export_tracing(args) -> int:
+    """Write one asset per leaf in a tracing.json from tools/leaf-tracer."""
+    with open(args.tracing) as fh:
+        doc = json.load(fh)
+    if doc.get("format") != "lunarleaf-tracing-1":
+        raise SystemExit(f"{args.tracing}: not a lunarleaf-tracing-1 file")
+    px_per_mm = args.px_per_mm or doc.get("pxPerMm")
+    if not px_per_mm:
+        raise SystemExit(
+            "the tracing has no scale — re-trace with the calibration step, or pass --px-per-mm. "
+            "Without it every millimetre in the output would be invented."
+        )
+
+    leaves = doc.get("leaves") or []
+    if args.tracing_index is not None:
+        if not 1 <= args.tracing_index <= len(leaves):
+            raise SystemExit(f"--tracing-index {args.tracing_index} out of range (1..{len(leaves)})")
+        leaves = [leaves[args.tracing_index - 1]]
+    if not leaves:
+        raise SystemExit("the tracing contains no leaves")
+
+    timestamp = exif_timestamp(args.source_image) if args.source_image else None
+    age_hours = None
+    if timestamp and args.t0:
+        try:
+            age_hours = round(
+                (datetime.fromisoformat(timestamp) - datetime.fromisoformat(args.t0)).total_seconds() / 3600, 3
+            )
+        except ValueError:
+            pass
+
+    os.makedirs(args.out, exist_ok=True)
+    series = args.series if args.series != "unknown" else doc.get("series", "traced")
+    frame = args.frame if args.frame is not None else doc.get("frame")
+    stem = args.id or f"{series.lower().replace('_', '')}" + (f"-f{frame:04d}" if frame is not None else "")
+
+    for i, leaf in enumerate(leaves, start=1):
+        pts = np.asarray(leaf["points"], dtype=float)
+        if len(pts) < 3:
+            print(f"  skipping '{leaf.get('label')}' — only {len(pts)} points")
+            continue
+        # Defence in depth: this is the step that turns clicks into millimetres, so a
+        # non-finite coordinate must stop here rather than become a confident measurement.
+        if not np.isfinite(pts).all():
+            raise SystemExit(
+                f"leaf '{leaf.get('label')}' contains non-finite coordinates — the tracing is corrupt. "
+                "Re-trace it with the browser window at a normal size."
+            )
+        idx = args.tracing_index or i
+        asset_id = stem if len(leaves) == 1 and args.id else f"{stem}-leaf{idx}"
+        provenance = {
+            "series": series,
+            **({"frame": frame} if frame is not None else {}),
+            **({"timestamp": timestamp} if timestamp else {}),
+            **({"ageHours": age_hours} if age_hours is not None else {}),
+        }
+        notes = [
+            f"Outline HAND-TRACED in tools/leaf-tracer from {doc.get('image', 'an image')} "
+            f"at {px_per_mm:.3f} px/mm (scale set by two-point calibration, not inferred).",
+            "Profile and camber are FLAT: a top-down tracing carries no out-of-plane information.",
+        ]
+        asset, length, width, area = build_asset(
+            pts, px_per_mm, asset_id, args.label or leaf.get("label", asset_id),
+            args.points, args.thickness_mm, provenance, notes,
+        )
+        with open(os.path.join(args.out, f"{asset_id}.json"), "w") as fh:
+            json.dump(asset, fh, indent=2)
+            fh.write("\n")
+        print(f"{asset_id}: {length:.2f} x {width:.2f} mm, area {area:.2f} mm^2  ({leaf.get('label', '')})")
+
+    if age_hours is not None:
+        print(f"  age {age_hours:.2f} h since {args.t0}")
+    print(f"  wrote {len(leaves)} asset(s) to {args.out}")
+    print("  validate with: node validation/leaf_inspect.mjs <asset.json>")
+    print("  then register in src/leaf/registry.ts and run tools/sync-leaf-module.sh")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--mask", required=True, help="binary mask PNG of ONE leaf")
-    ap.add_argument("--px-per-mm", type=float, required=True, help="scale of the mask (working scale from segment_plate)")
-    ap.add_argument("--id", required=True)
-    ap.add_argument("--label", required=True)
+    ap.add_argument("--mask", default=None, help="binary mask PNG of ONE leaf")
+    ap.add_argument(
+        "--tracing",
+        default=None,
+        help="tracing.json from tools/leaf-tracer (hand-traced outlines). Use instead of --mask "
+        "when thresholding cannot separate overlapping leaves. Writes one asset per traced leaf.",
+    )
+    ap.add_argument("--tracing-index", type=int, default=None, help="export only this 1-based leaf from the tracing")
+    ap.add_argument("--px-per-mm", type=float, default=None, help="required with --mask (the WORKING scale from segment_plate's manifest); with --tracing it is read from the file")
+    ap.add_argument("--id", default=None, help="required with --mask; derived per leaf with --tracing")
+    ap.add_argument("--label", default=None)
     ap.add_argument("--out", required=True, help="output directory, normally src/leaf/assets")
     ap.add_argument("--series", default="unknown")
     ap.add_argument("--frame", type=int, default=None)
@@ -149,22 +276,19 @@ def main() -> int:
     ap.add_argument("--cup", type=float, default=0.0, help="impose cupping (mm at the margins); NOT measured")
     args = ap.parse_args()
 
+    if bool(args.mask) == bool(args.tracing):
+        raise SystemExit("give exactly one of --mask or --tracing")
+
+    if args.tracing:
+        return export_tracing(args)
+
+    for required in ("px_per_mm", "id", "label"):
+        if getattr(args, required) is None:
+            raise SystemExit(f"--{required.replace('_', '-')} is required with --mask")
+
     mask = np.asarray(Image.open(args.mask).convert("L")) > 127
     if mask.sum() < 32:
         raise SystemExit(f"mask {args.mask} has only {mask.sum()} pixels")
-
-    outline_px = trace_outline(mask)
-    outline_px = resample_closed(outline_px, args.points)
-    outline_mm = orient(outline_px / args.px_per_mm)
-
-    # Counter-clockwise, matching the module's convention.
-    x, y = outline_mm[:, 0], outline_mm[:, 1]
-    if np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)) < 0:
-        outline_mm = outline_mm[::-1]
-
-    length = float(outline_mm[:, 1].max())
-    width = float(np.ptp(outline_mm[:, 0]))
-    area = polygon_area(outline_mm)
 
     imposed = args.curl != 0.0 or args.cup != 0.0
     note_parts = [
@@ -187,24 +311,23 @@ def main() -> int:
         except ValueError:
             pass
 
-    margin = args.cup + args.curl
-    asset = {
-        "id": args.id,
-        "label": args.label,
-        "provisional": False,
-        "source": {
-            "series": args.series,
-            **({"frame": args.frame} if args.frame is not None else {}),
-            **({"timestamp": timestamp} if timestamp else {}),
-            **({"ageHours": age_hours} if age_hours is not None else {}),
-            "note": " ".join(note_parts),
-        },
-        "outline": [[round(float(a), 4), round(float(b), 4)] for a, b in outline_mm],
-        "midrib": chord_midpoints(outline_mm),
-        "profile": [[0, 0], [1, 0]],
-        "camber": [[-1, round(margin, 4)], [0, 0], [1, round(margin, 4)]],
-        "thicknessMm": args.thickness_mm,
+    provenance = {
+        "series": args.series,
+        **({"frame": args.frame} if args.frame is not None else {}),
+        **({"timestamp": timestamp} if timestamp else {}),
+        **({"ageHours": age_hours} if age_hours is not None else {}),
     }
+    asset, length, width, area = build_asset(
+        trace_outline(mask),
+        args.px_per_mm,
+        args.id,
+        args.label,
+        args.points,
+        args.thickness_mm,
+        provenance,
+        note_parts,
+        margin=args.cup + args.curl,
+    )
 
     os.makedirs(args.out, exist_ok=True)
     path = os.path.join(args.out, f"{args.id}.json")
