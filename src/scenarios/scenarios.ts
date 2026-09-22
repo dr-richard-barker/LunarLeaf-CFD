@@ -1161,6 +1161,12 @@ export const SCENARIOS: ScenarioDef[] = [
     build: makeLeafScene({ ...DOM, id: 'hw-cara', label: 'CARA — micropore-taped dish, µg, light', gRatio: 0, renderScale: 0.3, geometry: leafGeometry, membraneK: 0.01 }),
   },
   {
+    id: 'hw-cara-dark',
+    label: 'Hardware · CARA micropore tape (dark)',
+    description: CARA_DESC,
+    build: makeLeafScene({ ...DOM, id: 'hw-cara-dark', label: 'CARA — micropore-taped dish, µg, dark', gRatio: 0, renderScale: 0.3, geometry: leafGeometry, membraneK: 0.01, dark: true }),
+  },
+  {
     id: 'hw-veggie',
     label: 'Hardware · VEGGIE vented',
     description: VEGGIE_DESC,
