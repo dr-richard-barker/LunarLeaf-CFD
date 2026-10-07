@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 FIG, TAB = "results/figures", "results/tables"
 df = pd.read_csv(f"{TAB}/T7_hardware_timeseries.csv")
 
-colors = {"BRIC light": "#e0654e", "BRIC dark": "#b5462f", "CARA tape": "#2a7de1",
+colors = {"BRIC light": "#e0654e", "BRIC dark": "#b5462f", "CARA light": "#2a7de1", "CARA dark": "#1c5aa6",
           "VEGGIE vented": "#2fbf71", "open (ref)": "#9aa3bd"}
 
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.6))
 # Panel A — enclosure (dish-mean) CO2 excess vs time: does it drift or settle?
 # Only the enclosed dishes have a dish-mean; vented cases sit at ambient (0).
-for name in ["BRIC light", "BRIC dark", "CARA tape"]:
+for name in ["BRIC light", "BRIC dark", "CARA light", "CARA dark"]:
     g = df[df.case == name]
     a1.plot(g.step / 1e3, g.dishmean_co2, lw=2.2, color=colors.get(name, "0.5"), label=name)
 a1.axhline(0, color="0.5", lw=1.2, ls="--", label="ambient (VEGGIE / vented)")
@@ -28,7 +28,7 @@ a1.grid(alpha=0.25); a1.legend(fontsize=8.5)
 
 # Panel B — steady leaf-surface CO2 gap by hardware (last step)
 last = df.sort_values("step").groupby("case").tail(1).set_index("case")
-order = ["BRIC light", "CARA tape", "VEGGIE vented", "open (ref)"]
+order = ["BRIC light", "CARA light", "VEGGIE vented", "open (ref)"]
 vals = [abs(last.loc[n, "surf_co2_mean"]) for n in order]
 a2.bar(range(len(order)), vals, color=[colors[n] for n in order])
 a2.set_xticks(range(len(order))); a2.set_xticklabels(["BRIC\n(sealed)", "CARA\n(tape)", "VEGGIE\n(vented)", "open\n(ref)"])

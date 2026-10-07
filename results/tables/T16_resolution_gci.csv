@@ -1,0 +1,7 @@
+gravity_g,quantity,dx_mm,phi_fine,phi_med,phi_coarse,p,monotone,phi_ext,gci_fine_pct,gci_coarse_pct,all_stationary
+1,g_bl_mol_m2_s,0.144 / 0.192 / 0.288,0.98,0.986,0.997,0.7532,True,0.9552,3.163,5.47,True
+1,delta_mm,0.144 / 0.192 / 0.288,0.68,0.67,0.67,nan,False,nan,nan,nan,True
+1,dC_CO2_mean,0.144 / 0.192 / 0.288,-0.164,-0.163,-0.161,1,True,-0.167,2.287,4.491,True
+0,g_bl_mol_m2_s,0.144 / 0.192 / 0.288,0.4394,0.4407,0.4433,1.172,True,0.4364,0.8674,1.968,True
+0,delta_mm,0.144 / 0.192 / 0.288,1.516,1.509,1.5,0.2069,True,1.629,9.305,9.906,True
+0,dC_CO2_mean,0.144 / 0.192 / 0.288,-0.3665,-0.3654,-0.3635,0.6466,True,-0.3718,1.81,2.792,True

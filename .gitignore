@@ -11,3 +11,11 @@ scratch_val.*
 scratch_cyl.log
 *.tsbuildinfo
 results/tables/_*.npy
+
+# Regenerable intermediates from the parallel exports and verification runs (2026-10-07)
+results/tables/.partials/
+results/regen/
+results/timeseries/*_frames.f32
+results/timeseries/*_frames.json
+results/animations/*/
+results/*/log.*

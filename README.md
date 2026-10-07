@@ -182,9 +182,9 @@ not perfectly controlled. Treat the curl rows as indicative until the blade is r
 - ✅ Rosette preset (fan of overlapping leaves — interior air‑trapping)
 - ✅ Microgreen‑canopy preset (row of upright shoots on soil — within‑canopy stagnation)
 - 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
-- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.8 cm/s nulls the microgravity penalty** (`results/T6`, `F6`). Three in‑app fan presets (3/8/17 cm/s).
+- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.0 cm/s nulls the microgravity penalty** (`results/T6`, `F6`; was 2.8 before the 2026‑10‑07 outlet + steady‑state fix, see `results/README.md`). Three in‑app fan presets (3/8/17 cm/s).
 - ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
-- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.6 / 11 / 21 cm/s** (leaf/rosette/canopy); BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
+- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.0 / 6.5 cm/s** (leaf/rosette); the canopy does not reach Earth level within the solver's low‑Mach range (≤ 6.6 cm/s). BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
 - ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression 1–4% (most in rosette crown); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). 3 feedback presets → 26 scenarios.
 - ✅ **Draft manuscript assembled** — [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md) (full paper) + [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex) (self‑contained npj‑Microgravity‑style LaTeX, 9 figures + 5 tables, structure‑validated).
 
