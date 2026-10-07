@@ -7,7 +7,8 @@ import { SCENARIOS } from '../src/scenarios/scenarios';
 const CASES = [
   ['hw-bric-light', 'BRIC light'],
   ['hw-bric-dark', 'BRIC dark'],
-  ['hw-cara', 'CARA tape'],
+  ['hw-cara', 'CARA light'],
+  ['hw-cara-dark', 'CARA dark'],
   ['hw-veggie', 'VEGGIE vented'],
   ['leaf-ug', 'open (ref)'],
 ];

@@ -19,15 +19,17 @@ thickens, and surface gas gradients steepen. Using a Lattice-Boltzmann solver va
 textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rates, we show that:
 
 1. reducing gravity from 1 g to microgravity **eliminates convective ventilation** (peak flow speed
-   `u_max` → 0, scaling ≈ √g) and **steepens the surface-to-ambient gas gaps 1.5–1.8×** at every scale;
+   `u_max` → 0, scaling ≈ √g) and **steepens the surface-to-ambient gas gaps 1.7–2.3×** at every scale;
 2. **canopy geometry amplifies the effect** — an isolated leaf is the mildest case, a rosette traps
    air in its crown (steepest local gradients), and a microgreen stand stagnates as a whole;
 3. anchored on the measured net assimilation flux (3.85 µmol CO₂ m⁻² s⁻¹), the model predicts a
    boundary-layer CO₂ drawdown of **≈ 4 ppm (isolated leaf, Earth) rising to ≈ 13 ppm (rosette bulk,
-   microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`);
+   microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`; **TODO:** T5 predates the 2026-10-07
+   steady-state rerun and needs regenerating from `validation/raw/`; the microgravity values will rise);
 4. the microgravity penalty is **fully reversible by forced ventilation**, but the required airflow **scales
-   steeply with planting density** — **≈ 2.6 / 11 / 21 cm s⁻¹** to restore Earth-equivalent surface gradients
-   for a **leaf / rosette / canopy** (`T6`, `F6`, `F8`) — so a single fan speed cannot serve all densities;
+   with planting density** — **≈ 2.0 cm s⁻¹ for a leaf and ≈ 6.5 cm s⁻¹ for a rosette** restore Earth-equivalent
+   surface gradients, while a **canopy** is not restored within the solver's valid range (`T6`, `F6`, `F8`, `T9`)
+   — so a single fan speed cannot serve all densities;
 5. the three ISS plant-growth systems map onto three dish boundary conditions (`§3.7`, `F7`, `T8`):
    **BRIC** (sealed) suffers both runaway enclosure drift — CO₂ fixed in **~7 min** in light, O₂ hypoxia
    in **~6.5 days** in the dark — and the steepest surface gradient; **CARA** (micropore tape) vents the
@@ -107,6 +109,9 @@ microgravity, making a **microgravity canopy the worst case** for surface gas de
 Anchoring the model's dimensionless gradients on the measured assimilation flux and a standard still-air
 leaf boundary-layer conductance (1.0 mol m⁻² s⁻¹) yields concrete predictions (`T5`):
 
+> **TODO (2026-10-07):** this table is from `T5`, which was not regenerated after the steady-state rerun
+> (it needs the raw Vernier data in `validation/raw/`). The microgravity rows will rise.
+
 | Scenario | CO₂ drawdown, mean (ppm) | CO₂ drawdown, peak (ppm) |
 |---|---|---|
 | Leaf · Earth | 3.8 | 5.9 |
@@ -124,11 +129,10 @@ effect — and ≥ 20 ppm in trapped rosette pockets — once low gravity and de
 
 Because the penalty is transport-limited, it can be engineered away. Replacing the absent buoyant
 convection with a forced inlet flow (the leaf placed in a ventilation channel, gravity off), we sweep
-fan speed and track the surface gap (`F6`, `T6`). The still-microgravity gap (ΔC = 0.231, model units)
-falls monotonically with airflow and **crosses the Earth-1 g level (0.128) at ≈ 2.8 cm s⁻¹** for water
-vapour; CO₂, with its lower diffusivity and thus thicker concentration boundary layer, reaches parity a
-little higher (≈ 5 cm s⁻¹). Beyond ~8 cm s⁻¹ the forced flow *over-ventilates*, driving the surface
-gaps below their Earth values. The predicted Earth-equivalent speed (a few cm s⁻¹) is well within — and
+fan speed and track the surface gap (`F6`, `T6`). The still-microgravity gap (ΔC = 0.240, model units)
+falls monotonically with airflow and **crosses the Earth-1 g level (0.128) at ≈ 2.0 cm s⁻¹** for water
+vapour; CO₂ reaches parity at about the same speed (≈ 2.2 cm s⁻¹). Above about 2 cm s⁻¹ the forced flow
+*over-ventilates*, driving the surface gaps below their Earth values. The predicted Earth-equivalent speed (a few cm s⁻¹) is well within — and
 an order of magnitude below — the 0.1–1 m s⁻¹ air velocities used in flight hardware such as VEGGIE and
 the Advanced Plant Habitat, giving physical grounds for why those systems restore gas exchange, and a
 lower-bound target for minimal-power ventilation.
@@ -150,8 +154,9 @@ both work against the plant. This reproduces the well-documented BRIC hypoxia/CO
 from first principles.
 
 **CARA — micropore surgical tape** (semi-permeable membrane walls). The gas-permeable tape vents the dish
-to the effectively-infinite cabin reservoir, so the **dish-mean stays bounded a few ppm from ambient**
-(`F7`, left, the levelling blue curve) — consistent with ground measurements showing surgical tape keeps
+to the effectively-infinite cabin reservoir, so the **dish-mean drifts more slowly than BRIC's** — about
+two-thirds of BRIC's rate over the 6.9 s run (`F7`, left); whether it levels off is not resolved in that
+window — consistent with ground measurements showing surgical tape keeps
 plated seedlings at near-ambient CO₂/O₂ while parafilm and plastic wrap deplete CO₂ and trigger thousands
 of stress genes. Critically, though, **the tape does not fix the microgravity boundary layer**: with no
 convection inside the dish, the leaf-surface gradient is essentially that of an open dish (`F7`, right,
@@ -173,16 +178,19 @@ makes each rung quantitative.
 Extending the fan sweep (§3.6) and the hardware comparison (§3.7) to all three plant scales exposes a
 result with direct hardware consequences (`F8`, `F9`, `T9`, `T10`): **the ventilation needed to null the
 microgravity penalty rises steeply with planting density.** The Earth-equivalent airflow is
-**≈ 2.6 cm s⁻¹ for an isolated leaf, ≈ 11 cm s⁻¹ for a rosette, and ≈ 21 cm s⁻¹ for a microgreen canopy**
-(`F8`) — an ~8× increase. The canopy is the hardest to ventilate: side airflow skims the top of the stand
-while the within-canopy air stays comparatively stagnant, so its ΔC-vs-speed curve flattens and only
-approaches the Earth level near the solver's low-Mach limit (higher speeds went numerically unstable — a
-hint that a real dense canopy needs vigorous, likely turbulent, through-canopy flow, not laminar over-flow).
+**≈ 2.0 cm s⁻¹ for an isolated leaf and ≈ 6.5 cm s⁻¹ for a rosette** (`F8`), about 3×. The canopy is the
+hardest to ventilate: side airflow skims the top of the stand while the within-canopy air stays comparatively
+stagnant, so its ΔC-vs-speed curve levels off above the Earth level and **does not reach it within the
+solver's valid range** (Mach ≤ 0.3, up to 6.6 cm s⁻¹). Faster runs exceed that limit or go numerically
+unstable, so `T9` flags them (`ma_max`) and excludes them. This hints that a real dense canopy needs
+vigorous, likely turbulent, through-canopy flow, not laminar over-flow; resolving it needs a finer lattice.
 
 The hardware comparison inherits this scale dependence (`F9`, `T10`). Across all three scales, **BRIC and
 CARA give nearly the same steep leaf-surface gradient** — the tape vents the *enclosure* but not the *µg
-surface layer* — while **a single VEGGIE fan speed (~8 cm s⁻¹) that restores a leaf (ΔC 0.10) barely helps
-a rosette (0.32) or canopy (0.31)**, because 8 cm s⁻¹ is well below their 11 and 21 cm s⁻¹ requirements.
+surface layer* — while **a single VEGGIE fan speed (~8 cm s⁻¹) over-ventilates a leaf (|ΔC CO₂| 0.087)
+and brings a rosette to about its Earth level (0.294 vs 0.298), but does not restore a canopy (0.406 vs its
+Earth 0.364)**. The canopy VEGGIE run is just past the low-Mach limit (Mach 0.32), and BRIC/CARA in `T10`
+keep the original 3.8 s run length, so the canopy comparison is indicative only.
 The enclosure-drift side worsens too: the sealed (BRIC) rosette depletes its dish CO₂ ~2.5× faster than a
 single leaf, and even the taped (CARA) rosette carries a larger residual dish offset (`T10`,
 `dishmean_CO2`). **Denser plantings therefore demand disproportionately more gas-exchange engineering** —
@@ -232,7 +240,7 @@ responses [11]: the present model supplies a physical mechanism for that hardwar
 BRIC-specific O₂ drawdown (§3.7) is consistent with the reported hypoxia signatures.
 
 **Implications for space-flight hardware.** Because the effect is transport-limited rather than
-biochemical, it is engineerable — and §3.6 quantifies the fix: **≈ 2.8 cm s⁻¹ of forced airflow restores
+biochemical, it is engineerable — and §3.6 quantifies the fix: **≈ 2.0 cm s⁻¹ of forced airflow restores
 Earth-equivalent surface gradients** for an isolated leaf, the design rationale behind fan-ventilated
 growth chambers (VEGGIE, APH). The predicted worst case (dense canopy, microgravity) identifies where
 ventilation matters most and will demand higher speeds; the same solver sizes that requirement per
@@ -286,7 +294,7 @@ redistributed here.
 2. Porterfield, D. M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. *J. Plant Growth Regul.* **21**, 177–190 (2002). doi:10.1007/s003440010054.
 3. Ghia, U., Ghia, K. N. & Shin, C. T. High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method. *J. Comput. Phys.* **48**, 387–411 (1982). doi:10.1016/0021-9991(82)90058-4. — lid-driven cavity benchmark.
 4. de Vahl Davis, G. Natural convection of air in a square cavity: a bench mark numerical solution. *Int. J. Numer. Methods Fluids* **3**, 249–264 (1983). doi:10.1002/fld.1650030305. — natural-convection benchmark.
-5. Chew, Y. H. *et al.* (incl. Millar, A. J.). Linking circadian time to growth rate quantitatively via carbon metabolism. *bioRxiv* 105437 (2017). doi:10.1101/105437. — the whole-plant-chamber gas-exchange dataset used here.
+5. **TODO (2026-10-07): unverified reference.** As cited: Chew, Y. H. *et al.* (incl. Millar, A. J.). Linking circadian time to growth rate quantitatively via carbon metabolism. *bioRxiv* 105437 (2017). doi:10.1101/105437. CrossRef resolves this DOI to "The Arabidopsis Framework Model version 2 predicts the organism-level effects of circadian clock gene mis-regulation" (Chew, Seaton, Mengin, Flis, Mugford, George, Moulin, Hume, Zeeman, Fitzpatrick, Smith, Stitt, Millar). Confirm which publication holds the dataset and correct the title or DOI. — the whole-plant-chamber gas-exchange dataset used here.
 6. Correll, M. J. *et al.* Transcriptome analyses of *Arabidopsis thaliana* seedlings grown in space: implications for gravity-responsive genes (BRIC hardware). *Planta* **238**, 519–533 (2013). doi:10.1007/s00425-013-1909-x.
 7. Zhou, M., Ferl, R. J. & Paul, A.-L. Light has a principal role in the *Arabidopsis* transcriptomic response to the spaceflight environment (CARA). *npj Microgravity* **10**, 82 (2024). doi:10.1038/s41526-024-00417-0.
 8. Ma, Y. *et al.* Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484. — surgical tape holds near-ambient CO₂/O₂; parafilm/PE deplete CO₂.

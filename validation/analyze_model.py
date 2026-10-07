@@ -30,10 +30,18 @@ dt = D_H2O_LAT * dx**2 / D_H2O_PHYS
 u_star = dx / dt              # m/s per lattice-velocity unit
 
 sweep = pd.read_csv(f"{TAB}/T2_model_sweep.csv")
-A_SI, R_SI = np.load(f"{TAB}/_flux_anchor.npy")   # umol/m2/s
+# The measured flux anchor comes from analyze_data.py, which needs validation/raw/
+# (gitignored). Without it, T3 and T5 are left untouched and only the figures that do
+# not depend on the anchor (F3, F4, F5, F6) are rebuilt.
+ANCHOR = f"{TAB}/_flux_anchor.npy"
+HAVE_ANCHOR = os.path.exists(ANCHOR)
+if HAVE_ANCHOR:
+    A_SI, R_SI = np.load(ANCHOR)   # umol/m2/s
+else:
+    print(f"NOTE: {ANCHOR} missing (run analyze_data.py with validation/raw/) — skipping T3 and T5")
 
 umax_earth = float(sweep.loc[sweep.scenario == "leaf-earth", "u_max"].iloc[0])
-cal = pd.DataFrame([
+cal = None if not HAVE_ANCHOR else pd.DataFrame([
     ("Leaf length", f"{L_LEAF_PHYS*100:.1f}", "cm", "assumed (Arabidopsis)"),
     ("Grid spacing dx", f"{dx*1e3:.3f}", "mm/cell", "= leaf/52"),
     ("Time step dt", f"{dt*1e3:.3f}", "ms/step", "= D_lat dx^2 / D_phys"),
@@ -43,7 +51,8 @@ cal = pd.DataFrame([
     ("Net assimilation A", f"{A_SI:.2f}", "umol CO2 m^-2 s^-1", "measured (Table 1)"),
     ("Dark respiration R", f"{R_SI:.2f}", "umol CO2 m^-2 s^-1", "measured (Table 1)"),
 ], columns=["quantity", "value", "units", "source"])
-cal.to_csv(f"{TAB}/T3_calibration.csv", index=False)
+if HAVE_ANCHOR:
+    cal.to_csv(f"{TAB}/T3_calibration.csv", index=False)
 
 # ---------------------------------------------------------------- F3 plume maps
 def load_field(name):
@@ -78,7 +87,7 @@ fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.2))
 a1.plot(gr, dCw, "o-", color="#2a7de1", label="ΔC H$_2$O")
 a1.plot(gr, dCc, "s-", color="#e0654e", label="|ΔC CO$_2$|")
 a1.set_xlabel("gravity (g / g$_{Earth}$)"); a1.set_ylabel("surface gap ΔC (mean, model units)")
-a1.set_title("Single-leaf gravity sweep"); a1.grid(alpha=0.25); a1.legend(loc="upper right")
+a1.set_title("Single-leaf gravity sweep"); a1.grid(alpha=0.25); a1.legend(loc="upper center")
 a1b = a1.twinx(); a1b.plot(gr, umax, "^--", color="#2fbf71", alpha=0.7)
 a1b.set_ylabel("u$_{max}$ convection (green)", color="#2fbf71")
 
@@ -146,26 +155,27 @@ plt.close(fig)
 print(f"F6: Earth-equivalent ventilation ≈ {null_cms:.1f} cm/s (nulls the µg penalty)")
 
 # ---------------------------------------------------------------- T5 physical prediction
-G_BL_EARTH = 1.0  # mol m^-2 s^-1, leaf boundary layer, still-air free convection (literature)
-ref = abs(sweep[sweep.scenario == "leaf-earth"].dC_CO2_mean.iloc[0])
-ppm_per_unit = (A_SI * 1e-6 / G_BL_EARTH) / ref * 1e6  # ppm per model unit, anchored at leaf-earth
-labels = {"leaf-earth": "Leaf · Earth", "leaf-mars": "Leaf · Mars", "leaf-moon": "Leaf · Moon",
-          "leaf-ug": "Leaf · µg", "rosette-earth": "Rosette · Earth", "rosette-ug": "Rosette · µg",
-          "canopy-earth": "Canopy · Earth", "canopy-ug": "Canopy · µg"}
-rows = []
-for sid, lab in labels.items():
-    r = sweep[sweep.scenario == sid].iloc[0]
-    rows.append((lab,
-                 f"{abs(r.dC_CO2_mean)*ppm_per_unit:.1f}",
-                 f"{abs(r.dC_CO2_peak)*ppm_per_unit:.1f}",
-                 f"{abs(r.dC_O2_mean)*ppm_per_unit:.1f}"))
-t5 = pd.DataFrame(rows, columns=["scenario", "CO2 drawdown mean (ppm)",
-                                 "CO2 drawdown peak (ppm)", "O2 build-up mean (ppm)"])
-t5.to_csv(f"{TAB}/T5_physical_prediction.csv", index=False)
+if HAVE_ANCHOR:
+    G_BL_EARTH = 1.0  # mol m^-2 s^-1, leaf boundary layer, still-air free convection (literature)
+    ref = abs(sweep[sweep.scenario == "leaf-earth"].dC_CO2_mean.iloc[0])
+    ppm_per_unit = (A_SI * 1e-6 / G_BL_EARTH) / ref * 1e6  # ppm per model unit, anchored at leaf-earth
+    labels = {"leaf-earth": "Leaf · Earth", "leaf-mars": "Leaf · Mars", "leaf-moon": "Leaf · Moon",
+              "leaf-ug": "Leaf · µg", "rosette-earth": "Rosette · Earth", "rosette-ug": "Rosette · µg",
+              "canopy-earth": "Canopy · Earth", "canopy-ug": "Canopy · µg"}
+    rows = []
+    for sid, lab in labels.items():
+        r = sweep[sweep.scenario == sid].iloc[0]
+        rows.append((lab,
+                     f"{abs(r.dC_CO2_mean)*ppm_per_unit:.1f}",
+                     f"{abs(r.dC_CO2_peak)*ppm_per_unit:.1f}",
+                     f"{abs(r.dC_O2_mean)*ppm_per_unit:.1f}"))
+    t5 = pd.DataFrame(rows, columns=["scenario", "CO2 drawdown mean (ppm)",
+                                     "CO2 drawdown peak (ppm)", "O2 build-up mean (ppm)"])
+    t5.to_csv(f"{TAB}/T5_physical_prediction.csv", index=False)
 
-print("=== Calibration (T3) ==="); print(cal.to_string(index=False))
-print("\n=== Physical surface drawdown (T5), anchored on measured A ===")
-print(t5.to_string(index=False))
-print(f"\nAnchor: A={A_SI:.2f} umol/m2/s, g_bl(Earth)={G_BL_EARTH} mol/m2/s -> "
-      f"leaf-Earth CO2 drawdown {abs(ref)*ppm_per_unit:.1f} ppm")
-print("Figures: F3_plume_maps, F4_gravity_scale, F5_chamber_validation")
+    print("=== Calibration (T3) ==="); print(cal.to_string(index=False))
+    print("\n=== Physical surface drawdown (T5), anchored on measured A ===")
+    print(t5.to_string(index=False))
+    print(f"\nAnchor: A={A_SI:.2f} umol/m2/s, g_bl(Earth)={G_BL_EARTH} mol/m2/s -> "
+          f"leaf-Earth CO2 drawdown {abs(ref)*ppm_per_unit:.1f} ppm")
+    print("Figures: F3_plume_maps, F4_gravity_scale, F5_chamber_validation")

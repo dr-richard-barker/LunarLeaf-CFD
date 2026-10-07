@@ -113,6 +113,64 @@ Gate 3 is the decisive one: it proves gravity correctly drives buoyant convectio
 
 Run the interactive bench with `npm install && npm run dev` → pick a scenario, press **Run**, watch the diagnostics/gate panel. (Use a visible browser tab — background tabs throttle `requestAnimationFrame` to zero; long runs are best driven headlessly.)
 
+All four gates also run headlessly in one shot, which is what you want after touching anything the solver reaches:
+
+```bash
+npx esbuild validation/gates.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/gates.mjs && node validation/gates.mjs
+```
+
+#### Leaf geometry — `src/leaf/`
+
+The blade was an ellipse (`stampEllipse`, a = 26, b = 4 cells). `src/leaf/` replaces it with real
+leaf geometry, following the shape/deformation split of **NeuraLeaf**
+([Yang et al., ICCV 2025, arXiv:2507.12714](https://arxiv.org/abs/2507.12714)): a flattened 2D base
+shape (outline + midrib) kept apart from the 3D deformation (midrib profile + transverse camber), so
+one outline can be re-posed without refitting anything.
+
+The 2D domain here is a **vertical slice**, so what it needs is a cut *through* the blade, not the
+top-down silhouette — `section.ts` provides both the longitudinal cut (along the midrib; reduces to
+the old ellipse for a flat leaf) and the transverse cut (across the blade, where cupping and curl live).
+
+`stampEllipse` stays: it is the published calibration reference and T1–T13 depend on it. Shape results
+land in a separate table.
+
+```bash
+# geometry invariants (SDF signs, watertight shell, section extents)
+npx esbuild validation/leaf_checks.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_checks.mjs && node validation/leaf_checks.mjs
+
+# visual contact sheet of every asset: outline, both cuts, and a curl sweep
+npx esbuild validation/leaf_preview.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_preview.mjs && node validation/leaf_preview.mjs
+```
+
+⚠️ The shipped leaves are **provisional analytic stand-ins**, not fits to imagery. See
+[`src/leaf/assets/PROVENANCE.md`](src/leaf/assets/PROVENANCE.md) and
+[`tools/neuraleaf/README.md`](tools/neuraleaf/README.md) for the pipeline that replaces them with real
+outlines from your own plate photographs.
+
+#### First shape result — T14
+
+```bash
+npx esbuild validation/export_shape.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/export_shape.mjs && node validation/export_shape.mjs
+```
+
+Two independently controlled groups in [`results/tables/T14_shape_sweep.csv`](results/tables/T14_shape_sweep.csv).
+Do **not** compare across them — the longitudinal cut has a 52-cell chord and the transverse cut a
+27-cell one, so their characteristic lengths and Sherwood numbers are on different scales by construction.
+
+| finding | measurement |
+|---|---|
+| **A real outline conducts less than the ellipse.** Chord and thickness matched at 52 × 8 cells, so the outline is the only variable. | g_bl 0.997 → **0.941** at 1 g (−5.6%); 0.443 → **0.426** in µg (−3.8%) |
+| **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.814 at 1 g, ×0.832 in µg |
+| **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.338 → **−0.540** in µg: **2.6×** the flat-blade 1 g peak |
+
+*Values from `T14_shape_sweep.csv`, every case run to steady state (150 000 steps, drift < 0.5 % over the last 5 s; regenerated 2026‑10‑07 — the earlier 30 000‑step snapshot overstated the µg values by ~10 % but gave the same ratios).*
+
+⚠️ **Caveat on the curl group.** A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under
+one lattice cell — it would fall straight through. Thickness is therefore inflated to 8 cells (~11×
+life size), matching what `stampEllipse` already did silently. That inflation fattens a *tilted* margin
+sideways, so the curled section is 35 cells wide against the flat one's 27 and the curl comparison is
+not perfectly controlled. Treat the curl rows as indicative until the blade is resolved on a finer lattice.
+
 ### Milestone 2 — User‑friendly GUI (professional‑package features)
 - ⬜ Import 3D models (STL / OBJ / GLB / PLY) + parametric leaf‑shape generator
 - ⬜ Auto‑voxelise geometry to solver grid; domain & mesh controls
@@ -126,9 +184,9 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 - ✅ Rosette preset (fan of overlapping leaves — interior air‑trapping)
 - ✅ Microgreen‑canopy preset (row of upright shoots on soil — within‑canopy stagnation)
 - 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
-- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.8 cm/s nulls the microgravity penalty** (`results/T6`, `F6`). Three in‑app fan presets (3/8/17 cm/s).
+- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.0 cm/s nulls the microgravity penalty** (`results/T6`, `F6`; was 2.8 before the 2026‑10‑07 outlet + steady‑state fix, see `results/README.md`). Three in‑app fan presets (3/8/17 cm/s).
 - ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
-- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.6 / 11 / 21 cm/s** (leaf/rosette/canopy); BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
+- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.0 / 6.5 cm/s** (leaf/rosette); the canopy does not reach Earth level within the solver's low‑Mach range (≤ 6.6 cm/s). BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
 - ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression 1–4% (most in rosette crown); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). 3 feedback presets → 26 scenarios.
 - ✅ **Draft manuscript assembled** — [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md) (full paper) + [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex) (self‑contained npj‑Microgravity‑style LaTeX, 9 figures + 5 tables, structure‑validated).
 
@@ -136,21 +194,22 @@ Run the interactive bench with `npm install && npm run dev` → pick a scenario,
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O
 release), the near‑surface air is lighter (humid, CO₂‑depleted), and solutal Boussinesq buoyancy drives
 the convection that sweeps the boundary layer — until gravity is reduced. Fields are excess‑over‑ambient
-(so ambient = 0 and CO₂ goes negative). Headless sweep, 30 000 steps each, reproducible (select any preset
-in the app and press Run). ΔC is the surface‑to‑ambient gap, reported as **mean / peak** over the surface:
+(so ambient = 0 and CO₂ goes negative). Headless sweep run to steady state — 150 000 steps each (the µg canopy
+900 000), regenerated 2026‑10‑07 from `results/tables/T2_model_sweep.csv`; earlier versions of this table used
+30 000‑step snapshots taken before the µg cases had settled. ΔC is the surface‑to‑ambient gap, reported as **mean / peak** over the surface:
 
 | Scale · gravity | u_max (convection) | ΔC H₂O (mean/peak) | ΔC CO₂ (mean/peak) |
 |---|---|---|---|
-| Single leaf · 1 g | 4.6e‑2 | 0.128 / 0.188 | −0.161 / −0.246 |
-| Single leaf · **µg** | **0.0** | **0.231** / 0.263 | **−0.326** / −0.373 |
-| Rosette · 1 g | 4.6e‑2 | 0.225 / 0.509 | −0.298 / −0.715 |
-| Rosette · **µg** | **0.0** | **0.384** / 0.698 | **−0.554** / −1.033 |
-| Microgreen canopy · 1 g | 7.0e‑2 | 0.252 / 0.425 | −0.327 / −0.539 |
-| Microgreen canopy · **µg** | **0.0** | **0.367** / 0.505 | **−0.445** / −0.602 |
+| Single leaf · 1 g | 4.6e‑2 | 0.128 / 0.188 | −0.161 / −0.247 |
+| Single leaf · **µg** | **0.0** | **0.240** / 0.274 | **−0.364** / −0.414 |
+| Rosette · 1 g | 4.6e‑2 | 0.225 / 0.510 | −0.298 / −0.716 |
+| Rosette · **µg** | **0.0** | **0.392** / 0.704 | **−0.593** / −1.064 |
+| Microgreen canopy · 1 g | 7.2e‑2 | 0.259 / 0.452 | −0.364 / −0.638 |
+| Microgreen canopy · **µg** | **0.0** | **0.547** / 0.785 | **−0.829** / −1.188 |
 
 **Two effects, both reproduced from first principles:**
 1. **Gravity.** Within every scale, dropping to microgravity kills convection (u_max → 0) and steepens the
-   surface gaps ≈1.5–1.8× — the leaf/stand sits in stale, CO₂‑starved, humid air. (The full single‑leaf
+   surface gaps ≈1.7–2.1× (H₂O; CO₂ 2.0–2.3×) — the leaf/stand sits in stale, CO₂‑starved, humid air. (The full single‑leaf
    Mars/Moon points scale ≈√g: u_max 4.6e‑2 → 2.8e‑2 → 1.6e‑2 → 0.)
 2. **Scale.** Denser geometry traps air, so the gaps grow leaf → rosette → canopy. The rosette crown shows
    the steepest *peak* (0.51 vs the leaf’s 0.19 — tightly enclosed pockets); the canopy shows the highest
@@ -238,12 +297,18 @@ LunarLeaf_CFD/
 ├── src/                          ← the consolidated app (Milestone 1 scaffolded)
 │   ├── solver/lbm/               ← d2q9, LBMFluid, ScalarField, buoyancy
 │   ├── solver/diagnostics/       ← dimensionless numbers, Ghia reference, Strouhal probe
+│   ├── leaf/                     ← leaf geometry: outline SDF, loft, cross-sections, asset library
+│   │   └── assets/               ← leaf JSONs + PROVENANCE.md (read this before trusting one)
 │   ├── scenarios/                ← cavity + cylinder validation cases
 │   ├── render/                   ← colormaps + field rasteriser
 │   ├── sim/                      ← SimulationController (RAF loop)
 │   └── ui/                       ← App.tsx debug bench
 ├── index.html · package.json · vite.config.ts · tsconfig.json
 ├── legacy/                       ← the three AI‑Studio prototypes (to import for credit/reference)
+├── tools/
+│   ├── leaf-assets/              ← generator for the provisional stand-in leaves
+│   ├── neuraleaf/                ← plate photo → real leaf asset pipeline (see its README)
+│   └── sync-leaf-module.sh       ← push src/leaf/ to AeroLeaf CFD
 ├── validation/                   ← measured datasets + comparison notebooks (to add)
 ├── .zenodo.json                  ← (to add)
 └── CITATION.cff                  ← (to add)
