@@ -87,7 +87,7 @@ fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.2))
 a1.plot(gr, dCw, "o-", color="#2a7de1", label="ΔC H$_2$O")
 a1.plot(gr, dCc, "s-", color="#e0654e", label="|ΔC CO$_2$|")
 a1.set_xlabel("gravity (g / g$_{Earth}$)"); a1.set_ylabel("surface gap ΔC (mean, model units)")
-a1.set_title("Single-leaf gravity sweep"); a1.grid(alpha=0.25); a1.legend(loc="upper right")
+a1.set_title("Single-leaf gravity sweep"); a1.grid(alpha=0.25); a1.legend(loc="upper center")
 a1b = a1.twinx(); a1b.plot(gr, umax, "^--", color="#2fbf71", alpha=0.7)
 a1b.set_ylabel("u$_{max}$ convection (green)", color="#2fbf71")
 

@@ -23,7 +23,7 @@ for name in ["BRIC light", "BRIC dark", "CARA light", "CARA dark"]:
     a1.plot(g.step / 1e3, g.dishmean_co2, lw=2.2, color=colors.get(name, "0.5"), label=name)
 a1.axhline(0, color="0.5", lw=1.2, ls="--", label="ambient (VEGGIE / vented)")
 a1.set_xlabel("step (×10³, model ≈ 0.17 ms/step)"); a1.set_ylabel("dish-mean CO$_2$ excess (model units)")
-a1.set_title("Enclosure atmosphere: BRIC drifts, tape holds ~ambient")
+a1.set_title("Enclosure atmosphere over 6.9 s: BRIC drifts fastest, tape ~⅔ as fast")
 a1.grid(alpha=0.25); a1.legend(fontsize=8.5)
 
 # Panel B — steady leaf-surface CO2 gap by hardware (last step)

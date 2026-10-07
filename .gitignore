@@ -19,3 +19,4 @@ results/timeseries/*_frames.f32
 results/timeseries/*_frames.json
 results/animations/*/
 results/*/log.*
+.abai/

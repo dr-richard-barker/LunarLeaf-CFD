@@ -4,8 +4,9 @@ Validation of the solver against measured *Arabidopsis* gas-exchange data, and t
 gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 
 > **Revision 2026-10-07.** T2, T6, T7, T9, T10 and T13 (and F3, F4, F6–F9) were regenerated after two
-> defects were found while comparing against an independent OpenFOAM microgreen-chamber model (write-up:
-> `AIrflow_omics_Biomni_lab_downloads_20260806_110815/microgravity_atmospheric_adaptation/docs/CFD_comparison_chamber_model.md`):
+> defects were found while comparing against an independent OpenFOAM microgreen-chamber model
+> (`microgreen-chamber-cfd` @ `6ac89c1`;
+> the full write-up lives with the OSDR meta-analysis package, not in this repo):
 > 1. **Snapshots before steady state.** Scenarios were reported at 22–30 k steps (3.8–5.2 s); the 0 g
 >    scenes relax by diffusion and take ~12–15 s (leaf/rosette) and > 26 s (canopy). All steady-state
 >    cases now run 150 k steps (canopy 0 g: 900 k ≈ 156 s) and every table records the drift over the last 5 s.
@@ -16,8 +17,11 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > With the fan carrying its full flow, the faster rosette/canopy runs exceed the lattice-Boltzmann
 > low-Mach limit (Ma > 0.3) or blow up; those runs are flagged (`ma_max`) and excluded from crossings.
 > BRIC/CARA rows keep their original run length (BRIC never reaches steady state) and are unchanged.
-> **Not regenerated:** T3/T5 (need `validation/raw/` for the flux anchor) and T12 (hand-transcribed
-> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes).
+> **Not regenerated:** T3/T5 (need `validation/raw/` for the flux anchor), T12 (hand-transcribed
+> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes), T14 (leaf-shape
+> sweep, still a 30 k-step snapshot), and the hand-made slide deck `CFD_Spaceflight_Botany.pptx`/`.pdf`
+> (no generator; still shows the old figures and numbers). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`
+> and `MANUSCRIPT.docx` were updated to the new values, with TODOs where T5 and reference 5 are unverified.
 
 **Assembled manuscript:** [`MANUSCRIPT.md`](MANUSCRIPT.md) (full paper, figures embedded) ·
 [`manuscript/manuscript.tex`](manuscript/manuscript.tex) (npj-style LaTeX draft, compile instructions in

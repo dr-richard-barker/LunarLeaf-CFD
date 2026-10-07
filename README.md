@@ -163,6 +163,8 @@ Do **not** compare across them — the longitudinal cut has a 52-cell chord and 
 | **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.812 at 1 g, ×0.835 in µg |
 | **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.309 → **−0.498** in µg: **2.4×** the flat-blade 1 g peak |
 
+> **TODO (2026‑10‑07):** the values in this table are from `T14`, a 30 000‑step snapshot. The µg values were not yet steady at that point (the µg ellipse reads 0.494 there vs 0.443 at steady state in `T13`); re‑run `validation/export_shape.ts` to steady state before citing them.
+
 ⚠️ **Caveat on the curl group.** A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under
 one lattice cell — it would fall straight through. Thickness is therefore inflated to 8 cells (~11×
 life size), matching what `stampEllipse` already did silently. That inflation fattens a *tilted* margin
@@ -192,21 +194,22 @@ not perfectly controlled. Treat the curl rows as indicative until the blade is r
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O
 release), the near‑surface air is lighter (humid, CO₂‑depleted), and solutal Boussinesq buoyancy drives
 the convection that sweeps the boundary layer — until gravity is reduced. Fields are excess‑over‑ambient
-(so ambient = 0 and CO₂ goes negative). Headless sweep, 30 000 steps each, reproducible (select any preset
-in the app and press Run). ΔC is the surface‑to‑ambient gap, reported as **mean / peak** over the surface:
+(so ambient = 0 and CO₂ goes negative). Headless sweep run to steady state — 150 000 steps each (the µg canopy
+900 000), regenerated 2026‑10‑07 from `results/tables/T2_model_sweep.csv`; earlier versions of this table used
+30 000‑step snapshots taken before the µg cases had settled. ΔC is the surface‑to‑ambient gap, reported as **mean / peak** over the surface:
 
 | Scale · gravity | u_max (convection) | ΔC H₂O (mean/peak) | ΔC CO₂ (mean/peak) |
 |---|---|---|---|
-| Single leaf · 1 g | 4.6e‑2 | 0.128 / 0.188 | −0.161 / −0.246 |
-| Single leaf · **µg** | **0.0** | **0.231** / 0.263 | **−0.326** / −0.373 |
-| Rosette · 1 g | 4.6e‑2 | 0.225 / 0.509 | −0.298 / −0.715 |
-| Rosette · **µg** | **0.0** | **0.384** / 0.698 | **−0.554** / −1.033 |
-| Microgreen canopy · 1 g | 7.0e‑2 | 0.252 / 0.425 | −0.327 / −0.539 |
-| Microgreen canopy · **µg** | **0.0** | **0.367** / 0.505 | **−0.445** / −0.602 |
+| Single leaf · 1 g | 4.6e‑2 | 0.128 / 0.188 | −0.161 / −0.247 |
+| Single leaf · **µg** | **0.0** | **0.240** / 0.274 | **−0.364** / −0.414 |
+| Rosette · 1 g | 4.6e‑2 | 0.225 / 0.510 | −0.298 / −0.716 |
+| Rosette · **µg** | **0.0** | **0.392** / 0.704 | **−0.593** / −1.064 |
+| Microgreen canopy · 1 g | 7.2e‑2 | 0.259 / 0.452 | −0.364 / −0.638 |
+| Microgreen canopy · **µg** | **0.0** | **0.547** / 0.785 | **−0.829** / −1.188 |
 
 **Two effects, both reproduced from first principles:**
 1. **Gravity.** Within every scale, dropping to microgravity kills convection (u_max → 0) and steepens the
-   surface gaps ≈1.5–1.8× — the leaf/stand sits in stale, CO₂‑starved, humid air. (The full single‑leaf
+   surface gaps ≈1.7–2.1× (H₂O; CO₂ 2.0–2.3×) — the leaf/stand sits in stale, CO₂‑starved, humid air. (The full single‑leaf
    Mars/Moon points scale ≈√g: u_max 4.6e‑2 → 2.8e‑2 → 1.6e‑2 → 0.)
 2. **Scale.** Denser geometry traps air, so the gaps grow leaf → rosette → canopy. The rosette crown shows
    the steepest *peak* (0.51 vs the leaf’s 0.19 — tightly enclosed pockets); the canopy shows the highest
