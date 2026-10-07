@@ -159,11 +159,11 @@ Do **not** compare across them — the longitudinal cut has a 52-cell chord and 
 
 | finding | measurement |
 |---|---|
-| **A real outline conducts less than the ellipse.** Chord and thickness matched at 52 × 8 cells, so the outline is the only variable. | g_bl 1.001 → **0.944** at 1 g (−5.7%); 0.494 → **0.474** in µg (−4.0%) |
-| **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.812 at 1 g, ×0.835 in µg |
-| **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.309 → **−0.498** in µg: **2.4×** the flat-blade 1 g peak |
+| **A real outline conducts less than the ellipse.** Chord and thickness matched at 52 × 8 cells, so the outline is the only variable. | g_bl 0.997 → **0.941** at 1 g (−5.6%); 0.443 → **0.426** in µg (−3.8%) |
+| **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.814 at 1 g, ×0.832 in µg |
+| **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.338 → **−0.540** in µg: **2.6×** the flat-blade 1 g peak |
 
-> **TODO (2026‑10‑07):** the values in this table are from `T14`, a 30 000‑step snapshot. The µg values were not yet steady at that point (the µg ellipse reads 0.494 there vs 0.443 at steady state in `T13`); re‑run `validation/export_shape.ts` to steady state before citing them.
+*Values from `T14_shape_sweep.csv`, every case run to steady state (150 000 steps, drift < 0.5 % over the last 5 s; regenerated 2026‑10‑07 — the earlier 30 000‑step snapshot overstated the µg values by ~10 % but gave the same ratios).*
 
 ⚠️ **Caveat on the curl group.** A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under
 one lattice cell — it would fall straight through. Thickness is therefore inflated to 8 cells (~11×

@@ -3,7 +3,7 @@
 Validation of the solver against measured *Arabidopsis* gas-exchange data, and the first
 gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 
-> **Revision 2026-10-07.** T2, T6, T7, T9, T10 and T13 (and F3, F4, F6–F9) were regenerated after two
+> **Revision 2026-10-07.** T2, T6, T7, T9, T10, T13 and T14 (and F3, F4, F6–F9) were regenerated after two
 > defects were found while comparing against an independent OpenFOAM microgreen-chamber model
 > (`microgreen-chamber-cfd` @ `6ac89c1`;
 > the full write-up lives with the OSDR meta-analysis package, not in this repo):
@@ -18,8 +18,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > low-Mach limit (Ma > 0.3) or blow up; those runs are flagged (`ma_max`) and excluded from crossings.
 > BRIC/CARA rows keep their original run length (BRIC never reaches steady state) and are unchanged.
 > **Not regenerated:** T3/T5 (need `validation/raw/` for the flux anchor), T12 (hand-transcribed
-> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes), T14 (leaf-shape
-> sweep, still a 30 k-step snapshot), and the hand-made slide deck `CFD_Spaceflight_Botany.pptx`/`.pdf`
+> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes), and the hand-made slide deck `CFD_Spaceflight_Botany.pptx`/`.pdf`
 > (no generator; still shows the old figures and numbers). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`
 > and `MANUSCRIPT.docx` were updated to the new values, with TODOs where T5 and reference 5 are unverified.
 
@@ -59,6 +58,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T11_photosynthesis_feedback.csv` | 0-D closed-loop model: start/end net assimilation + 12 h carbon (% of Earth) per enclosure. |
 | `T12_feedback_spatial.csv` | Solver closed-loop net assimilation (% of potential) by gravity / scale / hardware. **Stale:** hand-transcribed from `feedback_test.ts` (22 k steps, copy outlet); not regenerated. |
 | `T13_boundary_layer.csv` | Boundary-layer conductance g_bl, film thickness δ, Sherwood number per scale × gravity at steady state, with `gbl_drift_pct_last_5s`. Consumed by the OSDR omics package (`extract_cfd.py`) and `fvcb.py`. |
+| `T14_shape_sweep.csv` | Leaf-shape sweep at steady state: ellipse vs real outline (longitudinal cut) and flat vs curled blade (transverse cut), 1 g and µg; g_bl, δ, Sh, mean/peak ΔC CO₂, ratio to group reference, drift column. Groups are not comparable with each other. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
 | `T16_resolution_gci.csv` | Three-grid convergence (dx 0.288 / 0.192 / 0.144 mm) for g_bl and ΔC_CO₂, Celik et al. (2008) GCI. |
 
