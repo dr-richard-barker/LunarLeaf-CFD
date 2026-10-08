@@ -813,6 +813,13 @@ interface LeafSceneCfg {
    *  column's populations, has no pressure reference, so mass accumulates (ρ rises ~4 %
    *  in 20 s) and the through-flow decays (71 % of U at 5.2 s, 18 % at 26 s). */
   outletBC?: 'copy' | 'pressure';
+  /** Reference state for solutal buoyancy. 'ambient' (default): ΔC is measured from the
+   *  cabin ambient (0), right when the walls hold ambient. 'enclosureMean': ΔC is
+   *  measured from the enclosure's current mean, the correct Boussinesq reference for a
+   *  closed or nearly closed dish. A uniform drift of the whole dish atmosphere (sealed
+   *  BRIC) then drives no spurious body force, and the β·ΔC limit applies only to
+   *  the local deviations that actually drive flow. */
+  buoyancyRef?: 'ambient' | 'enclosureMean';
 }
 
 /**
@@ -1063,6 +1070,9 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         if (age) age.step();
         if (cfg.forcedU !== undefined) speciesInletOutlet();
         if (membraneCells.length) applyMembrane();
+        if (cfg.buoyancyRef === 'enclosureMean' && gLat !== 0) {
+          for (const ct of contributors) ct.ref = domainMean(ct.field);
+        }
         applyBoussinesqForce(fluid, 0, -gLat, contributors);
       },
       diagnostics(step: number): Readout[] {

@@ -10,8 +10,7 @@
  *   BRIC  60 mm round dish (packed without lid): base O.D. 54.8–55.6 mm, height 13–15 mm,
  *         agar 10–15 mL.
  *   CARA  120 × 120 mm square dish: inner edge 120 mm, height 15–17 mm, agar 70–80 mL.
- * Assumptions added here (TODO: confirm): 1.0 mm wall and base thickness; agar depth =
- * volume / interior floor area; headspace = (height − base) − agar depth.
+ * Geometry and its assumptions (1.0 mm wall/base, TODO: confirm) live in validation/dishes.ts.
  * Mid-range values are the defaults. The 0 g hardware cases are also run at the minimum
  * and maximum headspace the ranges allow.
  *
@@ -32,31 +31,9 @@
 import { writeFileSync } from 'node:fs';
 import { dishLeafGeometry, makeLeafScene } from '../src/scenarios/scenarios';
 import { cli, DEFAULT_STEPS, driftPct, num, pair, runScene, val, warnDrift } from './jobs';
+import { cells, dishGeom, DISHES, GAP_MM } from './dishes';
 
-const DX = 0.288; // mm per cell (T3)
-const WALL = 1.0; // mm, assumed wall and base thickness (TODO: confirm)
-const GAP_MM = 1.0; // leaf blade 1 mm above the agar surface
 const DRIFT_WINDOW = 30000;
-
-interface Dish { name: string; widthMm: number; floorCm2: number; heightMm: number; agarMl: number }
-const cells = (mm: number) => Math.round(mm / DX);
-
-function dishGeom(d: Dish) {
-  const agarMm = (d.agarMl / d.floorCm2) * 10; // mL / cm² -> cm -> mm
-  const headMm = d.heightMm - WALL - agarMm;
-  return { agarMm, headMm, nx: cells(d.widthMm) + 2, agarCells: cells(agarMm), headCells: cells(headMm) };
-}
-
-const bricW = (54.8 + 55.6) / 2 - 2 * WALL;
-const bricFloor = Math.PI * (bricW / 20) ** 2;
-const DISHES: Record<string, Dish> = {
-  'BRIC-mid': { name: 'BRIC 60 mm', widthMm: bricW, floorCm2: bricFloor, heightMm: 14, agarMl: 12.5 },
-  'BRIC-min': { name: 'BRIC 60 mm', widthMm: bricW, floorCm2: bricFloor, heightMm: 13, agarMl: 15 },
-  'BRIC-max': { name: 'BRIC 60 mm', widthMm: bricW, floorCm2: bricFloor, heightMm: 15, agarMl: 10 },
-  'CARA-mid': { name: 'CARA 120 mm sq', widthMm: 120, floorCm2: 144, heightMm: 16, agarMl: 75 },
-  'CARA-min': { name: 'CARA 120 mm sq', widthMm: 120, floorCm2: 144, heightMm: 15, agarMl: 80 },
-  'CARA-max': { name: 'CARA 120 mm sq', widthMm: 120, floorCm2: 144, heightMm: 17, agarMl: 70 },
-};
 
 type BC = 'ambient' | 'sealed' | 'taped';
 type Job = { id: string; dish: string; bc: BC; g: 0 | 1 };
@@ -74,7 +51,7 @@ cli(
   (j) => {
     const d = DISHES[j.dish];
     const geo = dishGeom(d);
-    const ny = geo.agarCells + geo.headCells + 2;
+    const ny = geo.ny;
     const inst = makeLeafScene({
       id: j.id, label: j.id, gRatio: j.g, nx: geo.nx, ny, renderScale: 0.12,
       geometry: dishLeafGeometry({ agarCells: geo.agarCells, gapCells: cells(GAP_MM) }),
