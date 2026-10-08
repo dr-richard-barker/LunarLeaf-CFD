@@ -574,6 +574,29 @@ export function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array
  * physical leaf, chamber and blade thickness, r× more cells along each axis. Used by
  * the resolution ladder (validation/resolution_ladder.ts) with `refine: r`.
  */
+/**
+ * A single leaf inside a real Petri-dish cross-section (2-D vertical slice):
+ * an agar layer `agarCells` thick on the floor (solid, zero-flux), the air headspace
+ * above it, and the leaf blade lying `gapCells` above the agar surface. The caller sets
+ * nx (dish interior width) and ny (agar + headspace + the two border rows); the outer
+ * border keeps chamberWalls' ambient-held walls unless the scene clears them
+ * (membraneK: 0 sealed / > 0 taped). Same blade as leafGeometry (26 × 4 half-axes).
+ */
+export function dishLeafGeometry(cfg: { agarCells: number; gapCells: number }): Geometry {
+  return (fluid: LBMFluid, sp: Species) => {
+    chamberWalls(fluid, sp);
+    for (let y = 1; y <= cfg.agarCells; y++) {
+      for (let x = 1; x < fluid.nx - 1; x++) fluid.solid[fluid.index(x, y)] = 1; // agar: zero-flux
+    }
+    const isLeaf = new Uint8Array(fluid.size);
+    const b = 4;
+    const cy = cfg.agarCells + 1 + cfg.gapCells + b - 0.5;
+    if (cy + b >= fluid.ny - 1) throw new Error(`dishLeafGeometry: leaf (top at ${cy + b}) does not fit under the lid (ny ${fluid.ny})`);
+    stampEllipse(fluid, isLeaf, fluid.nx / 2, cy, 26, b, 0);
+    return { isLeaf, charLen: 52 };
+  };
+}
+
 export function leafGeometryRefined(r: number): Geometry {
   return (fluid: LBMFluid, sp: Species) => {
     chamberWalls(fluid, sp);
@@ -1111,6 +1134,16 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
             { label: 'δ film (CO₂)', value: `${deltaMM.toFixed(2)} mm` },
             { label: 'Sherwood Sh', value: Sh.toFixed(1) },
           );
+        }
+        // Conductance between the leaf surface and the enclosure's own bulk air. In a
+        // sealed dish (BRIC) the whole atmosphere drifts, so the gap to the original
+        // ambient grows without bound; the surface-to-bulk gap reaches a quasi-steady
+        // value and is the meaningful boundary-layer conductance there.
+        {
+          const dCrel = Math.abs(cc.mean - domainMean(co2));
+          if (dCrel > 5e-3 && sAbs > 0) {
+            out.push({ label: 'g_bl vs enclosure bulk', value: `${((K_GBL * r * sAbs) / dCrel).toFixed(3)} mol m⁻² s⁻¹` });
+          }
         }
         if (age) {
           // τ = fluid area / inlet flux (lattice steps). Outlet age is flux-weighted on

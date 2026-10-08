@@ -1,0 +1,13 @@
+job,dish,boundary,gravity_g,width_mm,headspace_mm,agar_mm,nx,ny,g_bl_vs_ambient,g_bl_vs_enclosure_bulk,dC_CO2_surface,dish_mean_CO2,gbl_rel_drift_pct_last_5s
+BRIC-mid_ambient_g1,BRIC-mid,ambient,1,53.2,7.38,5.62,187,48,0.247,0.285,-0.652,NaN,0.00
+BRIC-mid_ambient_g0,BRIC-mid,ambient,0,53.2,7.38,5.62,187,48,0.197,0.237,-0.818,NaN,0.00
+BRIC-mid_sealed_g1,BRIC-mid,sealed,1,53.2,7.38,5.62,187,48,0.070,0.330,-2.297,-1.809,3.77
+BRIC-mid_sealed_g0,BRIC-mid,sealed,0,53.2,7.38,5.62,187,48,0.060,0.185,-2.679,-1.809,-0.54
+CARA-mid_ambient_g1,CARA-mid,ambient,1,120.0,9.79,5.21,419,54,0.251,0.265,-0.642,NaN,0.00
+CARA-mid_ambient_g0,CARA-mid,ambient,0,120.0,9.79,5.21,419,54,0.176,0.190,-0.916,NaN,0.00
+CARA-mid_taped_g1,CARA-mid,taped,1,120.0,9.79,5.21,419,54,0.247,0.263,-0.653,-0.040,0.00
+CARA-mid_taped_g0,CARA-mid,taped,0,120.0,9.79,5.21,419,54,0.170,0.186,-0.945,-0.080,0.00
+BRIC-min_sealed_g0,BRIC-min,sealed,0,53.2,5.25,6.75,187,43,0.043,0.151,-3.769,-2.702,0.00
+BRIC-max_sealed_g0,BRIC-max,sealed,0,53.2,9.50,4.50,187,51,0.072,0.195,-2.227,-1.403,-0.51
+CARA-min_taped_g0,CARA-min,taped,0,120.0,8.44,5.56,419,50,0.181,0.198,-0.887,-0.073,0.00
+CARA-max_taped_g0,CARA-max,taped,0,120.0,11.14,4.86,419,58,0.161,0.177,-0.998,-0.088,0.00

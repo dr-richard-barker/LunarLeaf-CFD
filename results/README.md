@@ -39,6 +39,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `F11_stationarity.png` | g_bl(t) over 26 s for six scenarios, with the old 30 k-step snapshot marked (from `results/timeseries/`). |
 | `F12_outlet_bc.png` | Forced-airflow through-flow and g_bl vs time: original copy outlet vs pressure outlet. |
 | `F13_domain_size.png` | g_bl vs modelled chamber size (1×, 1.5×, 2×) for leaf and rosette at 1 g and 0 g: the 1 g values move ≤ 7 %, the 0 g values keep falling (−33 % leaf, −41 % rosette at 2×). From T17. |
+| `F14_dish_hardware.png` | Leaf g_bl at 1 g and 0 g inside the real BRIC (60 mm round) and CARA (120 mm square) dishes vs the generic open box. In a dish the Earth/0 g ratio is 1.25–1.8×, not 2.25×. From T19 and T13. |
 | `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left; hollow = Ma > 0.3, not used) and required airflow ≈ 2.0 / 6.5 cm/s for leaf / rosette; the canopy does not reach Earth level within the solver's valid range (≤ 6.6 cm/s) (right). |
 | `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy. BRIC/CARA at the original 3.8 s; VEGGIE at steady state; canopy VEGGIE hatched (Ma 0.32). |
 | `F10_photosynthesis_feedback.png` | Closed-loop CO₂-limited photosynthesis: net assimilation vs time (BRIC collapses in minutes) and 12 h carbon fixed (BRIC 1% / CARA 90% / VEGGIE 100% of Earth). |
@@ -62,6 +63,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T14_shape_sweep.csv` | Leaf-shape sweep at steady state: ellipse vs real outline (longitudinal cut) and flat vs curled blade (transverse cut), 1 g and µg; g_bl, δ, Sh, mean/peak ΔC CO₂, ratio to group reference, drift column. Groups are not comparable with each other. |
 | `T17_domain_size.csv` | Domain-size sensitivity: leaf and rosette at 1 g / 0 g in chambers 1×, 1.5× and 2× the production 36.9 × 27.6 mm, same leaf and dx, each to steady state. 0 g g_bl is chamber-dependent (2-D diffusion to the walls has no size-independent limit); 1 g is not. |
 | `T18_surface_distribution.csv` | Distribution of the leaf-surface CO₂ gap, not just its mean: CoV, 10th/50th/90th percentiles, and fraction of surface worse than an isolated Earth leaf's mean, for the steady scenes (open dish at 1 g / 0 g, and VEGGIE leaf/rosette). |
+| `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
 | `T16_resolution_gci.csv` | Three-grid convergence (dx 0.288 / 0.192 / 0.144 mm) for g_bl and ΔC_CO₂, Celik et al. (2008) GCI. |
 
@@ -80,6 +82,12 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   chamber is doubled), but the 0 g conductance is not: it falls 33 % (leaf) and 41 % (rosette) at 2× and has
   not levelled off. The absolute 0 g values, and so the size of the Earth/µg ratio (2.25× → 3.5× for the leaf),
   depend on the chamber modelled; hardware scenes should use each system's real dish dimensions.
+- **Real dishes (T19):** with only 7–10 mm of air above the agar, convection barely develops even at 1 g, so
+  conductance in the dish is about 0.25 at 1 g (vs 0.997 in the open box) and the Earth/0 g ratio is 1.25–1.8×
+  rather than 2.25×. At 0 g, BRIC (sealed, against its own air) and CARA (taped) give nearly the same leaf
+  conductance (0.185 vs 0.186); the hardware difference is in the dish atmosphere, not the boundary layer.
+  Caveats: the sealed 1 g case is not steady and exceeds the Boussinesq limit; the inflated 2.3 mm blade fills
+  ~30 % of the BRIC headspace; rosettes do not fit under the lid yet.
 - **Surface distribution (T18):** at 0 g the whole surface degrades (100 % of a leaf or rosette is worse than
   an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.294 vs 0.298)
   but leaves the most uneven surface of any case (CoV 0.65, p90 0.61 vs 0.52 on Earth).
