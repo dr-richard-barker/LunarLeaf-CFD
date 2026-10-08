@@ -40,6 +40,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `F12_outlet_bc.png` | Forced-airflow through-flow and g_bl vs time: original copy outlet vs pressure outlet. |
 | `F13_domain_size.png` | g_bl vs modelled chamber size (1×, 1.5×, 2×) for leaf and rosette at 1 g and 0 g: the 1 g values move ≤ 7 %, the 0 g values keep falling (−33 % leaf, −41 % rosette at 2×). From T17. |
 | `F14_dish_hardware.png` | Leaf g_bl at 1 g and 0 g inside the real BRIC (60 mm round) and CARA (120 mm square) dishes vs the generic open box. In a dish the Earth/0 g ratio is 1.25–1.8×, not 2.25×. From T19 and T13. |
+| `F15_dish_feedback.png` | Sealed BRIC dish with CO₂-limited photosynthesis: assimilation over ~7 min at 1 g and 0 g, and the leaf's conductance to the dish air while assimilation > 10 %. From T20. |
 | `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left; hollow = Ma > 0.3, not used) and required airflow ≈ 2.0 / 6.5 cm/s for leaf / rosette; the canopy does not reach Earth level within the solver's valid range (≤ 6.6 cm/s) (right). |
 | `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy. BRIC/CARA at the original 3.8 s; VEGGIE at steady state; canopy VEGGIE hatched (Ma 0.32). |
 | `F10_photosynthesis_feedback.png` | Closed-loop CO₂-limited photosynthesis: net assimilation vs time (BRIC collapses in minutes) and 12 h carbon fixed (BRIC 1% / CARA 90% / VEGGIE 100% of Earth). |
@@ -64,6 +65,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T17_domain_size.csv` | Domain-size sensitivity: leaf and rosette at 1 g / 0 g in chambers 1×, 1.5× and 2× the production 36.9 × 27.6 mm, same leaf and dx, each to steady state. 0 g g_bl is chamber-dependent (2-D diffusion to the walls has no size-independent limit); 1 g is not. |
 | `T18_surface_distribution.csv` | Distribution of the leaf-surface CO₂ gap, not just its mean: CoV, 10th/50th/90th percentiles, and fraction of surface worse than an isolated Earth leaf's mean, for the steady scenes (open dish at 1 g / 0 g, and VEGGIE leaf/rosette). |
 | `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
+| `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
 | `T16_resolution_gci.csv` | Three-grid convergence (dx 0.288 / 0.192 / 0.144 mm) for g_bl and ΔC_CO₂, Celik et al. (2008) GCI. |
 
@@ -88,6 +90,13 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   conductance (0.185 vs 0.186); the hardware difference is in the dish atmosphere, not the boundary layer.
   Caveats: the sealed 1 g case is not steady and exceeds the Boussinesq limit; the inflated 2.3 mm blade fills
   ~30 % of the BRIC headspace; rosettes do not fit under the lid yet.
+- **Sealed BRIC with photosynthesis feedback (T20):** the dish runs out of CO₂ in about 3.5 min (assimilation
+  < 10 % at ≈ 200 s) at both 1 g and 0 g, since the dish-level mass balance does not depend on gravity (T8's
+  analytic estimate: ≈ 7 min; the model time depends on the co2Ambient calibration). The leaf's conductance to the
+  dish air is constant at 0.187 at 0 g; at 1 g it rises from 0.33 to ≈ 0.40 while photosynthesis is active. If BRIC
+  ground controls fly in the same sealed hardware, they starve as fast as the flight samples, so BRIC's carbon
+  deficit is a hardware effect shared by flight and ground, not a flight effect. CARA (taped) keeps assimilation at
+  94–96 %.
 - **Surface distribution (T18):** at 0 g the whole surface degrades (100 % of a leaf or rosette is worse than
   an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.294 vs 0.298)
   but leaves the most uneven surface of any case (CoV 0.65, p90 0.61 vs 0.52 on Earth).
