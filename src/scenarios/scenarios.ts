@@ -1074,6 +1074,24 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
           { label: 'ΔC O₂  mean/peak', value: `${oo.mean.toFixed(3)} / ${oo.peak.toFixed(3)}` },
         );
 
+        // Surface distribution of the CO₂ gap, not just its mean (after the tray-plane CoV
+        // and target-band fraction of the microgreen-chamber-cfd project): how uneven the
+        // boundary layer is over the plant, and how much of the surface is worse than an
+        // isolated Earth leaf's average gap (DC_CO2_REF).
+        {
+          const v = surfaceCells.map((c) => Math.abs(co2.C[c])).sort((a, b) => a - b);
+          const n = v.length || 1;
+          const mean = v.reduce((s, x) => s + x, 0) / n;
+          const sd = Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / n);
+          const q = (p: number) => v[Math.min(v.length - 1, Math.floor(p * (v.length - 1)))] ?? NaN;
+          const worse = v.filter((x) => x > DC_CO2_REF).length / n;
+          out.push(
+            { label: 'surface |ΔC CO₂| CoV', value: (mean > 0 ? sd / mean : NaN).toFixed(4) },
+            { label: 'surface |ΔC CO₂| p10/p50/p90', value: `${q(0.1).toFixed(4)} / ${q(0.5).toFixed(4)} / ${q(0.9).toFixed(4)}` },
+            { label: 'surface frac > Earth-leaf mean', value: worse.toFixed(4) },
+          );
+        }
+
         // Model-derived boundary-layer transport for CO2 (film theory). g_bl is
         // the conductance that, in series with stomatal + mesophyll conductances,
         // sets the CO2 reaching Rubisco (Cc) — the handoff to the photorespiration
