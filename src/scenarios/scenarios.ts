@@ -820,6 +820,15 @@ interface LeafSceneCfg {
    *  BRIC) then drives no spurious body force, and the β·ΔC limit applies only to
    *  the local deviations that actually drive flow. */
   buoyancyRef?: 'ambient' | 'enclosureMean';
+  /** Which species contribute to solutal buoyancy (default all three). For diagnosing
+   *  what drives the flow, e.g. ['co2', 'o2'] removes the transpiration (H₂O) term. */
+  buoyancySpecies?: Array<'h2o' | 'co2' | 'o2'>;
+  /** Saturation humidity, as an H₂O excess over ambient in model units. When set,
+   *  transpiration is driven by the leaf-to-air humidity gap: the local source is
+   *  S_H₂O · max(0, 1 − C_H₂O / h2oSatExcess), so it falls to zero as the air next to
+   *  the leaf saturates. Without it, H₂O release is constant and a sealed dish
+   *  accumulates humidity without bound. */
+  h2oSatExcess?: number;
 }
 
 /**
@@ -945,6 +954,20 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     const KC = 0.75 * Ca; // half-saturation (~300/400 of ambient)
     const mAmbient = Ca > 0 ? (Ca - GAMMA) / (Ca - GAMMA + KC) : 1;
     let aEff = 1;
+    // Humidity-limited transpiration (opt-in): the leaf interior is saturated, so the
+    // H₂O flux scales with the remaining gap to saturation at each surface cell.
+    let eEff = 1;
+    const updateTranspiration = () => {
+      const sat = cfg.h2oSatExcess;
+      if (!(sat !== undefined && sat > 0)) return;
+      let sum = 0;
+      for (const c of surfaceCells) {
+        const m = Math.max(0, 1 - h2o.C[c] / sat);
+        h2o.source![c] = S_H2O * m;
+        sum += m;
+      }
+      eEff = sum / (surfaceCells.length || 1);
+    };
     const updatePhotosynthesis = () => {
       if (!(Ca > 0) || cfg.dark) return;
       let sum = 0;
@@ -1003,11 +1026,12 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     // O2 slightly heavier (β>0). Gravity points down (−y), scaled by g/g_earth.
     const B = 8e-4;
     const gLat = (B * cfg.gRatio) / r ** 3;
+    const include = new Set(cfg.buoyancySpecies ?? ['h2o', 'co2', 'o2']);
     const contributors = [
-      { field: h2o, beta: -1.0, ref: 0 },
-      { field: co2, beta: 0.7, ref: 0 },
-      { field: o2, beta: 0.5, ref: 0 },
-    ];
+      { name: 'h2o', field: h2o, beta: -1.0, ref: 0 },
+      { name: 'co2', field: co2, beta: 0.7, ref: 0 },
+      { name: 'o2', field: o2, beta: 0.5, ref: 0 },
+    ].filter((c) => include.has(c.name as 'h2o' | 'co2' | 'o2'));
 
     const surfaceStats = (field: ScalarField): { mean: number; peak: number } => {
       let sum = 0;
@@ -1064,6 +1088,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
       },
       onAfterStep() {
         updatePhotosynthesis(); // CO2-limit the source before it is applied
+        updateTranspiration(); // humidity-limit the H₂O source (only if h2oSatExcess is set)
         co2.step();
         o2.step();
         h2o.step();
@@ -1098,6 +1123,12 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
         );
         if (cfg.membraneK !== undefined || cfg.dark) {
           out.push({ label: 'dish-mean CO₂ excess', value: domainMean(co2).toFixed(3) });
+          if (cfg.h2oSatExcess !== undefined) {
+            out.push(
+              { label: 'dish-mean H₂O excess', value: domainMean(h2o).toFixed(4) },
+              { label: 'transpiration (% potential)', value: (eEff * 100).toFixed(1) },
+            );
+          }
         } else {
           out.push({ label: 'Rayleigh (H₂O)', value: Ra.toExponential(1) });
         }

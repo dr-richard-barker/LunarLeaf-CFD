@@ -2,8 +2,11 @@
 
 Left: net assimilation (% of potential) over time at 1 g and 0 g. The dish runs out of
 CO₂ at almost the same rate under either gravity.
-Right: leaf conductance to the dish's own air, shown only while assimilation is > 10 %
-(below that the surface gap vanishes and the ratio is ill-conditioned).
+Right: leaf conductance to the dish's own air, shown only while assimilation is > 10 %.
+Correction (T21, T22): these runs hold transpiration constant, so the sealed dish
+accumulates humidity without bound. The 1 g rise to ≈ 0.40 depends on that, and the
+late 1 g collapse is a flow runaway, not an ill-conditioned ratio. With humidity-limited
+transpiration (T22, F17) the 1 g conductance instead decays toward the 0 g value.
 
     python3 analysis/plot_dish_feedback.py
 """

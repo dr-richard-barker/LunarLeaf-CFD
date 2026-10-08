@@ -41,6 +41,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `F13_domain_size.png` | g_bl vs modelled chamber size (1×, 1.5×, 2×) for leaf and rosette at 1 g and 0 g: the 1 g values move ≤ 7 %, the 0 g values keep falling (−33 % leaf, −41 % rosette at 2×). From T17. |
 | `F14_dish_hardware.png` | Leaf g_bl at 1 g and 0 g inside the real BRIC (60 mm round) and CARA (120 mm square) dishes vs the generic open box. In a dish the Earth/0 g ratio is 1.25–1.8×, not 2.25×. From T19 and T13. |
 | `F15_dish_feedback.png` | Sealed BRIC dish with CO₂-limited photosynthesis: assimilation over ~7 min at 1 g and 0 g, and the leaf's conductance to the dish air while assimilation > 10 %. From T20. |
+| `F16_dish_buoyancy_diag.png` | What drives the 1 g conductance in the sealed BRIC dish: four buoyancy variants (all species with feedback; fixed uptake; H₂O only; CO₂ + O₂ only) and their peak flow speed, showing the flow runaway after ~3.7 min when transpiration is unbounded. From T21 and T20. |
+| `F17_dish_humidity.png` | Sealed BRIC dish with humidity-limited transpiration: g_bl to the dish air at 1 g for three saturation levels and at 0 g, against T20's constant-transpiration run; and transpiration, assimilation and dish humidity over time. From T22. |
 | `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left; hollow = Ma > 0.3, not used) and required airflow ≈ 2.0 / 6.5 cm/s for leaf / rosette; the canopy does not reach Earth level within the solver's valid range (≤ 6.6 cm/s) (right). |
 | `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy. BRIC/CARA at the original 3.8 s; VEGGIE at steady state; canopy VEGGIE hatched (Ma 0.32). |
 | `F10_photosynthesis_feedback.png` | Closed-loop CO₂-limited photosynthesis: net assimilation vs time (BRIC collapses in minutes) and 12 h carbon fixed (BRIC 1% / CARA 90% / VEGGIE 100% of Earth). |
@@ -66,6 +68,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T18_surface_distribution.csv` | Distribution of the leaf-surface CO₂ gap, not just its mean: CoV, 10th/50th/90th percentiles, and fraction of surface worse than an isolated Earth leaf's mean, for the steady scenes (open dish at 1 g / 0 g, and VEGGIE leaf/rosette). |
 | `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
 | `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
+| `T21_dish_buoyancy_diag.csv` | Sealed BRIC (1 g) time series with buoyancy from CO₂ + O₂ only, H₂O only (both with feedback), and all species with fixed uptake; dish CO₂, assimilation, g_bl to the dish air and peak flow speed. |
+| `T22_dish_humidity.csv` | Sealed BRIC dish with photosynthesis feedback and humidity-limited transpiration (`h2oSatExcess` 0.65 / 1.3 / 2.6 model units at 1 g, 1.3 at 0 g), 415 s: dish CO₂ and H₂O, assimilation, transpiration, g_bl to the dish air, peak flow speed. The saturation level is an estimate, not a calibration. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
 | `T16_resolution_gci.csv` | Three-grid convergence (dx 0.288 / 0.192 / 0.144 mm) for g_bl and ΔC_CO₂, Celik et al. (2008) GCI. |
 
@@ -93,10 +97,19 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 - **Sealed BRIC with photosynthesis feedback (T20):** the dish runs out of CO₂ in about 3.5 min (assimilation
   < 10 % at ≈ 200 s) at both 1 g and 0 g, since the dish-level mass balance does not depend on gravity (T8's
   analytic estimate: ≈ 7 min; the model time depends on the co2Ambient calibration). The leaf's conductance to the
-  dish air is constant at 0.187 at 0 g; at 1 g it rises from 0.33 to ≈ 0.40 while photosynthesis is active. If BRIC
+  dish air is constant at 0.187 at 0 g; at 1 g it rose from 0.33 to ≈ 0.40 in T20, but **that plateau is an artefact
+  of constant transpiration** (T21, T22: see the next bullet). If BRIC
   ground controls fly in the same sealed hardware, they starve as fast as the flight samples, so BRIC's carbon
   deficit is a hardware effect shared by flight and ground, not a flight effect. CARA (taped) keeps assimilation at
   94–96 %.
+- **What drives the 1 g conductance in a sealed dish (T21, T22):** the rise in T20 at 0.5–1 min is convection onset
+  (it appears without feedback too), sustained by transpiration that the model held constant, so the sealed dish
+  accumulated humidity without bound; after ~3.7 min that flow ran away toward the Mach limit (the late collapse
+  in T20 is this runaway, not an ill-conditioned ratio). With transpiration limited by the humidity gap (T22), the
+  dish saturates in 1–2 min, transpiration stops, convection dies away and the 1 g conductance decays toward the
+  0 g value (0.26 at 60 s, 0.21 at 200 s, 0.19 by 5 min; 0 g stays 0.187). No runaway; the result holds across a
+  4× range of the (uncalibrated) saturation level. So in a sealed BRIC dish the 1 g and 0 g boundary layers converge
+  within minutes.
 - **Surface distribution (T18):** at 0 g the whole surface degrades (100 % of a leaf or rosette is worse than
   an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.294 vs 0.298)
   but leaves the most uneven surface of any case (CoV 0.65, p90 0.61 vs 0.52 on Earth).
