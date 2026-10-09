@@ -582,11 +582,21 @@ export function leafGeometry(fluid: LBMFluid, sp: Species): { isLeaf: Uint8Array
  * border keeps chamberWalls' ambient-held walls unless the scene clears them
  * (membraneK: 0 sealed / > 0 taped). Same blade as leafGeometry (26 × 4 half-axes).
  */
-export function dishLeafGeometry(cfg: { agarCells: number; gapCells: number }): Geometry {
+export function dishLeafGeometry(cfg: { agarCells: number; gapCells: number; agarH2O?: number }): Geometry {
   return (fluid: LBMFluid, sp: Species) => {
     chamberWalls(fluid, sp);
     for (let y = 1; y <= cfg.agarCells; y++) {
       for (let x = 1; x < fluid.nx - 1; x++) fluid.solid[fluid.index(x, y)] = 1; // agar: zero-flux
+    }
+    // Wet agar (opt-in): agar is mostly water, so its surface holds the air above it at
+    // saturation. agarH2O is that saturation humidity as an H₂O excess over ambient (model
+    // units, normally the scene's h2oSatExcess). CO₂ and O₂ stay zero-flux at the agar.
+    // WARNING (T23): valid at 0 g, but UNSTABLE at 1 g with agarH2O = 1.3. The agar-to-air
+    // humidity contrast puts the H₂O buoyancy at β·ΔC ≈ 1.3, beyond the small-perturbation
+    // range (≲ 0.5): sealed BRIC accelerated from ~87 s and diverged at 129.5 s; taped CARA
+    // ran near Mach 0.17, then accelerated from ~82 s. Do not use at 1 g until the humidity buoyancy is calibrated.
+    if (cfg.agarH2O !== undefined) {
+      for (let x = 1; x < fluid.nx - 1; x++) sp.h2o.setDirichlet(fluid.index(x, cfg.agarCells), cfg.agarH2O);
     }
     const isLeaf = new Uint8Array(fluid.size);
     const b = 4;
