@@ -17,10 +17,11 @@ INK, MUTED, GRID = "#1F2933", "#52606D", "#E4E7EB"
 
 def main() -> None:
     t22 = pd.read_csv("results/tables/T22_dish_humidity.csv")
-    t20 = pd.read_csv("results/tables/T20_dish_feedback.csv")
+    # The first T20 (constant transpiration), kept for comparison; T20 itself is now humidity-limited.
+    t20 = pd.read_csv("results/tables/T20_dish_feedback_constant_transpiration.csv")
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.4, 3.9), dpi=150, constrained_layout=True)
     ref = t20[(t20.job == "BRIC_sealed_fb_g1") & (t20.t_s <= 250)]
-    a1.plot(ref.t_s / 60, ref.g_bl_vs_dish_air, color="#9AA5B1", lw=1.6, ls="--", label="1 g, constant transpiration (T20)")
+    a1.plot(ref.t_s / 60, ref.g_bl_vs_dish_air, color="#9AA5B1", lw=1.6, ls="--", label="1 g, constant transpiration (first T20)")
     for run, col, lab in [("sat0.65_g1", "#7FA8D8", "1 g, saturation 0.65"), ("sat1.3_g1", "#3B6EA5", "1 g, saturation 1.3"),
                           ("sat2.6_g1", "#1B3557", "1 g, saturation 2.6"), ("sat1.3_g0", "#C46A2B", "0 g, saturation 1.3")]:
         d = t22[(t22.run == run) & (t22.net_assimilation_pct > 2)]

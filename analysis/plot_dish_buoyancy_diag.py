@@ -14,7 +14,7 @@ import pandas as pd  # noqa: E402
 
 INK, MUTED, GRID = "#1F2933", "#52606D", "#E4E7EB"
 STYLE = {
-    "reference": ("all species + feedback (T20)", "#1F2933", "-"),
+    "reference": ("all species + feedback (T20, constant transpiration)", "#1F2933", "-"),
     "constflux": ("all species, fixed uptake", "#3B6EA5", "--"),
     "H2Oonly": ("H₂O buoyancy only", "#2A9D8F", "-"),
     "noH2O": ("CO₂ + O₂ buoyancy only", "#C46A2B", "-"),
@@ -23,7 +23,8 @@ STYLE = {
 
 def main() -> None:
     t21 = pd.read_csv("results/tables/T21_dish_buoyancy_diag.csv")
-    t20 = pd.read_csv("results/tables/T20_dish_feedback.csv")
+    # The first T20 (constant transpiration), kept for comparison; T20 itself is now humidity-limited.
+    t20 = pd.read_csv("results/tables/T20_dish_feedback_constant_transpiration.csv")
     ref = t20[t20.job == "BRIC_sealed_fb_g1"].rename(columns={"g_bl_vs_dish_air": "g"})
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.4, 3.9), dpi=150, constrained_layout=True)
     series = {"reference": ref.assign(u=float("nan"))}

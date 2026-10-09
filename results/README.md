@@ -67,7 +67,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T17_domain_size.csv` | Domain-size sensitivity: leaf and rosette at 1 g / 0 g in chambers 1×, 1.5× and 2× the production 36.9 × 27.6 mm, same leaf and dx, each to steady state. 0 g g_bl is chamber-dependent (2-D diffusion to the walls has no size-independent limit); 1 g is not. |
 | `T18_surface_distribution.csv` | Distribution of the leaf-surface CO₂ gap, not just its mean: CoV, 10th/50th/90th percentiles, and fraction of surface worse than an isolated Earth leaf's mean, for the steady scenes (open dish at 1 g / 0 g, and VEGGIE leaf/rosette). |
 | `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
-| `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
+| `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8), humidity-limited transpiration (h2oSatExcess = 1.3) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
+| `T20_dish_feedback_constant_transpiration.csv` | The first version of T20 (constant transpiration), kept as the reference for F16/F17: its 1 g plateau and late runaway are artefacts of unbounded humidity. |
 | `T21_dish_buoyancy_diag.csv` | Sealed BRIC (1 g) time series with buoyancy from CO₂ + O₂ only, H₂O only (both with feedback), and all species with fixed uptake; dish CO₂, assimilation, g_bl to the dish air and peak flow speed. |
 | `T22_dish_humidity.csv` | Sealed BRIC dish with photosynthesis feedback and humidity-limited transpiration (`h2oSatExcess` 0.65 / 1.3 / 2.6 model units at 1 g, 1.3 at 0 g), 415 s: dish CO₂ and H₂O, assimilation, transpiration, g_bl to the dish air, peak flow speed. The saturation level is an estimate, not a calibration. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
@@ -96,16 +97,17 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   ~30 % of the BRIC headspace; rosettes do not fit under the lid yet.
 - **Sealed BRIC with photosynthesis feedback (T20):** the dish runs out of CO₂ in about 3.5 min (assimilation
   < 10 % at ≈ 200 s) at both 1 g and 0 g, since the dish-level mass balance does not depend on gravity (T8's
-  analytic estimate: ≈ 7 min; the model time depends on the co2Ambient calibration). The leaf's conductance to the
-  dish air is constant at 0.187 at 0 g; at 1 g it rose from 0.33 to ≈ 0.40 in T20, but **that plateau is an artefact
-  of constant transpiration** (T21, T22: see the next bullet). If BRIC
+  analytic estimate: ≈ 7 min; the model time depends on the co2Ambient calibration). With humidity-limited
+  transpiration (as recomputed), the leaf's conductance to the dish air is constant at 0.187 at 0 g, and at 1 g it
+  decays from 0.31 toward that value as convection dies away (0.29 at 26 s, 0.21 at 200 s). The first version of T20
+  held transpiration constant and showed a spurious 1 g plateau of ≈ 0.40 (see the next bullet). If BRIC
   ground controls fly in the same sealed hardware, they starve as fast as the flight samples, so BRIC's carbon
   deficit is a hardware effect shared by flight and ground, not a flight effect. CARA (taped) keeps assimilation at
   94–96 %.
 - **What drives the 1 g conductance in a sealed dish (T21, T22):** the rise in T20 at 0.5–1 min is convection onset
   (it appears without feedback too), sustained by transpiration that the model held constant, so the sealed dish
   accumulated humidity without bound; after ~3.7 min that flow ran away toward the Mach limit (the late collapse
-  in T20 is this runaway, not an ill-conditioned ratio). With transpiration limited by the humidity gap (T22), the
+  in the first version of T20 was this runaway, not an ill-conditioned ratio; T20 is now recomputed with the limit). With transpiration limited by the humidity gap (T22), the
   dish saturates in 1–2 min, transpiration stops, convection dies away and the 1 g conductance decays toward the
   0 g value (0.26 at 60 s, 0.21 at 200 s, 0.19 by 5 min; 0 g stays 0.187). No runaway; the result holds across a
   4× range of the (uncalibrated) saturation level. So in a sealed BRIC dish the 1 g and 0 g boundary layers converge
