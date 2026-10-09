@@ -2,8 +2,10 @@
 
 Left: net assimilation (% of potential) over time at 1 g and 0 g. The dish runs out of
 CO₂ at almost the same rate under either gravity.
-Right: leaf conductance to the dish's own air, shown only while assimilation is > 10 %
-(below that the surface gap vanishes and the ratio is ill-conditioned).
+Right: leaf conductance to the dish's own air, shown only while assimilation is > 10 %.
+T20 now uses humidity-limited transpiration (h2oSatExcess = 1.3). The first version held
+transpiration constant, which let the sealed dish accumulate humidity without bound and
+produced a spurious 1 g plateau of about 0.40 and a late flow runaway (T21).
 
     python3 analysis/plot_dish_feedback.py
 """
@@ -28,14 +30,14 @@ def main() -> None:
                     xytext=(6, 4 if g else -12), textcoords="offset points", fontsize=8, color=INK)
         v = d[d.net_assimilation_pct > 10]
         a2.plot(v.t_s / 60, v.g_bl_vs_dish_air, color=COL[g], lw=1.8)
-        a2.annotate(lab, (v.t_s.iloc[-1] / 60, v.g_bl_vs_dish_air.iloc[-1]), xytext=(4, 0),
+        a2.annotate(lab, (v.t_s.iloc[-1] / 60, v.g_bl_vs_dish_air.iloc[-1]), xytext=(4, 6 if g else -6),
                     textcoords="offset points", va="center", fontsize=8, color=INK)
     a1.axhline(10, color=MUTED, lw=0.8, ls=":")
     a1.set_ylabel("net assimilation (% of potential)", fontsize=8.5, color=MUTED)
     a1.set_title("The sealed dish runs out of CO₂ in ~3.5 min at either gravity", fontsize=9.5, color=INK, loc="left")
     a2.set_ylabel("g_bl to the dish air (mol m⁻² s⁻¹)", fontsize=8.5, color=MUTED)
     a2.set_ylim(0, 0.5)
-    a2.set_title("Conductance while assimilation > 10 %:\n0 g constant at 0.19; 1 g rises from 0.33 to ≈ 0.40",
+    a2.set_title("Conductance while assimilation > 10 %:\n0 g constant at 0.19; 1 g decays from 0.31 toward it",
                  fontsize=9.5, color=INK, loc="left")
     for ax in (a1, a2):
         ax.set_xlabel("time in the dish (min)", fontsize=8.5, color=MUTED)

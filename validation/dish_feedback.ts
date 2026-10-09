@@ -7,7 +7,11 @@
  *   - co2Ambient = 8 (model units; the feedback presets' value): uptake follows a
  *     rectangular-hyperbola CO₂ response and stops at the compensation point (0.125 Ca);
  *   - buoyancyRef = 'enclosureMean': only deviations from the dish's own mean drive flow,
- *     the correct Boussinesq reference in a closed dish.
+ *     the correct Boussinesq reference in a closed dish;
+ *   - h2oSatExcess = 1.3 (since 2026-10-08): transpiration follows the leaf-to-air humidity
+ *     gap. Without it the sealed dish accumulates humidity without bound and the 1 g flow
+ *     runs away after ~3.7 min (T21). The saturation level is estimated, not calibrated;
+ *     T22 shows the result holds over 0.65–2.6.
  * Each run records a time series every ~0.5 s: dish-mean CO₂ excess, net assimilation
  * (% of potential), and g_bl against the dish air and against cabin ambient.
  *
@@ -27,6 +31,7 @@ import { cells, dishGeom, DISHES, GAP_MM } from './dishes';
 const DT_S = 0.173e-3;
 const CA = 8; // ambient CO₂ in model units (feedback presets, scenarios.ts)
 const GAMMA_EXCESS = 0.125 * CA - CA; // compensation point as excess over ambient (= -7)
+const H2O_SAT = 1.3; // saturation humidity excess, model units (estimate; see T22)
 const SAMPLE = 2890; // ≈ 0.5 s
 // DISH_FB_SCALE=0.01 shortens every run for a smoke test (results are then not meaningful).
 const SCALE = Number(process.env.DISH_FB_SCALE ?? 1);
@@ -54,6 +59,7 @@ cli(
       membraneK: j.bc === 'sealed' ? 0 : 0.01,
       co2Ambient: j.feedback ? CA : undefined,
       buoyancyRef: 'enclosureMean',
+      h2oSatExcess: H2O_SAT,
     })();
     const f = inst.fluid;
     const series: number[][] = [];
