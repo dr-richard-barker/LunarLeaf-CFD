@@ -69,6 +69,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
 | `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8), humidity-limited transpiration (h2oSatExcess = 1.3) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
 | `T20_dish_feedback_constant_transpiration.csv` | The first version of T20 (constant transpiration), kept as the reference for F16/F17: its 1 g plateau and late runaway are artefacts of unbounded humidity. |
+| `T23_dish_wet_agar.csv` | **Negative result at 1 g.** Wet agar (agar surface held at saturation, `agarH2O` = 1.3) in sealed BRIC and taped CARA, with humidity-limited transpiration and feedback. At 0 g the leaf conductance is unchanged from dry agar (BRIC 0.186–0.189, CARA 0.192). At 1 g both runs are numerically unusable (BRIC diverges at 129.5 s; CARA runs near Mach 0.17, then accelerates), because the fixed-saturation agar pushes the H₂O buoyancy beyond the model's small-perturbation range. Rows after divergence are NaN. |
 | `T21_dish_buoyancy_diag.csv` | Sealed BRIC (1 g) time series with buoyancy from CO₂ + O₂ only, H₂O only (both with feedback), and all species with fixed uptake; dish CO₂, assimilation, g_bl to the dish air and peak flow speed. |
 | `T22_dish_humidity.csv` | Sealed BRIC dish with photosynthesis feedback and humidity-limited transpiration (`h2oSatExcess` 0.65 / 1.3 / 2.6 model units at 1 g, 1.3 at 0 g), 415 s: dish CO₂ and H₂O, assimilation, transpiration, g_bl to the dish air, peak flow speed. The saturation level is an estimate, not a calibration. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
@@ -112,6 +113,12 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   0 g value (0.26 at 60 s, 0.21 at 200 s, 0.19 by 5 min; 0 g stays 0.187). No runaway; the result holds across a
   4× range of the (uncalibrated) saturation level. So in a sealed BRIC dish the 1 g and 0 g boundary layers converge
   within minutes.
+- **Wet agar (T23), a negative result at 1 g:** holding the agar surface at saturation leaves the 0 g leaf conductance
+  unchanged (BRIC 0.186–0.189, CARA 0.192, as with dry agar), but at 1 g the agar-to-air humidity contrast drives the
+  H₂O buoyancy to β·ΔC ≈ 1.3, beyond the model's small-perturbation range (≲ 0.5). Sealed BRIC diverges at 129.5 s, and
+  taped CARA runs near Mach 0.17, then accelerates. The `agarH2O` option is flagged as unsafe at 1 g. Representing wet
+  agar at 1 g needs a calibrated humidity buoyancy coefficient, weaker forcing on a finer lattice, or a more stable
+  collision scheme.
 - **Surface distribution (T18):** at 0 g the whole surface degrades (100 % of a leaf or rosette is worse than
   an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.294 vs 0.298)
   but leaves the most uneven surface of any case (CoV 0.65, p90 0.61 vs 0.52 on Earth).
