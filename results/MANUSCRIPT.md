@@ -92,7 +92,7 @@ certified by gate 4.
 ### Measured gas exchange anchors the model
 
 Two independent measurements fix the physical stomatal flux (Fig. 1; Table 2). A whole‑plant‑chamber
-dataset [5] gives a net CO₂ assimilation of 1.38 µmol CO₂ h⁻¹ cm⁻² = **3.85 µmol m⁻² s⁻¹** for Col wild‑type,
+dataset [5, 12] gives a net CO₂ assimilation of 1.38 µmol CO₂ h⁻¹ cm⁻² = **3.85 µmol m⁻² s⁻¹** for Col wild‑type,
 with dark respiration 1.18 µmol m⁻² s⁻¹ (R/A = 0.31) — textbook‑typical for *Arabidopsis*. An independent
 4.8‑day Vernier whole‑chamber trace (Fig. 1a) shows the expected closed‑system signature: strong diel O₂
 cycling (6.6–32.8 %) and humidity swings driven by photosynthesis and respiration. These fix the model's
@@ -353,7 +353,7 @@ layer conductance (Earth free convection vs microgravity diffusion) and the encl
 photoperiod.
 
 **Data sources.** Measured gas exchange: Vernier whole‑chamber logs and a whole‑plant‑chamber biomass/gas‑
-exchange workbook [5]. All model code, the validation harness and the analysis scripts are in the LunarLeaf‑CFD
+exchange workbook [5, 12]. All model code, the validation harness and the analysis scripts are in the LunarLeaf‑CFD
 repository; runs are 30 000 (or 22 000) steps to quasi‑steady state.
 
 ---
@@ -362,7 +362,7 @@ repository; runs are 30 000 (or 22 000) steps to quasi‑steady state.
 
 Model source, validation harness, analysis scripts and this results package are in the LunarLeaf‑CFD
 repository. Measured gas‑exchange data comprise Vernier whole‑chamber logs and the whole‑plant‑chamber
-workbook of Chew, Y.H. & Millar, A.J. [5]; raw third‑party data are referenced by provenance and not
+workbook of Chew, Millar and colleagues [5], archived at Edinburgh DataShare [12]; raw third‑party data are referenced by provenance and not
 redistributed here.
 
 ## Author contributions
@@ -387,10 +387,11 @@ completed.)*
 2. Porterfield, D. M. The biophysical limitations in physiological transport and exchange in plants grown in microgravity. *J. Plant Growth Regul.* **21**, 177–190 (2002). doi:10.1007/s003440010054.
 3. Ghia, U., Ghia, K. N. & Shin, C. T. High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method. *J. Comput. Phys.* **48**, 387–411 (1982). doi:10.1016/0021-9991(82)90058-4.
 4. de Vahl Davis, G. Natural convection of air in a square cavity: a bench mark numerical solution. *Int. J. Numer. Methods Fluids* **3**, 249–264 (1983). doi:10.1002/fld.1650030305.
-5. **TODO (2026-10-07): unverified reference.** As cited: Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., Smith, A. M., Stitt, M. & Millar, A. J. Linking circadian time to growth rate quantitatively via carbon metabolism. *bioRxiv* 105437 (2017). doi:10.1101/105437. CrossRef resolves this DOI to a different title, "The Arabidopsis Framework Model version 2 predicts the organism-level effects of circadian clock gene mis-regulation", with 13 authors (Chew, Seaton, Mengin, Flis, Mugford, George, Moulin, Hume, Zeeman, Fitzpatrick, Smith, Stitt, Millar). Confirm which publication holds the gas-exchange dataset and correct the title, authors or DOI. *(Whole-plant-chamber gas-exchange dataset used here.)*
+5. Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., George, G. M., Moulin, M., Hume, A., Zeeman, S. C., Fitzpatrick, T. B., Smith, A. M., Stitt, M. & Millar, A. J. The *Arabidopsis* Framework Model version 2 predicts the organism-level effects of circadian clock gene mis-regulation. *in silico Plants* **4**, diac010 (2022). doi:10.1093/insilicoplants/diac010. Preprint: *bioRxiv* doi:10.1101/105437.
 6. Correll, M. J., Pyle, T. P., Millar, K. D. L., Sun, Y., Yao, J., Edelmann, R. E. & Kiss, J. Z. Transcriptome analyses of *Arabidopsis thaliana* seedlings grown in space: implications for gravity-responsive genes (BRIC hardware). *Planta* **238**, 519–533 (2013). doi:10.1007/s00425-013-1909-x.
 7. Zhou, M., Ferl, R. J. & Paul, A.-L. Light has a principal role in the *Arabidopsis* transcriptomic response to the spaceflight environment (CARA). *npj Microgravity* **10**, 82 (2024). doi:10.1038/s41526-024-00417-0.
 8. Ma, Y., Li, F., Wang, X., Sun, Q., Wang, R. & Zhao, J. Beware of sealing film of Petri dishes!—alters the expression of a large number of genes. *Int. J. Mol. Sci.* **26**, 5484 (2025). doi:10.3390/ijms26125484.
 9. Xu, L., Li, S., Shabala, S., Jian, T. & Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
 10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.
 11. Barker, R., Kruse, C. P. S., Johnson, C., Saravia-Butler, A., Fogle, H., Chang, H.-S., Trane, R. M., Kinscherf, N., Villacampa, A., Manzano, A., Herranz, R., Davin, L. B., Lewis, N. G., Perera, I., Wolverton, C., Gupta, P., Jaiswal, P., Reinsch, S. S., Wyatt, S. & Gilroy, S. Meta-analysis of the space flight and microgravity response of the *Arabidopsis* plant transcriptome. *npj Microgravity* **9**, 21 (2023). doi:10.1038/s41526-023-00247-6.
+12. Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., George, G. M., Moulin, M., Hume, A., Zeeman, S. C., Fitzpatrick, T. B., Smith, A. M., Millar, A. J. & Stitt, M. Prediction and analysis of phenotypes in the *Arabidopsis* clock mutant prr7prr9 using the Framework Model v2 (FMv2) [dataset]. Edinburgh DataShare, University of Edinburgh (2022). doi:10.7488/ds/3453. Gas-exchange workbook `Biomass_FW_DW_gas_exchange_data.xlsx` = FAIRDOMHub data file 5005 (investigation 123).
