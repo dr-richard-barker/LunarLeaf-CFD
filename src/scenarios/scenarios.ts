@@ -833,6 +833,9 @@ interface LeafSceneCfg {
   /** Which species contribute to solutal buoyancy (default all three). For diagnosing
    *  what drives the flow, e.g. ['co2', 'o2'] removes the transpiration (H₂O) term. */
   buoyancySpecies?: Array<'h2o' | 'co2' | 'o2'>;
+  /** Collision scheme for this scene (default: LBMFluid.defaultCollision, i.e. BGK).
+   *  'mrt' is the opt-in multiple-relaxation-time scheme (Lallemand & Luo 2000). */
+  collision?: 'bgk' | 'mrt';
   /** Saturation humidity, as an H₂O excess over ambient in model units. When set,
    *  transpiration is driven by the leaf-to-air humidity gap: the local source is
    *  S_H₂O · max(0, 1 − C_H₂O / h2oSatExcess), so it falls to zero as the air next to
@@ -854,6 +857,7 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     const r = cfg.refine ?? 1;
     const U = (cfg.forcedU ?? 0) / r;
     const fluid = new LBMFluid(nx, ny, tauFromViscosity(nu));
+    if (cfg.collision) fluid.collision = cfg.collision;
     fluid.setEquilibrium(1, U, 0);
     fluid.enableForcing();
 
