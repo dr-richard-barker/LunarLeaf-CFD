@@ -9,6 +9,7 @@
  *
  *   npx esbuild validation/gates.ts --bundle --format=esm --platform=node \
  *     --loader:.json=json --outfile=validation/gates.mjs && node validation/gates.mjs
+ *   LBM_COLLISION=mrt node validation/gates.mjs     # the same gates with MRT collision
  *
  * Gate 1  lid-driven cavity      Ghia et al. (1982), Re 100     L2 < 0.05
  * Gate 2  flow past a cylinder   Strouhal, Re 100, 17% blockage 0.16–0.22
@@ -17,6 +18,11 @@
  */
 
 import { Readout, SCENARIOS } from '../src/scenarios/scenarios';
+import { LBMFluid } from '../src/solver/lbm/LBMFluid';
+
+// LBM_COLLISION=mrt runs every gate with the opt-in MRT collision (default: BGK).
+if (process.env.LBM_COLLISION === 'mrt') LBMFluid.defaultCollision = 'mrt';
+console.log(`collision: ${LBMFluid.defaultCollision}`);
 
 interface GateSpec {
   id: string;

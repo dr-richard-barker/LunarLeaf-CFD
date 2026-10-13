@@ -109,6 +109,8 @@ Status legend: ✅ done · 🟡 in progress · ⬜ not started
 | **3** | Natural-convection cavity, Ra 1e4 — hot-wall Nusselt vs. de Vahl Davis (1983) | Nu = 2.238 | **Nu = 2.242** (0.18% err) | ✅ PASS |
 | **4** | Pure diffusion — profile vs. ½·erfc analytic | L2 → 0 | **L2 ≈ 0.0000** | ✅ PASS |
 
+An opt-in multiple-relaxation-time collision (MRT, Lallemand & Luo 2000; `collision: 'mrt'`) passes the same four gates (`LBM_COLLISION=mrt node validation/gates.mjs`: L2 0.0115, St 0.200, Nu 2.248, erfc L2 0.0001). BGK remains the default for every published result; MRT does not rescue the wet-agar 1 g runs (T24).
+
 Gate 3 is the decisive one: it proves gravity correctly drives buoyant convection, so scaling **g → 0** genuinely collapses it (gate 4's diffusion-only limit). That is the exact microgravity mechanism this project exists to model.
 
 Run the interactive bench with `npm install && npm run dev` → pick a scenario, press **Run**, watch the diagnostics/gate panel. (Use a visible browser tab — background tabs throttle `requestAnimationFrame` to zero; long runs are best driven headlessly.)

@@ -29,7 +29,8 @@
  *     the model's small-perturbation range (≲ 0.5). CARA's 0.286 during its steady phase
  *     is not reported as a result.
  *   - Representing wet agar at 1 g needs a calibrated humidity buoyancy coefficient (real
- *     RH values), weaker forcing at a finer lattice, or a more stable collision scheme.
+ *     RH values) or weaker forcing at a finer lattice. A more stable collision scheme was
+ *     tried and does not help (MRT, T24: the 1 g runs break down sooner).
  *
  *   npx esbuild validation/dish_wet_agar.ts --bundle --format=esm --platform=node \
  *     --loader:.json=json --outfile=validation/dish_wet_agar.mjs
