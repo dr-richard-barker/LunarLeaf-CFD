@@ -18,8 +18,9 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > low-Mach limit (Ma > 0.3) or blow up; those runs are flagged (`ma_max`) and excluded from crossings.
 > BRIC/CARA rows keep their original run length (BRIC never reaches steady state) and are unchanged.
 > **Not regenerated:** T3/T5 (need `validation/raw/` for the flux anchor), T12 (hand-transcribed
-> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes), and the hand-made slide deck `CFD_Spaceflight_Botany.pptx`/`.pdf`
-> (no generator; still shows the old figures and numbers). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`
+> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes). The hand-made July slide deck
+> has been retired to `archive/2026-07-deck/` (superseded, do not cite) and replaced by a deck built from these
+> tables, linked from that folder's README. `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`
 > and `MANUSCRIPT.docx` were updated to the new values, with TODOs where T5 and reference 5 are unverified.
 
 **Assembled manuscript:** [`MANUSCRIPT.md`](MANUSCRIPT.md) (full paper, figures embedded) ·
