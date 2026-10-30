@@ -354,7 +354,7 @@ photoperiod.
 
 **Data sources.** Measured gas exchange: Vernier whole‑chamber logs and a whole‑plant‑chamber biomass/gas‑
 exchange workbook [5, 12]. All model code, the validation harness and the analysis scripts are in the LunarLeaf‑CFD
-repository; runs are 30 000 (or 22 000) steps to quasi‑steady state.
+repository. Solver exports run to steady state, 150 000 steps by default and longer where a case was still drifting (900 000 for the microgravity canopy), with the drift over the last 5 s reported; the BRIC/CARA hardware runs keep their original 3.8 s, since BRIC never reaches steady state, and T5 and T12 predate the rerun.
 
 ---
 
@@ -394,4 +394,4 @@ completed.)*
 9. Xu, L., Li, S., Shabala, S., Jian, T. & Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. *Front. Plant Sci.* **10**, 637 (2019). doi:10.3389/fpls.2019.00637.
 10. Monje, O., Stutte, G. W. & Chapman, D. K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating CO₂ concentration. *Planta* **222**, 336–345 (2005). doi:10.1007/s00425-005-1529-1.
 11. Barker, R., Kruse, C. P. S., Johnson, C., Saravia-Butler, A., Fogle, H., Chang, H.-S., Trane, R. M., Kinscherf, N., Villacampa, A., Manzano, A., Herranz, R., Davin, L. B., Lewis, N. G., Perera, I., Wolverton, C., Gupta, P., Jaiswal, P., Reinsch, S. S., Wyatt, S. & Gilroy, S. Meta-analysis of the space flight and microgravity response of the *Arabidopsis* plant transcriptome. *npj Microgravity* **9**, 21 (2023). doi:10.1038/s41526-023-00247-6.
-12. Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., George, G. M., Moulin, M., Hume, A., Zeeman, S. C., Fitzpatrick, T. B., Smith, A. M., Millar, A. J. & Stitt, M. Prediction and analysis of phenotypes in the *Arabidopsis* clock mutant prr7prr9 using the Framework Model v2 (FMv2) [dataset]. Edinburgh DataShare, University of Edinburgh (2022). doi:10.7488/ds/3453. Gas-exchange workbook `Biomass_FW_DW_gas_exchange_data.xlsx` = FAIRDOMHub data file 5005 (investigation 123).
+12. Chew, Y. H., Seaton, D. D., Mengin, V., Flis, A., Mugford, S. T., George, G. M., Moulin, M., Hume, A., Zeeman, S. C., Fitzpatrick, T. B., Smith, A. M., Stitt, M. & Millar, A. J. Prediction and analysis of phenotypes in the *Arabidopsis* clock mutant prr7prr9 using the Framework Model v2 (FMv2) [dataset]. Edinburgh DataShare, University of Edinburgh (2022). doi:10.7488/ds/3453. Gas-exchange workbook `Biomass_FW_DW_gas_exchange_data.xlsx` = FAIRDOMHub data file 5005 (investigation 123).

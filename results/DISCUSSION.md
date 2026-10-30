@@ -277,7 +277,7 @@ H₂O) are transported by D2Q5 advection–diffusion lattices sharing the flow f
 diffusivities in the ratio 1.6 : 2.0 : 2.4 (×10⁻⁵ m² s⁻¹). Gravity enters through a Boussinesq body
 force proportional to the local species-density perturbation and a user-set gravity vector. Leaf
 surfaces impose a stomatal source/sink; chamber walls hold ambient concentration (Dirichlet) or are
-sealed (zero-flux) as noted. All runs are 30 000 steps to quasi-steady state. Full source, the four
+sealed (zero-flux) as noted. Solver exports run to steady state, 150 000 steps by default and longer where a case was still drifting (900 000 for the microgravity canopy), with the drift over the last 5 s reported; the BRIC/CARA hardware runs keep their original 3.8 s, since BRIC never reaches steady state, and T5 and T12 predate the rerun. Full source, the four
 validation gates, and the export/analysis scripts are in the repository (`src/`, `validation/`).
 
 ## 6. Data and code availability

@@ -18,10 +18,10 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > low-Mach limit (Ma > 0.3) or blow up; those runs are flagged (`ma_max`) and excluded from crossings.
 > BRIC/CARA rows keep their original run length (BRIC never reaches steady state) and are unchanged.
 > **Not regenerated:** T3/T5 (need `validation/raw/` for the flux anchor), T12 (hand-transcribed
-> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes). The hand-made July slide deck
+> from `feedback_test.ts` console output; its µg and VEGGIE rows predate both fixes). The July slide deck (NotebookLM-generated)
 > has been retired to `archive/2026-07-deck/` (superseded, do not cite) and replaced by a deck built from these
 > tables, linked from that folder's README. `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`
-> and `MANUSCRIPT.docx` were updated to the new values, with TODOs where T5 and reference 5 are unverified.
+> and `MANUSCRIPT.docx` were updated to the new values, with TODOs where T5 is unverified (reference 5 was resolved on 2026-10-09).
 
 **Assembled manuscript:** [`MANUSCRIPT.md`](MANUSCRIPT.md) (full paper, figures embedded) ·
 [`manuscript/manuscript.tex`](manuscript/manuscript.tex) (npj-style LaTeX draft, compile instructions in
@@ -70,8 +70,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T19_dish_hardware.csv` | A leaf 1 mm above the agar inside each real dish cross-section (BRIC 60 mm round, CARA 120 × 120 mm square; dimensions supplied by R. Barker, 2026-10-08), open to the cabin or with its flight boundary (BRIC sealed, CARA taped), at 1 g and 0 g, plus min/max headspace. g_bl is given against cabin ambient and against the enclosure's own air. Assumes a 1 mm wall and base thickness. |
 | `T20_dish_feedback.csv`, `T20_dish_feedback_summary.csv` | Time series (every ~0.5 s) for the sealed BRIC dish with CO₂-limited photosynthesis (co2Ambient = 8), humidity-limited transpiration (h2oSatExcess = 1.3) and buoyancy referenced to the dish mean, at 1 g and 0 g over 415 s, plus CARA taped with feedback and BRIC with the buoyancy fix only. Dish-mean CO₂, net assimilation, g_bl to the dish air and to cabin ambient. |
 | `T20_dish_feedback_constant_transpiration.csv` | The first version of T20 (constant transpiration), kept as the reference for F16/F17: its 1 g plateau and late runaway are artefacts of unbounded humidity. |
-| `T23_dish_wet_agar.csv` | **Negative result at 1 g.** Wet agar (agar surface held at saturation, `agarH2O` = 1.3) in sealed BRIC and taped CARA, with humidity-limited transpiration and feedback. At 0 g the leaf conductance is unchanged from dry agar (BRIC 0.186–0.189, CARA 0.192). At 1 g both runs are numerically unusable (BRIC diverges at 129.5 s; CARA runs near Mach 0.17, then accelerates), because the fixed-saturation agar pushes the H₂O buoyancy beyond the model's small-perturbation range. Rows after divergence are NaN. |
-| `T24_dish_wet_agar_mrt.csv` | **Negative result: MRT does not rescue wet agar at 1 g.** The four T23 cases rerun with the opt-in MRT collision (Lallemand & Luo 2000; passes all four validation gates). 0 g is unchanged (BRIC 0.186–0.189, CARA 0.192). At 1 g the runs break down sooner than with BGK: sealed BRIC exceeds Mach 0.3 at 72 s and diverges at 82.5 s (BGK: 109 s and 129.5 s); taped CARA exceeds Mach 0.3 at 64 s and diverges at 78 s (BGK: 86 s, finite to 104 s). The instability is the physical forcing (β·ΔC ≈ 1.3), not the collision scheme. |
+| `T23_dish_wet_agar.csv` | **Negative result at 1 g.** Wet agar (agar surface held at saturation, `agarH2O` = 1.3) in sealed BRIC and taped CARA, with humidity-limited transpiration and feedback. At 0 g the leaf conductance is unchanged from dry agar (BRIC 0.185–0.189, CARA 0.192). At 1 g both runs are numerically unusable (BRIC diverges at 129.5 s; CARA runs near Mach 0.17, then accelerates), because the fixed-saturation agar pushes the H₂O buoyancy beyond the model's small-perturbation range. Rows after divergence are NaN. |
+| `T24_dish_wet_agar_mrt.csv` | **Negative result: MRT does not rescue wet agar at 1 g.** The four T23 cases rerun with the opt-in MRT collision (Lallemand & Luo 2000; passes all four validation gates). 0 g is unchanged (BRIC 0.185–0.189, CARA 0.192). At 1 g the runs break down sooner than with BGK: sealed BRIC exceeds Mach 0.3 at 72 s and diverges at 82.5 s (BGK: 109 s and 129.5 s); taped CARA exceeds Mach 0.3 at 64 s and diverges at 78 s (BGK: 86 s, finite to 104 s). The instability is the physical forcing (β·ΔC ≈ 1.3), not the collision scheme. |
 | `T21_dish_buoyancy_diag.csv` | Sealed BRIC (1 g) time series with buoyancy from CO₂ + O₂ only, H₂O only (both with feedback), and all species with fixed uptake; dish CO₂, assimilation, g_bl to the dish air and peak flow speed. |
 | `T22_dish_humidity.csv` | Sealed BRIC dish with photosynthesis feedback and humidity-limited transpiration (`h2oSatExcess` 0.65 / 1.3 / 2.6 model units at 1 g, 1.3 at 0 g), 415 s: dish CO₂ and H₂O, assimilation, transpiration, g_bl to the dish air, peak flow speed. The saturation level is an estimate, not a calibration. |
 | `T15_stationarity.csv` | Snapshot-vs-steady comparison (N_eff-corrected window means, drift test) from `results/timeseries/`. |
@@ -116,7 +116,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   4× range of the (uncalibrated) saturation level. So in a sealed BRIC dish the 1 g and 0 g boundary layers converge
   within minutes.
 - **Wet agar (T23), a negative result at 1 g:** holding the agar surface at saturation leaves the 0 g leaf conductance
-  unchanged (BRIC 0.186–0.189, CARA 0.192, as with dry agar), but at 1 g the agar-to-air humidity contrast drives the
+  unchanged (BRIC 0.185–0.189, CARA 0.192, as with dry agar), but at 1 g the agar-to-air humidity contrast drives the
   H₂O buoyancy to β·ΔC ≈ 1.3, beyond the model's small-perturbation range (≲ 0.5). Sealed BRIC diverges at 129.5 s, and
   taped CARA runs near Mach 0.17, then accelerates. The `agarH2O` option is flagged as unsafe at 1 g. Representing wet
   agar at 1 g needs a calibrated humidity buoyancy coefficient or weaker forcing on a finer lattice; a more stable

@@ -360,8 +360,8 @@ measured flux at ambient; \oo{} release tracks $A$.
 \paragraph{Calibration \& 0-D model.} Lattice mapped by resolving a 1.5\,cm leaf at 52 cells and matching \wo{}
 diffusivity. A 0-D enclosure--photosynthesis model integrates $A(C)$, the boundary-layer conductance (Earth vs
 microgravity) and enclosure exchange over a 12\,h photoperiod.
-\paragraph{Data.} Vernier whole-chamber logs and a whole-plant-chamber workbook\citep{chew2022,chew2022data}; runs
-$2.2$--$3\times10^{4}$ steps to quasi-steady state. Code and analysis scripts: LunarLeaf-CFD repository.
+\paragraph{Data.} Vernier whole-chamber logs and a whole-plant-chamber workbook\citep{chew2022,chew2022data}; exports
+run to steady state: $1.5\times10^{5}$ steps by default, longer where a case was still drifting ($9\times10^{5}$ for the microgravity canopy), with the drift over the last 5\,s reported; BRIC/CARA hardware runs keep their original 3.8\,s, since BRIC never reaches steady state, and T5 and T12 predate the rerun. Code and analysis scripts: LunarLeaf-CFD repository.
 
 \section*{Data and code availability}
 Model source, validation harness, analysis scripts and the results package are in the LunarLeaf-CFD repository.
@@ -387,7 +387,7 @@ The authors declare no competing interests.
 \bibitem{parafilm} Xu, L., Li, S., Shabala, S., Jian, T. \& Zhang, W. Plants grown in parafilm-wrapped Petri dishes are stressed and possess altered gene-expression profiles. \textit{Front. Plant Sci.} \textbf{10}, 637 (2019). doi:10.3389/fpls.2019.00637.
 \bibitem{monje2005} Monje, O., Stutte, G.~W. \& Chapman, D.~K. Microgravity does not alter plant stand gas exchange of wheat at moderate light levels and saturating \co{} concentration. \textit{Planta} \textbf{222}, 336--345 (2005). doi:10.1007/s00425-005-1529-1.
 \bibitem{barker2023} Barker, R., Kruse, C.~P.~S., Johnson, C., Saravia-Butler, A., Fogle, H., Chang, H.-S., Trane, R.~M., Kinscherf, N., Villacampa, A., Manzano, A., Herranz, R., Davin, L.~B., Lewis, N.~G., Perera, I., Wolverton, C., Gupta, P., Jaiswal, P., Reinsch, S.~S., Wyatt, S. \& Gilroy, S. Meta-analysis of the space flight and microgravity response of the \textit{Arabidopsis} plant transcriptome. \textit{npj Microgravity} \textbf{9}, 21 (2023). doi:10.1038/s41526-023-00247-6.
-\bibitem{chew2022data} Chew, Y.~H., Seaton, D.~D., Mengin, V., Flis, A., Mugford, S.~T., George, G.~M., Moulin, M., Hume, A., Zeeman, S.~C., Fitzpatrick, T.~B., Smith, A.~M., Millar, A.~J. \& Stitt, M. Prediction and analysis of phenotypes in the \textit{Arabidopsis} clock mutant prr7prr9 using the Framework Model v2 (FMv2) [dataset]. Edinburgh DataShare, University of Edinburgh (2022). doi:10.7488/ds/3453. Gas-exchange workbook \texttt{Biomass\_FW\_DW\_gas\_exchange\_data.xlsx} (FAIRDOMHub data file 5005).
+\bibitem{chew2022data} Chew, Y.~H., Seaton, D.~D., Mengin, V., Flis, A., Mugford, S.~T., George, G.~M., Moulin, M., Hume, A., Zeeman, S.~C., Fitzpatrick, T.~B., Smith, A.~M., Stitt, M. \& Millar, A.~J. Prediction and analysis of phenotypes in the \textit{Arabidopsis} clock mutant prr7prr9 using the Framework Model v2 (FMv2) [dataset]. Edinburgh DataShare, University of Edinburgh (2022). doi:10.7488/ds/3453. Gas-exchange workbook \texttt{Biomass\_FW\_DW\_gas\_exchange\_data.xlsx} (FAIRDOMHub data file 5005).
 \end{thebibliography}
 
 \end{document}
