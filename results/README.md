@@ -6,7 +6,7 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > **Revision 2026-11-07 (forced-airflow inlet).** The ventilation inlet held its column at equilibrium
 > with ρ = 1. Once the interior pressurises to push the flow to the ρ = 1 outlet, mass leaks back across the
 > inlet face, so every forced scene delivered less than its stated fan speed: leaf 96–98 %, rosette 88–96 %,
-> canopy 85–95 % (the VEGGIE scenes: leaf 97 %, rosette 93 %, canopy 89 %), steady from 5 s on
+> canopy 85–95 % (the VEGGIE scenes: leaf 97 %, rosette 93 %, canopy 89 %), already at 5 s (within 0.4 % of the 26 s value in every run)
 > (`tables/inlet_flux_before.csv`: exact mass flux through the outlet face over U·H, `validation/inlet_flux.ts`).
 > The pressure outlet's "holds the throughput at U" had never been checked against an outlet flux, and F12's
 > left panel plotted the flow relative to its own value at 0.25 s, which hid the shortfall. The inlet now takes
@@ -17,7 +17,8 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > reproduce (the re-run copy-outlet files in `age/` match their old columns exactly). Gates 1–4 do not use this
 > inlet; their output is identical to the previous code under BGK and MRT.
 > **Regenerated:** T6, T7 (VEGGIE rows), T9, T10, T15 (the two `-pressure` fan rows), T18 (VEGGIE rows), `age/`,
-> `timeseries/leaf-ug-fan-{lo,mid}-pressure.csv`, F6–F9, F11, F12 and the two fan animations. T6/T9/T10 and `age/`
+> `timeseries/leaf-ug-fan-{lo,mid}-pressure.csv`, F6–F9, F12 and the two fan animations (F11 plots six scenarios
+> whose series did not change, so it stays as it was). T6/T9/T10 and `age/`
 > gained a `throughput_over_set` column. **What moved:** rosette Earth-equivalent fan speed 6.5 → 6.1 cm/s (leaf
 > stays 2.0); VEGGIE rosette |ΔC CO₂| 0.294 → 0.289 (Earth 0.298); VEGGIE canopy 0.406 → 0.426, now at Mach 0.46
 > (was 0.32). With the full flow delivered, the canopy at 6.6 cm/s passes the low-Mach limit (Ma 0.26 → 0.35),
@@ -198,7 +199,10 @@ python validation/feedback_0d.py       # 0-D closed-loop photosynthesis -> F10, 
 # 4) verification added 2026-10-07 (timeseries -> T15/F11, outlet check -> F12, resolution ladder -> T16)
 #    see validation/timeseries.ts, age_check.ts, resolution_ladder.ts and analysis/*.py
 # 4b) forced-airflow throughput (added 2026-11-07) -> inlet_flux_<tag>.csv, inlet_variants.csv
+npx esbuild validation/inlet_flux.ts --bundle --format=esm --platform=node --outfile=validation/inlet_flux.mjs
+npx esbuild validation/inlet_variants.ts --bundle --format=esm --platform=node --outfile=validation/inlet_variants.mjs
 #    export INLET_FLUX_TAG=after   # names the output table and partials (before = the run on the ρ = 1 inlet)
+#    (INLET_FLUX_TAG=before INLET_FLUX_BC=equilibrium reproduces inlet_flux_before.csv)
 #    node validation/inlet_flux.mjs list | xargs -P 16 -I{} node validation/inlet_flux.mjs job {} && node validation/inlet_flux.mjs merge
 #    node validation/inlet_variants.mjs list | xargs -P 16 -I{} node validation/inlet_variants.mjs job {} && node validation/inlet_variants.mjs merge
 python3 -m pytest analysis/ -q

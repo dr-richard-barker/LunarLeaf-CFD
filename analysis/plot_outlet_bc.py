@@ -31,6 +31,7 @@ LABEL = {"copy": "copy outlet (original)", "pressure": "pressure outlet, matched
 
 def main() -> None:
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(9.2, 3.4), dpi=150, constrained_layout=True)
+    top = 1.1
     for p in sorted(glob.glob("results/age/age_fan_U*_*.csv")):
         m = re.search(r"U([\d.]+)_(copy|pressure)", p)
         u, bc = m.group(1), m.group(2)
@@ -38,11 +39,12 @@ def main() -> None:
         t = d["t_s"]
         kw = dict(color=COLOR[bc], ls=DASH.get(u, ":"), lw=1.8)
         a1.plot(t, d["throughput_over_set"], **kw)
+        top = max(top, 1.03 * float(max(d["throughput_over_set"])))  # keep the start-up transient in frame
         a2.plot(t, d["g_bl"], **kw)
         a2.annotate(f"{LABEL[bc]}, U={u}", (t[-1], d["g_bl"][-1]), xytext=(4, 0), textcoords="offset points",
                     fontsize=7, color=INK, va="center")
     a1.set_ylabel("through-flow / set fan flow", fontsize=8, color=MUTED)
-    a1.set_ylim(0, 1.1)
+    a1.set_ylim(0, top)
     a2.set_ylabel("g_bl (mol m⁻² s⁻¹)", fontsize=8, color=MUTED)
     a2.set_xlim(right=a2.get_xlim()[1] * 1.55)
     for ax in (a1, a2):
