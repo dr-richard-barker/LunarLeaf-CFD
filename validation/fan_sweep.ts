@@ -19,6 +19,9 @@ const LEGACY = process.env.LUNARLEAF_LEGACY === '1';
 const STEPS = LEGACY ? 30000 : DEFAULT_STEPS;
 const OUTLET = LEGACY ? 'copy' : 'pressure';
 const OUT = LEGACY ? 'T6_forced_airflow_legacy.csv' : 'T6_forced_airflow.csv';
+// The inlet follows the outlet (makeLeafScene): density-matched with the pressure outlet
+// (since 2026-11-07), the original ρ = 1 equilibrium inlet with the legacy copy outlet.
+const INLET = LEGACY ? 'equilibrium (ρ = 1)' : 'density-matched';
 
 const U_STAR_CM_S = 166; // lattice→physical velocity (results/tables/T3)
 const DOM = { nx: 128, ny: 96, renderScale: 0.12, geometry: leafGeometry };
@@ -44,19 +47,20 @@ cli(
       w: w(d),
       c: Math.abs(pair(d, 'ΔC CO₂')[0]),
       drift: driftPct(r, w),
+      tp: num(d, 'throughput'),
     };
   },
   (res) => {
-    const get = (id: string) => res.get(id) as { umax: number; w: number; c: number; drift: number };
+    const get = (id: string) => res.get(id) as { umax: number; w: number; c: number; drift: number; tp?: number | null };
     const earth = get('earth_1g');
     const ug = get('ug_still');
-    const rows = ['case,fan_U,fan_cm_s,u_max,dC_H2O_mean,dC_CO2_mean'];
-    rows.push(`earth_1g,,,${earth.umax.toExponential(3)},${earth.w.toFixed(4)},${earth.c.toFixed(4)}`);
-    rows.push(`ug_still,0,0,0,${ug.w.toFixed(4)},${ug.c.toFixed(4)}`);
+    const rows = ['case,fan_U,fan_cm_s,u_max,dC_H2O_mean,dC_CO2_mean,throughput_over_set'];
+    rows.push(`earth_1g,,,${earth.umax.toExponential(3)},${earth.w.toFixed(4)},${earth.c.toFixed(4)},`);
+    rows.push(`ug_still,0,0,0,${ug.w.toFixed(4)},${ug.c.toFixed(4)},`);
     const warnings = [warnDrift('earth_1g', earth.drift), warnDrift('ug_still', ug.drift)];
     const series = Us.map((U) => {
       const r = get(`ug_fan_${U}`);
-      rows.push(`ug_fan,${U},${(U * U_STAR_CM_S).toFixed(1)},${r.umax.toExponential(3)},${r.w.toFixed(4)},${r.c.toFixed(4)}`);
+      rows.push(`ug_fan,${U},${(U * U_STAR_CM_S).toFixed(1)},${r.umax.toExponential(3)},${r.w.toFixed(4)},${r.c.toFixed(4)},${r.tp == null ? 'NaN' : r.tp.toFixed(4)}`);
       warnings.push(warnDrift(`ug_fan ${U}`, r.drift));
       return { U, w: r.w };
     });
@@ -73,7 +77,7 @@ cli(
     }
     const nullCm = nullU * U_STAR_CM_S;
     rows.push(`# Earth-equivalent fan speed = ${nullU.toFixed(3)} lattice = ${nullCm.toFixed(1)} cm/s`);
-    rows.push(`# ${OUTLET} outlet, ${STEPS} steps${warnings.some(Boolean) ? '; DRIFT WARNINGS — see log' : '; all cases steady (<0.5 % over last ~5 s)'}`);
+    rows.push(`# ${OUTLET} outlet, ${INLET} inlet, ${STEPS} steps${warnings.some(Boolean) ? '; DRIFT WARNINGS — see log' : '; all cases steady (<0.5 % over last ~5 s)'}`);
     writeFileSync(`results/tables/${OUT}`, rows.join('\n') + '\n');
     console.log(`=> Earth-equivalent ventilation: ${nullU.toFixed(3)} lattice ≈ ${nullCm.toFixed(1)} cm/s`);
     console.log(`wrote ${OUT}`);

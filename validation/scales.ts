@@ -52,7 +52,7 @@ const JOBS: Job[] = SCALES.flatMap((s) => [
   { id: `${s.key}__veggie`, scale: s.key, extra: { forcedU: 0.05 }, steps: DEFAULT_STEPS },
 ]);
 
-type R = { w: number | null; c: number | null; umax: number; dish: number | null; drift: number | null };
+type R = { w: number | null; c: number | null; umax: number; dish: number | null; drift: number | null; tp?: number | null };
 const mach = (r: R) => (r.w === null ? NaN : r.umax / CS); // NaN run: u_max only reads the pinned inlet
 
 cli(
@@ -72,26 +72,26 @@ cli(
     const r = runScene(inst, j.steps, j.steps - DRIFT_WINDOW);
     const d = r.end.readouts;
     const w = (rows: typeof d) => Math.abs(pair(rows, 'ΔC H₂O')[0]);
-    return { w: w(d), c: Math.abs(pair(d, 'ΔC CO₂')[0]), umax: num(d, 'u_max'), dish: num(d, 'dish-mean'), drift: driftPct(r, w) };
+    return { w: w(d), c: Math.abs(pair(d, 'ΔC CO₂')[0]), umax: num(d, 'u_max'), dish: num(d, 'dish-mean'), drift: driftPct(r, w), tp: num(d, 'throughput') };
   },
   (res) => {
-    const t9 = ['scale,case,fan_cm_s,dC_H2O,dC_CO2,ma_max'];
-    const t10 = ['scale,hardware,surf_dC_H2O,surf_dC_CO2,dishmean_CO2,ma_max'];
+    const t9 = ['scale,case,fan_cm_s,dC_H2O,dC_CO2,ma_max,throughput_over_set'];
+    const t10 = ['scale,hardware,surf_dC_H2O,surf_dC_CO2,dishmean_CO2,ma_max,throughput_over_set'];
     const crossings: Record<string, number> = {};
     let drifting = false;
     for (const scale of SCALES) {
       const get = (k: string) => res.get(`${scale.key}__${k}`) as R;
       const earth = get('earth');
       const ug = get('ug');
-      t9.push(`${scale.key},earth,,${fmt(earth.w, 4)},${fmt(earth.c, 4)},${fmt(mach(earth), 2)}`);
-      t9.push(`${scale.key},ug_still,0,${fmt(ug.w, 4)},${fmt(ug.c, 4)},0.00`);
+      t9.push(`${scale.key},earth,,${fmt(earth.w, 4)},${fmt(earth.c, 4)},${fmt(mach(earth), 2)},`);
+      t9.push(`${scale.key},ug_still,0,${fmt(ug.w, 4)},${fmt(ug.c, 4)},0.00,`);
       drifting = !!warnDrift(`${scale.key} earth`, earth.drift ?? NaN) || drifting;
       drifting = !!warnDrift(`${scale.key} ug`, ug.drift ?? NaN) || drifting;
 
       const series = FAN.flatMap((U) => {
         const r = get(`fan_${U}`);
         const ma = mach(r);
-        t9.push(`${scale.key},ug_fan,${(U * U_STAR).toFixed(1)},${fmt(r.w, 4)},${fmt(r.c, 4)},${fmt(ma, 2)}`);
+        t9.push(`${scale.key},ug_fan,${(U * U_STAR).toFixed(1)},${fmt(r.w, 4)},${fmt(r.c, 4)},${fmt(ma, 2)},${fmt(r.tp ?? null, 4)}`);
         if (!(ma <= MA_VALID)) {
           console.warn(`[${scale.key}] fan ${(U * U_STAR).toFixed(1)} cm/s ${r.w === null ? 'blew up (NaN)' : `Ma ${ma.toFixed(2)} > ${MA_VALID}`} — excluded from crossing`);
           return [];
@@ -116,14 +116,14 @@ cli(
       const veg = get('veggie');
       drifting = !!warnDrift(`${scale.key} veggie`, veg.drift ?? NaN) || drifting;
       if (mach(veg) > MA_VALID) console.warn(`[${scale.key}] VEGGIE Ma ${mach(veg).toFixed(2)} > ${MA_VALID} — treat with caution`);
-      t10.push(`${scale.key},BRIC,${fmt(bric.w, 4)},${fmt(bric.c, 4)},${fmt(bric.dish, 4)},0.00`);
-      t10.push(`${scale.key},CARA,${fmt(cara.w, 4)},${fmt(cara.c, 4)},${fmt(cara.dish, 4)},0.00`);
-      t10.push(`${scale.key},VEGGIE,${fmt(veg.w, 4)},${fmt(veg.c, 4)},NaN,${fmt(mach(veg), 2)}`);
+      t10.push(`${scale.key},BRIC,${fmt(bric.w, 4)},${fmt(bric.c, 4)},${fmt(bric.dish, 4)},0.00,`);
+      t10.push(`${scale.key},CARA,${fmt(cara.w, 4)},${fmt(cara.c, 4)},${fmt(cara.dish, 4)},0.00,`);
+      t10.push(`${scale.key},VEGGIE,${fmt(veg.w, 4)},${fmt(veg.c, 4)},NaN,${fmt(mach(veg), 2)},${fmt(veg.tp ?? null, 4)}`);
       console.log(`[${scale.key}] BRIC=${fmt(bric.w, 3)} CARA=${fmt(cara.w, 3)} VEGGIE=${fmt(veg.w, 3)}  Earth-equiv fan=${crossings[scale.key].toFixed(1)} cm/s`);
     }
 
     t9.push('# Earth-equivalent fan speed (cm/s): ' + Object.entries(crossings).map(([k, v]) => `${k}=${v.toFixed(1)}`).join('  '));
-    t9.push(`# pressure outlet, ${DEFAULT_STEPS} steps (canopy ug_still ${STEPS_BY_ID.canopy__ug})${drifting ? '; DRIFT WARNINGS — see log' : '; all valid cases steady (<0.5 % over last ~5 s)'}`);
+    t9.push(`# pressure outlet, density-matched inlet, ${DEFAULT_STEPS} steps (canopy ug_still ${STEPS_BY_ID.canopy__ug})${drifting ? '; DRIFT WARNINGS — see log' : '; all valid cases steady (<0.5 % over last ~5 s)'}`);
     t9.push(`# crossings use only runs with ma_max <= ${MA_VALID}; NaN crossing = Earth level not reached within the valid range`);
     writeFileSync('results/tables/T9_fan_by_scale.csv', t9.join('\n') + '\n');
     writeFileSync('results/tables/T10_hardware_by_scale.csv', t10.join('\n') + '\n');

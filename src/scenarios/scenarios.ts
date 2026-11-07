@@ -818,11 +818,23 @@ interface LeafSceneCfg {
   ageOfAir?: boolean;
   /** Forced-airflow outlet. 'pressure' (default since 2026-10-07) pins ρ = 1 at the
    *  outlet (equilibrium at ρ = 1 and the upstream velocity + the upstream
-   *  non-equilibrium part), which holds the throughput at U. 'copy' is the original
+   *  non-equilibrium part), which stops the through-flow decaying. On its own it does not
+   *  hold the throughput at U: with the original ρ = 1 inlet the scenes delivered
+   *  85–98 % of U (see inletBC). 'copy' is the original
    *  outlet, kept only to reproduce pre-2026-10-07 tables: it copies the upstream
    *  column's populations, has no pressure reference, so mass accumulates (ρ rises ~4 %
-   *  in 20 s) and the through-flow decays (71 % of U at 5.2 s, 18 % at 26 s). */
+   *  in 20 s) and the through-flow decays (U = 0.02: 68 % of U at 5.25 s, 18 % at 26 s,
+   *  results/age/age_fan_U0.02_copy.csv; the earlier "71 %" was relative to the flow at
+   *  0.25 s, not to U). */
   outletBC?: 'copy' | 'pressure';
+  /** Forced-airflow inlet. 'densityMatched' (default with the pressure outlet since
+   *  2026-11-07) sets the inlet column to equilibrium at velocity U and the density of
+   *  the adjacent interior cell. 'equilibrium' is the original inlet, equilibrium at
+   *  ρ = 1: once the interior pressurises to drive the flow to the ρ = 1 outlet, mass
+   *  leaks back across the inlet face (≈ (ρ₁ − 1)/3 per row and step), so the scene
+   *  delivers less than U (results/tables/inlet_flux_before.csv). It stays the default
+   *  with the legacy 'copy' outlet so pre-2026-10-07 tables still reproduce. */
+  inletBC?: 'equilibrium' | 'densityMatched';
   /** Reference state for solutal buoyancy. 'ambient' (default): ΔC is measured from the
    *  cabin ambient (0), right when the walls hold ambient. 'enclosureMean': ΔC is
    *  measured from the enclosure's current mean, the correct Boussinesq reference for a
@@ -887,13 +899,21 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
     // Inlet: prescribed velocity + fresh air (zero species excess). Outlet:
     // zero-gradient. Fluid part runs in postStream (after streaming); the species
     // part runs in onAfterStep (after the scalar step) so the BC is not overwritten.
+    const outletBC = cfg.outletBC ?? 'pressure';
+    const inletBC = cfg.inletBC ?? (outletBC === 'copy' ? 'equilibrium' : 'densityMatched');
     const fluidInletOutlet = () => {
       for (let y = 1; y < ny - 1; y++) {
         const ci = fluid.index(0, y) * 9;
-        for (let i = 0; i < 9; i++) fluid.f[ci + i] = feq(i, 1, U, 0);
+        let rhoIn = 1;
+        const cn = fluid.index(1, y);
+        if (inletBC === 'densityMatched' && !fluid.solid[cn]) {
+          rhoIn = 0;
+          for (let i = 0; i < 9; i++) rhoIn += fluid.f[cn * 9 + i];
+        }
+        for (let i = 0; i < 9; i++) fluid.f[ci + i] = feq(i, rhoIn, U, 0);
         const co = fluid.index(nx - 1, y) * 9;
         const cs = fluid.index(nx - 2, y) * 9;
-        if ((cfg.outletBC ?? 'pressure') === 'pressure') {
+        if (outletBC === 'pressure') {
           let rho = 0;
           let mx = 0;
           let my = 0;
@@ -1129,7 +1149,20 @@ export function makeLeafScene(cfg: LeafSceneCfg): () => ScenarioInstance {
           { label: 'gravity', value: `${gAbs.toFixed(2)} m/s²  (${cfg.gRatio.toFixed(3)} g)` },
         ];
         if (cfg.forcedU !== undefined) {
-          out.push({ label: 'forced airflow', value: `${(U * r * U_STAR_CM_S).toFixed(1)} cm/s` });
+          // Delivered flow: mass flux through the open outlet cells over the set flow
+          // U × (open inlet rows). Must sit in 0.95–1.05 for the fan speed to be the one
+          // actually ventilating the plant (results/tables/inlet_flux_*.csv).
+          let q = 0;
+          let open = 0;
+          for (let y = 1; y < ny - 1; y++) {
+            if (!fluid.solid[fluid.index(0, y)] && !fluid.solid[fluid.index(1, y)]) open++;
+            const co = fluid.index(nx - 1, y);
+            if (!fluid.solid[co]) q += fluid.rho[co] * fluid.ux[co];
+          }
+          out.push(
+            { label: 'forced airflow', value: `${(U * r * U_STAR_CM_S).toFixed(1)} cm/s` },
+            { label: 'throughput / set fan flow', value: (q / (U * open)).toFixed(4) },
+          );
         }
         out.push(
           { label: 'steps', value: step.toLocaleString() },

@@ -1,31 +1,31 @@
-scale,case,fan_cm_s,dC_H2O,dC_CO2,ma_max
-leaf,earth,,0.1280,0.1610,0.08
-leaf,ug_still,0,0.2400,0.3640,0.00
-leaf,ug_fan,1.7,0.1350,0.1730,0.03
-leaf,ug_fan,3.3,0.1010,0.1310,0.05
-leaf,ug_fan,6.6,0.0750,0.0970,0.10
-leaf,ug_fan,11.6,0.0580,0.0750,0.16
-leaf,ug_fan,18.3,0.0470,0.0600,0.24
-leaf,ug_fan,26.6,0.0390,0.0500,0.35
-leaf,ug_fan,36.5,0.0340,0.0430,0.47
-rosette,earth,,0.2250,0.2980,0.08
-rosette,ug_still,0,0.3920,0.5930,0.00
-rosette,ug_fan,1.7,0.3080,0.4190,0.03
-rosette,ug_fan,3.3,0.2600,0.3560,0.07
-rosette,ug_fan,6.6,0.2230,0.3070,0.13
-rosette,ug_fan,11.6,0.2000,0.2760,0.22
-rosette,ug_fan,18.3,0.1840,0.2530,0.34
-rosette,ug_fan,26.6,0.1550,0.2070,0.52
-rosette,ug_fan,36.5,NaN,NaN,NaN
-canopy,earth,,0.2590,0.3640,0.12
-canopy,ug_still,0,0.5470,0.8290,0.00
-canopy,ug_fan,1.7,0.3750,0.5190,0.06
-canopy,ug_fan,3.3,0.3190,0.4480,0.13
-canopy,ug_fan,6.6,0.2900,0.4120,0.26
-canopy,ug_fan,11.6,0.2810,0.3970,0.42
-canopy,ug_fan,18.3,0.2770,0.3890,0.68
-canopy,ug_fan,26.6,NaN,NaN,NaN
-canopy,ug_fan,36.5,NaN,NaN,NaN
-# Earth-equivalent fan speed (cm/s): leaf=2.0  rosette=6.5  canopy=NaN
-# pressure outlet, 150000 steps (canopy ug_still 900000); all valid cases steady (<0.5 % over last ~5 s)
+scale,case,fan_cm_s,dC_H2O,dC_CO2,ma_max,throughput_over_set
+leaf,earth,,0.1280,0.1610,0.08,
+leaf,ug_still,0,0.2400,0.3640,0.00,
+leaf,ug_fan,1.7,0.1340,0.1720,0.03,0.9958
+leaf,ug_fan,3.3,0.1010,0.1300,0.05,0.9965
+leaf,ug_fan,6.6,0.0740,0.0960,0.10,0.9985
+leaf,ug_fan,11.6,0.0570,0.0740,0.17,1.0023
+leaf,ug_fan,18.3,0.0460,0.0590,0.25,1.0092
+leaf,ug_fan,26.6,0.0380,0.0490,0.40,1.0212
+leaf,ug_fan,36.5,0.0320,0.0410,0.54,1.0426
+rosette,earth,,0.2250,0.2980,0.08,
+rosette,ug_still,0,0.3920,0.5930,0.00,
+rosette,ug_fan,1.7,0.3060,0.4150,0.04,0.9965
+rosette,ug_fan,3.3,0.2570,0.3520,0.07,0.9983
+rosette,ug_fan,6.6,0.2190,0.3020,0.14,1.0040
+rosette,ug_fan,11.6,NaN,NaN,NaN,NaN
+rosette,ug_fan,18.3,NaN,NaN,NaN,NaN
+rosette,ug_fan,26.6,NaN,NaN,NaN,NaN
+rosette,ug_fan,36.5,NaN,NaN,NaN,NaN
+canopy,earth,,0.2590,0.3640,0.12,
+canopy,ug_still,0,0.5470,0.8290,0.00,
+canopy,ug_fan,1.7,0.3710,0.5150,0.07,0.9971
+canopy,ug_fan,3.3,0.3220,0.4550,0.16,1.0004
+canopy,ug_fan,6.6,0.3200,0.4470,0.35,1.0140
+canopy,ug_fan,11.6,NaN,NaN,NaN,NaN
+canopy,ug_fan,18.3,NaN,NaN,NaN,NaN
+canopy,ug_fan,26.6,NaN,NaN,NaN,NaN
+canopy,ug_fan,36.5,NaN,NaN,NaN,NaN
+# Earth-equivalent fan speed (cm/s): leaf=2.0  rosette=6.1  canopy=NaN
+# pressure outlet, density-matched inlet, 150000 steps (canopy ug_still 900000); all valid cases steady (<0.5 % over last ~5 s)
 # crossings use only runs with ma_max <= 0.3; NaN crossing = Earth level not reached within the valid range

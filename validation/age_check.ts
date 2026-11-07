@@ -25,7 +25,7 @@ const inst = makeLeafScene({
 })();
 const v = (d: Readout[], k: string) => parseFloat(d.find((r) => r.label.startsWith(k))?.value ?? 'NaN');
 
-const rows = ['step,t_s,tau_steps,outlet_age_over_tau,mean_age_over_tau,eps_a,outlet_over_inlet_flux,dC_CO2_mean,g_bl'];
+const rows = ['step,t_s,tau_steps,outlet_age_over_tau,mean_age_over_tau,eps_a,outlet_over_inlet_flux,dC_CO2_mean,g_bl,throughput_over_set'];
 for (let s = 1; s <= steps; s++) {
   inst.fluid.collideAndStream();
   inst.postStream();
@@ -33,7 +33,7 @@ for (let s = 1; s <= steps; s++) {
   if (s % sample === 0) {
     const d = inst.diagnostics(s);
     rows.push([s, (s * DT_S).toFixed(2), v(d, 'age τ'), v(d, 'age outlet'), v(d, 'age mean'), v(d, 'ε_a'), v(d, 'outlet / inlet'),
-      parseFloat(d.find((r) => r.label.startsWith('ΔC CO₂'))!.value), v(d, 'g_bl')].join(','));
+      parseFloat(d.find((r) => r.label.startsWith('ΔC CO₂'))!.value), v(d, 'g_bl'), v(d, 'throughput')].join(','));
   }
 }
 mkdirSync('results/age', { recursive: true });

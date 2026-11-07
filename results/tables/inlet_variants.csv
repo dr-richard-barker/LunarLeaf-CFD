@@ -1,0 +1,17 @@
+scale,fan_U,fan_cm_s,inlet,collision,start,outcome,diverged_by_step,peak_Ma_before_end,end_Ma,end_throughput_over_set
+rosette,0.07,11.6,equilibrium rho=1,BGK,impulsive (domain at U),ran,,0.224,0.224,0.9184
+rosette,0.07,11.6,density-matched,BGK,impulsive (domain at U),diverged,13000,0.582,,
+rosette,0.07,11.6,Zou-He,BGK,impulsive (domain at U),diverged,13000,0.555,,
+rosette,0.07,11.6,density-matched,MRT,impulsive (domain at U),diverged,14000,0.564,,
+rosette,0.07,11.6,Zou-He,MRT,impulsive (domain at U),diverged,14000,0.530,,
+rosette,0.07,11.6,density-matched,BGK,rest then ramp over 20000 steps,diverged,48000,0.610,,
+rosette,0.07,11.6,density-matched,BGK,rest then ramp over 50000 steps,diverged,82000,0.570,,
+rosette,0.07,11.6,density-matched,MRT,rest then ramp over 20000 steps,diverged,50000,0.580,,
+rosette,0.04,6.6,density-matched,BGK,impulsive (domain at U),ran,,0.139,0.138,1.0040
+rosette,0.04,6.6,density-matched,BGK,rest then ramp over 20000 steps,ran,,0.138,0.138,1.0040
+canopy,0.04,6.6,equilibrium rho=1,BGK,impulsive (domain at U),ran,,0.269,0.261,0.9046
+canopy,0.04,6.6,density-matched,BGK,impulsive (domain at U),ran,,0.357,0.354,1.0140
+canopy,0.04,6.6,Zou-He,BGK,impulsive (domain at U),ran,,0.350,0.345,1.0180
+canopy,0.04,6.6,density-matched,MRT,impulsive (domain at U),ran,,0.337,0.334,1.0135
+canopy,0.04,6.6,density-matched,BGK,rest then ramp over 20000 steps,ran,,0.354,0.354,1.0140
+# 150000 steps, flow only (0 g); sampled every 1000 steps; written by validation/inlet_variants.ts

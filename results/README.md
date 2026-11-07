@@ -3,6 +3,32 @@
 Validation of the solver against measured *Arabidopsis* gas-exchange data, and the first
 gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 
+> **Revision 2026-11-07 (forced-airflow inlet).** The ventilation inlet held its column at equilibrium
+> with ρ = 1. Once the interior pressurises to push the flow to the ρ = 1 outlet, mass leaks back across the
+> inlet face, so every forced scene delivered less than its stated fan speed: leaf 96–98 %, rosette 88–96 %,
+> canopy 85–95 % (the VEGGIE scenes: leaf 97 %, rosette 93 %, canopy 89 %), steady from 5 s on
+> (`tables/inlet_flux_before.csv`: exact mass flux through the outlet face over U·H, `validation/inlet_flux.ts`).
+> The pressure outlet's "holds the throughput at U" had never been checked against an outlet flux, and F12's
+> left panel plotted the flow relative to its own value at 0.25 s, which hid the shortfall. The inlet now takes
+> its density from the adjacent interior cell (`inletBC: 'densityMatched'`, the default with the pressure
+> outlet). Every run below Mach 0.3 now delivers 99.6–100.9 % of the set flow (all completed runs 99.6–104.2 %;
+> the excess at high speed is weak compressibility, ρ − 1 next to the inlet up to 4.8 %;
+> `tables/inlet_flux_after.csv`). The legacy copy outlet keeps the ρ = 1 inlet, so pre-2026-10-07 tables still
+> reproduce (the re-run copy-outlet files in `age/` match their old columns exactly). Gates 1–4 do not use this
+> inlet; their output is identical to the previous code under BGK and MRT.
+> **Regenerated:** T6, T7 (VEGGIE rows), T9, T10, T15 (the two `-pressure` fan rows), T18 (VEGGIE rows), `age/`,
+> `timeseries/leaf-ug-fan-{lo,mid}-pressure.csv`, F6–F9, F11, F12 and the two fan animations. T6/T9/T10 and `age/`
+> gained a `throughput_over_set` column. **What moved:** rosette Earth-equivalent fan speed 6.5 → 6.1 cm/s (leaf
+> stays 2.0); VEGGIE rosette |ΔC CO₂| 0.294 → 0.289 (Earth 0.298); VEGGIE canopy 0.406 → 0.426, now at Mach 0.46
+> (was 0.32). With the full flow delivered, the canopy at 6.6 cm/s passes the low-Mach limit (Ma 0.26 → 0.35),
+> so the canopy's valid range is now ≤ 3.3 cm/s. The rosette at 11.6 cm/s now diverges. It does so with a
+> Zou–He inlet, with MRT and from a ramped start too, so its earlier stable run (≈ 10.7 cm/s actually
+> delivered) relied on the leaking inlet (`tables/inlet_variants.csv`). Not regenerated: T12 (still stale; its
+> VEGGIE row also predates this fix). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`, `MANUSCRIPT.docx` and
+> the top-level README still carry the old values (6.5 cm/s, ≤ 6.6 cm/s, 0.294, 0.406, Mach 0.32) and await an
+> author decision. The copy-outlet decay quoted below as "71 % at 5.2 s" was relative to the flow at 0.25 s; measured
+> against the set flow it is 68 % at 5.25 s (U = 0.02).
+>
 > **Revision 2026-10-07.** T2, T6, T7, T9, T10, T13 and T14 (and F3, F4, F6–F9) were regenerated after two
 > defects were found while comparing against an independent OpenFOAM microgreen-chamber model
 > (`microgreen-chamber-cfd` @ `6ac89c1`;
@@ -38,14 +64,14 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `F6_forced_airflow.png` | Forced ventilation in µg: surface gap ΔC vs fan speed, with Earth-1 g and µg-no-fan reference lines and the ≈ 2.0 cm/s Earth-equivalent point. |
 | `F7_hardware_compare.png` | Spaceflight hardware (BRIC/CARA/VEGGIE) as dish boundary conditions: enclosure CO₂ drift vs time for BRIC/CARA light and dark (left) and leaf-surface gradient by hardware (right). |
 | `F11_stationarity.png` | g_bl(t) over 26 s for six scenarios, with the old 30 k-step snapshot marked (from `results/timeseries/`). |
-| `F12_outlet_bc.png` | Forced-airflow through-flow and g_bl vs time: original copy outlet vs pressure outlet. |
+| `F12_outlet_bc.png` | Forced-airflow through-flow (delivered / set fan flow, measured at the outlet) and g_bl vs time: original copy outlet (with the ρ = 1 inlet) vs pressure outlet with the density-matched inlet. |
 | `F13_domain_size.png` | g_bl vs modelled chamber size (1×, 1.5×, 2×) for leaf and rosette at 1 g and 0 g: the 1 g values move ≤ 7 %, the 0 g values keep falling (−33 % leaf, −41 % rosette at 2×). From T17. |
 | `F14_dish_hardware.png` | Leaf g_bl at 1 g and 0 g inside the real BRIC (60 mm round) and CARA (120 mm square) dishes vs the generic open box. In a dish the Earth/0 g ratio is 1.25–1.8×, not 2.25×. From T19 and T13. |
 | `F15_dish_feedback.png` | Sealed BRIC dish with CO₂-limited photosynthesis: assimilation over ~7 min at 1 g and 0 g, and the leaf's conductance to the dish air while assimilation > 10 %. From T20. |
 | `F16_dish_buoyancy_diag.png` | What drives the 1 g conductance in the sealed BRIC dish: four buoyancy variants (all species with feedback; fixed uptake; H₂O only; CO₂ + O₂ only) and their peak flow speed, showing the flow runaway after ~3.7 min when transpiration is unbounded. From T21 and T20. |
 | `F17_dish_humidity.png` | Sealed BRIC dish with humidity-limited transpiration: g_bl to the dish air at 1 g for three saturation levels and at 0 g, against T20's constant-transpiration run; and transpiration, assimilation and dish humidity over time. From T22. |
-| `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left; hollow = Ma > 0.3, not used) and required airflow ≈ 2.0 / 6.5 cm/s for leaf / rosette; the canopy does not reach Earth level within the solver's valid range (≤ 6.6 cm/s) (right). |
-| `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy. BRIC/CARA at the original 3.8 s; VEGGIE at steady state; canopy VEGGIE hatched (Ma 0.32). |
+| `F8_fan_by_scale.png` | Earth-equivalent ventilation vs plant scale: fan-sweep curves for leaf/rosette/canopy (left; hollow = Ma > 0.3, not used) and required airflow ≈ 2.0 / 6.1 cm/s for leaf / rosette; the canopy does not reach Earth level within the solver's valid range (≤ 3.3 cm/s) (right). |
+| `F9_hardware_by_scale.png` | BRIC/CARA/VEGGIE leaf-surface gradient across leaf/rosette/canopy. BRIC/CARA at the original 3.8 s; VEGGIE at steady state; canopy VEGGIE hatched (Ma 0.46). |
 | `F10_photosynthesis_feedback.png` | Closed-loop CO₂-limited photosynthesis: net assimilation vs time (BRIC collapses in minutes) and 12 h carbon fixed (BRIC 1% / CARA 90% / VEGGIE 100% of Earth). |
 
 ## Tables (`tables/`)
@@ -56,11 +82,13 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 | `T3_calibration.csv` | Lattice→physical mapping (dx = 0.288 mm, dt = 0.173 ms, velocity scale, measured flux). |
 | `T4_chamber_accumulation.csv` | Sealed-chamber time series (total mass, near-leaf & bulk probes) underpinning F5. |
 | `T5_physical_prediction.csv` | Surface CO₂ drawdown / O₂ build-up in **ppm**, per scale × gravity, anchored on the measured flux. |
-| `T6_forced_airflow.csv` | Forced-ventilation sweep (µg leaf, pressure outlet, steady state): ΔC vs fan speed, with the Earth-equivalent speed (≈ 2.0 cm/s). `LUNARLEAF_LEGACY=1` reproduces the original table as `T6_forced_airflow_legacy.csv`. |
+| `T6_forced_airflow.csv` | Forced-ventilation sweep (µg leaf, pressure outlet, steady state): ΔC vs fan speed, with the Earth-equivalent speed (≈ 2.0 cm/s) and `throughput_over_set` (delivered / set flow). `LUNARLEAF_LEGACY=1` reproduces the original table as `T6_forced_airflow_legacy.csv`. |
 | `T7_hardware_timeseries.csv` | BRIC/CARA/VEGGIE model time series: dish-mean CO₂ excess + leaf-surface gap vs step. |
 | `T8_enclosure_timescales.csv` | Analytic sealed-dish (BRIC) atmosphere timescales: CO₂ depletion (min), CO₂ stress (h), O₂ hypoxia (days). |
-| `T9_fan_by_scale.csv` | Forced-airflow sweep for leaf/rosette/canopy with per-run `ma_max`; Earth-equivalent speed per scale from Ma ≤ 0.3 runs only (leaf ≈ 2.0, rosette ≈ 6.5 cm/s, canopy not reached ≤ 6.6 cm/s). |
-| `T10_hardware_by_scale.csv` | BRIC/CARA/VEGGIE surface gradient + dish-mean CO₂ across the three scales, with `ma_max` (BRIC/CARA at the original 22 k steps; VEGGIE at steady state). |
+| `T9_fan_by_scale.csv` | Forced-airflow sweep for leaf/rosette/canopy with per-run `ma_max`; Earth-equivalent speed per scale from Ma ≤ 0.3 runs only (leaf ≈ 2.0, rosette ≈ 6.1 cm/s, canopy not reached ≤ 3.3 cm/s), with `throughput_over_set`. |
+| `T10_hardware_by_scale.csv` | BRIC/CARA/VEGGIE surface gradient + dish-mean CO₂ across the three scales, with `ma_max` (BRIC/CARA at the original 22 k steps; VEGGIE at steady state, with `throughput_over_set`). |
+| `inlet_flux_before.csv`, `inlet_flux_after.csv` | Forced-airflow throughput for every forced scene and sweep point: exact mass flux through the outlet (and inlet) face over the set flow U·H, density next to the inlet, value at 5 s and drift over the last 5 s. Before = the original ρ = 1 inlet (85–98 % delivered), after = the density-matched inlet. From `validation/inlet_flux.ts`. |
+| `inlet_variants.csv` | Rosette 11.6 cm/s and canopy 6.6 cm/s under five inlet/collision variants (ρ = 1 equilibrium, density-matched, Zou–He; BGK, MRT) and impulsive vs ramped start: which runs diverge, end Mach and throughput. From `validation/inlet_variants.ts`. |
 | `T11_photosynthesis_feedback.csv` | 0-D closed-loop model: start/end net assimilation + 12 h carbon (% of Earth) per enclosure. |
 | `T12_feedback_spatial.csv` | Solver closed-loop net assimilation (% of potential) by gravity / scale / hardware. **Stale:** hand-transcribed from `feedback_test.ts` (22 k steps, copy outlet); not regenerated. |
 | `T13_boundary_layer.csv` | Boundary-layer conductance g_bl, film thickness δ, Sherwood number per scale × gravity at steady state, with `gbl_drift_pct_last_5s`. Consumed by the OSDR omics package (`extract_cfd.py`) and `fvcb.py`. |
@@ -122,17 +150,17 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
   agar at 1 g needs a calibrated humidity buoyancy coefficient or weaker forcing on a finer lattice; a more stable
   collision scheme does not help (MRT, T24, breaks down sooner than BGK).
 - **Surface distribution (T18):** at 0 g the whole surface degrades (100 % of a leaf or rosette is worse than
-  an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.294 vs 0.298)
-  but leaves the most uneven surface of any case (CoV 0.65, p90 0.61 vs 0.52 on Earth).
+  an Earth leaf's mean, and the CoV roughly halves); VEGGIE restores the rosette's *mean* gap (0.289 vs 0.298)
+  but leaves the most uneven surface of any case (CoV 0.66, p90 0.61 vs 0.52 on Earth).
 - **Grid:** three-level resolution ladder converges monotonically; production grid within 2.0 % (0 g) and
   5.5 % (1 g) of the extrapolated g_bl (T16).
 - **Reversible:** a forced airflow of ≈ 2.0 cm/s restores Earth-equivalent surface gradients in µg
   (single leaf) — an order of magnitude below flight-hardware fan speeds (VEGGIE/APH, 0.1–1 m/s).
 - **Hardware:** BRIC (sealed) → CO₂ fixed in ~7 min (light) / O₂ hypoxia in ~6.5 days (dark) + steepest
   surface gradient; CARA (tape) vents the enclosure but not the µg surface layer; VEGGIE (airflow) fixes both.
-- **Scale-dependent:** the ventilation to null the µg penalty rises **≈ 2.0 → 6.5 cm/s** for leaf → rosette;
-  the canopy does not reach its Earth level within the solver's valid range (≤ 6.6 cm/s), and its
-  surface gap plateaus above Earth even in the faster (Ma > 0.3, unreliable) runs. A single fan speed that
+- **Scale-dependent:** the ventilation to null the µg penalty rises **≈ 2.0 → 6.1 cm/s** for leaf → rosette;
+  the canopy does not reach its Earth level within the solver's valid range (≤ 3.3 cm/s), and its
+  surface gap stays above Earth in the one faster canopy run that completes (6.6 cm/s, Ma 0.35, unreliable). A single fan speed that
   suffices for a leaf under-serves a canopy; resolving the canopy at higher speeds needs a finer lattice.
 - **Closed loop:** with CO₂-limited photosynthesis, boundary-layer depletion self-suppresses assimilation
   1–4% (most in the trapped rosette crown); over a 12 h photoperiod a **sealed BRIC dish fixes ~1%** of the
@@ -169,6 +197,10 @@ python validation/scales_analysis.py   # fan + hardware by scale -> F8, F9
 python validation/feedback_0d.py       # 0-D closed-loop photosynthesis -> F10, T11
 # 4) verification added 2026-10-07 (timeseries -> T15/F11, outlet check -> F12, resolution ladder -> T16)
 #    see validation/timeseries.ts, age_check.ts, resolution_ladder.ts and analysis/*.py
+# 4b) forced-airflow throughput (added 2026-11-07) -> inlet_flux_<tag>.csv, inlet_variants.csv
+#    export INLET_FLUX_TAG=after   # names the output table and partials (before = the run on the ρ = 1 inlet)
+#    node validation/inlet_flux.mjs list | xargs -P 16 -I{} node validation/inlet_flux.mjs job {} && node validation/inlet_flux.mjs merge
+#    node validation/inlet_variants.mjs list | xargs -P 16 -I{} node validation/inlet_variants.mjs job {} && node validation/inlet_variants.mjs merge
 python3 -m pytest analysis/ -q
 # CFD closed-loop check (net assimilation by gravity/scale/hardware) -> T12:
 # npx esbuild validation/feedback_test.ts --bundle --format=esm --platform=node --outfile=validation/feedback_test.mjs && node validation/feedback_test.mjs 8
