@@ -7,4 +7,4 @@
 - **Archiving:** a "minted DOI for permanent academic archiving". No archival DOI exists yet.
 - **Comparisons:** a table that badges three other tools "[No Physics]", with no source.
 
-**Replacement:** a 13-slide deck built from the October 2026 `results/tables` (each slide names its source table; its fan slide predates the 2026-11-07 inlet fix and still gives the rosette as ≈ 6.5 cm/s, now 6.1): [LunarLeaf-CFD: gravity and the leaf boundary layer](https://claude.ai/artifact/XLzC9EJb1KD4vbuNF334Bo). The link is private until shared by its owner.
+**Replacement:** a 13-slide deck built from the October 2026 `results/tables` (each slide names its source table; its fan slide was updated for the 2026-11-07 inlet fix): [LunarLeaf-CFD: gravity and the leaf boundary layer](https://claude.ai/artifact/XLzC9EJb1KD4vbuNF334Bo). The link is private until shared by its owner.
