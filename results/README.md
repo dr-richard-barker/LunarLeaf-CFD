@@ -24,9 +24,9 @@ gravity × canopy-scale predictions of surface O₂/CO₂/H₂O gradients.
 > so the canopy's valid range is now ≤ 3.3 cm/s. The rosette at 11.6 cm/s now diverges. It does so with a
 > Zou–He inlet, with MRT and from a ramped start too, so its earlier stable run (≈ 10.7 cm/s actually
 > delivered) relied on the leaking inlet (`tables/inlet_variants.csv`). Not regenerated: T12 (still stale; its
-> VEGGIE row also predates this fix). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md`, `MANUSCRIPT.docx` and
-> the top-level README still carry the old values (6.5 cm/s, ≤ 6.6 cm/s, 0.294, 0.406, Mach 0.32) and await an
-> author decision. The copy-outlet decay quoted below as "71 % at 5.2 s" was relative to the flow at 0.25 s; measured
+> VEGGIE row also predates this fix). `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md` and the top-level README
+> were updated to these values the same day, and `MANUSCRIPT.docx` rebuilt (`validation/build_docx.py`); the CO₂
+> parity speed in DISCUSSION §3.6 moves 2.2 → 2.1 cm/s (now printed by `validation/analyze_model.py`). The copy-outlet decay quoted below as "71 % at 5.2 s" was relative to the flow at 0.25 s; measured
 > against the set flow it is 68 % at 5.25 s (U = 0.02).
 >
 > **Revision 2026-10-07.** T2, T6, T7, T9, T10, T13 and T14 (and F3, F4, F6–F9) were regenerated after two

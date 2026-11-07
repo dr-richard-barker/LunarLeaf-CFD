@@ -153,6 +153,14 @@ ax.grid(alpha=0.25); ax.legend(fontsize=8.5)
 fig.tight_layout(); fig.savefig(f"{FIG}/F6_forced_airflow.png", dpi=130)
 plt.close(fig)
 print(f"F6: Earth-equivalent ventilation ≈ {null_cms:.1f} cm/s (nulls the µg penalty)")
+# Same linear crossing for CO2 (quoted in DISCUSSION §3.6).
+earth_c = float(fan[fan.case == "earth_1g"].dC_CO2_mean.iloc[0])
+ys_c = ff.dC_CO2_mean.values
+null_c = np.nan
+for i in range(1, len(xs)):
+    if (ys_c[i-1] - earth_c) * (ys_c[i] - earth_c) <= 0:
+        null_c = xs[i-1] + (earth_c - ys_c[i-1]) / (ys_c[i] - ys_c[i-1]) * (xs[i] - xs[i-1]); break
+print(f"F6: CO2 reaches its Earth level ({earth_c:.3f}) at ≈ {null_c:.1f} cm/s")
 
 # ---------------------------------------------------------------- T5 physical prediction
 if HAVE_ANCHOR:

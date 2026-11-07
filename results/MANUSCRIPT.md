@@ -23,7 +23,7 @@ chamber gas exchange (net assimilation 3.85 µmol CO₂ m⁻² s⁻¹). Reducing
 removes convective ventilation (peak flow speed ∝ √g → 0) and steepens the surface gas gaps 1.7–2.3× at
 every scale; denser architectures — a rosette, then a microgreen canopy — trap air and amplify the effect.
 The forced airflow needed to restore Earth‑equivalent boundary layers rises with planting density
-(≈ 2.0 cm s⁻¹ for a leaf, ≈ 6.5 cm s⁻¹ for a rosette); a microgreen canopy is not restored within the
+(≈ 2.0 cm s⁻¹ for a leaf, ≈ 6.1 cm s⁻¹ for a rosette); a microgreen canopy is not restored within the
 solver's valid range. Mapping the three ISS growth systems onto dish
 boundary conditions, a sealed BRIC dish both drifts toward hypoxia and, once photosynthesis is made CO₂‑
 limited, fixes only ≈ 1 % of the Earth carbon over a 12 h photoperiod; a micropore‑taped CARA dish sustains
@@ -187,10 +187,11 @@ Because the microgravity penalty is transport‑limited, it is engineerable: for
 the missing buoyant convection. For an isolated leaf, a fan of only ≈ 2.0 cm s⁻¹ restores Earth‑equivalent
 surface gradients (Fig. 6). Extending the sweep to all three scales exposes a result with direct hardware
 consequences (Fig. 7a): the Earth‑equivalent airflow rises with planting density — ≈ 2.0 cm s⁻¹ for a leaf
-and ≈ 6.5 cm s⁻¹ for a rosette (Fig. 7b), about 3×. The canopy is the hardest to ventilate: side airflow
-skims the top of the stand while the within‑canopy air stays comparatively stagnant, so its gradient‑vs‑speed
-curve levels off above the Earth level and does not reach it within the solver's valid range (Mach ≤ 0.3,
-up to 6.6 cm s⁻¹); faster runs exceed that limit or become numerically unstable. This is a hint that a real
+and ≈ 6.1 cm s⁻¹ for a rosette (Fig. 7b), about 3×. The canopy is the hardest to ventilate: side airflow
+skims the top of the stand while the within‑canopy air stays comparatively stagnant, so its surface gap stays
+well above the Earth level across the solver's valid range (Mach ≤ 0.3, up to 3.3 cm s⁻¹; ΔC H₂O 0.32 vs
+0.26 on Earth) and barely falls in the one faster canopy run that completes (6.6 cm s⁻¹, Mach 0.35, not used).
+Faster rosette and canopy runs (≥ 11.6 cm s⁻¹) diverge on this lattice. This is a hint that a real
 dense canopy needs vigorous, likely turbulent, through‑canopy flow, and resolving it needs a finer lattice.
 
 ![Figure 6](figures/F6_forced_airflow.png)
@@ -202,8 +203,8 @@ with the Earth‑1 g and µg‑no‑fan references and the ≈ 2.0 cm s⁻¹ Ear
 
 **Figure 7 | Ventilation requirement scales with planting density.** (a) Fan‑sweep curves for leaf/rosette/
 canopy with each scale's Earth reference and crossing point; hollow points exceed Mach 0.3 and are not
-used. (b) Earth‑equivalent airflow ≈ 2.0 / 6.5 cm s⁻¹ for leaf / rosette; the canopy does not reach its
-Earth level within the valid range (≤ 6.6 cm s⁻¹).
+used; runs that diverged are not shown. (b) Earth‑equivalent airflow ≈ 2.0 / 6.1 cm s⁻¹ for leaf / rosette;
+the canopy does not reach its Earth level within the valid range (≤ 3.3 cm s⁻¹).
 
 ### Spaceflight hardware as boundary conditions
 
@@ -220,7 +221,7 @@ the microgravity boundary layer, so the leaf‑surface gradient remains that of 
 **VEGGIE** — light + forced airflow — vents the enclosure *and* thins the leaf boundary layer, cutting the
 surface gradient ~4× relative to an open microgravity dish. Across all three scales, BRIC ≈ CARA at the leaf
 surface. A single VEGGIE fan speed (~8 cm s⁻¹) over‑ventilates a leaf and brings a rosette to about its
-Earth level (|ΔC CO₂| 0.294 vs 0.298), but does not restore a canopy, which no fan speed within the solver's
+Earth level (|ΔC CO₂| 0.289 vs 0.298), but does not restore a canopy, which no fan speed within the solver's
 valid range brings back to its Earth level (Fig. 9).
 
 ![Figure 8](figures/F7_hardware_compare.png)
@@ -288,7 +289,7 @@ gravity atmosphere throttles carbon gain.
 
 Because the effect is transport‑ rather than biochemistry‑limited, it is engineerable, and the same solver
 that quantifies the penalty sizes the forced airflow needed to remove it. The scale dependence of that
-requirement (≈ 2.0 → 6.5 cm s⁻¹ from leaf to rosette, with the canopy not restored within the solver's
+requirement (≈ 2.0 → 6.1 cm s⁻¹ from leaf to rosette, with the canopy not restored within the solver's
 valid range) is a concrete design guideline: a ventilation
 setting or permeable seal tuned on sparse plants will under‑serve a dense stand. The hardware mapping frames
 the three ISS systems as a ladder of increasing gas‑exchange control — sealed (both enclosure drift and
@@ -300,7 +301,9 @@ light‑driven responses [7]. Consistent with a transport-limited mechanism, who
 
 **Limitations.** The model is 2‑D and uses the Boussinesq approximation; results are kept within its
 validity (β·ΔC ≲ 0.5), and Earth‑equivalent fan speeds use only runs below Mach 0.3 (u_max ≲ 0.17 lattice
-units). The canopy VEGGIE value (Mach 0.32) is just outside that range. Photosynthesis is CO₂‑limited through a rectangular‑
+units). The canopy VEGGIE value (Mach 0.46) lies outside that range, and rosette and canopy fan runs at
+11.6 cm s⁻¹ and above diverge on this lattice (the rosette also with MRT collision and from a ramped start).
+Photosynthesis is CO₂‑limited through a rectangular‑
 hyperbola response, but stomatal *conductance* is not yet dynamic (transpiration is held CO₂‑independent),
 and the CO₂‑response and tape‑permeance parameters are reasonable assumptions rather than fits. Absolute ΔC
 values are reported in lattice excess units and converted to ppm through a single literature‑anchored
@@ -339,7 +342,10 @@ diffusion.
 **Boundary conditions and hardware.** The leaf surface imposes a stomatal source/sink (CO₂ uptake, O₂ + H₂O
 release; signs reversed and scaled by R/A = 0.31 in the dark). Chamber walls are ambient‑held (Dirichlet),
 sealed (zero‑flux, BRIC), semi‑permeable (the lid/side cells relax toward ambient each step, CARA micropore
-tape), or an inlet/outlet ventilation pair (VEGGIE forced airflow). The dense canopy uses a reduced per‑leaf
+tape), or an inlet/outlet ventilation pair (VEGGIE forced airflow). The inlet imposes the fan speed as an
+equilibrium distribution at the density of the adjacent fluid cell and the outlet holds ρ = 1; the delivered
+through‑flow, measured as the mass flux leaving the outlet, is 99.6–100.9 % of the set flow in every run below
+Mach 0.3 (an inlet held at ρ = 1 delivered only 85–98 %). The dense canopy uses a reduced per‑leaf
 flux to represent self‑shading.
 
 **Photosynthesis feedback.** When enabled, the CO₂ uptake follows A(C) = A_max (C − Γ)/(C − Γ + K) of the

@@ -27,7 +27,7 @@ textbook benchmarks **and** anchored to measured *Arabidopsis* gas-exchange rate
    microgravity), with trapped crown pockets reaching ≈ 25 ppm** (`T5`; **TODO:** T5 predates the 2026-10-07
    steady-state rerun and needs regenerating from `validation/raw/`; the microgravity values will rise);
 4. the microgravity penalty is **fully reversible by forced ventilation**, but the required airflow **scales
-   with planting density** — **≈ 2.0 cm s⁻¹ for a leaf and ≈ 6.5 cm s⁻¹ for a rosette** restore Earth-equivalent
+   with planting density** — **≈ 2.0 cm s⁻¹ for a leaf and ≈ 6.1 cm s⁻¹ for a rosette** restore Earth-equivalent
    surface gradients, while a **canopy** is not restored within the solver's valid range (`T6`, `F6`, `F8`, `T9`)
    — so a single fan speed cannot serve all densities;
 5. the three ISS plant-growth systems map onto three dish boundary conditions (`§3.7`, `F7`, `T8`):
@@ -129,9 +129,12 @@ effect — and ≥ 20 ppm in trapped rosette pockets — once low gravity and de
 
 Because the penalty is transport-limited, it can be engineered away. Replacing the absent buoyant
 convection with a forced inlet flow (the leaf placed in a ventilation channel, gravity off), we sweep
-fan speed and track the surface gap (`F6`, `T6`). The still-microgravity gap (ΔC = 0.240, model units)
+fan speed and track the surface gap (`F6`, `T6`). The inlet holds the fan speed at the density of the
+adjacent fluid, so the measured outflow is 99.6–100.9 % of the set flow in every run below Mach 0.3
+(`inlet_flux_after.csv`); the original inlet, held at ρ = 1, leaked mass back out and delivered only
+85–98 % (`inlet_flux_before.csv`, fixed 2026-11-07). The still-microgravity gap (ΔC = 0.240, model units)
 falls monotonically with airflow and **crosses the Earth-1 g level (0.128) at ≈ 2.0 cm s⁻¹** for water
-vapour; CO₂ reaches parity at about the same speed (≈ 2.2 cm s⁻¹). Above about 2 cm s⁻¹ the forced flow
+vapour; CO₂ reaches parity at about the same speed (≈ 2.1 cm s⁻¹). Above about 2 cm s⁻¹ the forced flow
 *over-ventilates*, driving the surface gaps below their Earth values. The predicted Earth-equivalent speed (a few cm s⁻¹) is well within — and
 an order of magnitude below — the 0.1–1 m s⁻¹ air velocities used in flight hardware such as VEGGIE and
 the Advanced Plant Habitat, giving physical grounds for why those systems restore gas exchange, and a
@@ -178,18 +181,20 @@ makes each rung quantitative.
 Extending the fan sweep (§3.6) and the hardware comparison (§3.7) to all three plant scales exposes a
 result with direct hardware consequences (`F8`, `F9`, `T9`, `T10`): **the ventilation needed to null the
 microgravity penalty rises steeply with planting density.** The Earth-equivalent airflow is
-**≈ 2.0 cm s⁻¹ for an isolated leaf and ≈ 6.5 cm s⁻¹ for a rosette** (`F8`), about 3×. The canopy is the
+**≈ 2.0 cm s⁻¹ for an isolated leaf and ≈ 6.1 cm s⁻¹ for a rosette** (`F8`), about 3×. The canopy is the
 hardest to ventilate: side airflow skims the top of the stand while the within-canopy air stays comparatively
-stagnant, so its ΔC-vs-speed curve levels off above the Earth level and **does not reach it within the
-solver's valid range** (Mach ≤ 0.3, up to 6.6 cm s⁻¹). Faster runs exceed that limit or go numerically
-unstable, so `T9` flags them (`ma_max`) and excludes them. This hints that a real dense canopy needs
+stagnant, so its surface gap stays well above the Earth level and **does not reach it within the solver's
+valid range** (Mach ≤ 0.3, up to 3.3 cm s⁻¹; ΔC H₂O 0.32 vs 0.26 on Earth), and barely falls in the one
+faster canopy run that completes (6.6 cm s⁻¹, Mach 0.35). Faster runs exceed that limit or diverge (rosette
+and canopy at ≥ 11.6 cm s⁻¹; the rosette also with MRT collision and from a ramped start,
+`inlet_variants.csv`), so `T9` flags them (`ma_max`) and excludes them. This hints that a real dense canopy needs
 vigorous, likely turbulent, through-canopy flow, not laminar over-flow; resolving it needs a finer lattice.
 
 The hardware comparison inherits this scale dependence (`F9`, `T10`). Across all three scales, **BRIC and
 CARA give nearly the same steep leaf-surface gradient** — the tape vents the *enclosure* but not the *µg
-surface layer* — while **a single VEGGIE fan speed (~8 cm s⁻¹) over-ventilates a leaf (|ΔC CO₂| 0.087)
-and brings a rosette to about its Earth level (0.294 vs 0.298), but does not restore a canopy (0.406 vs its
-Earth 0.364)**. The canopy VEGGIE run is just past the low-Mach limit (Mach 0.32), and BRIC/CARA in `T10`
+surface layer* — while **a single VEGGIE fan speed (~8 cm s⁻¹) over-ventilates a leaf (|ΔC CO₂| 0.086)
+and brings a rosette to about its Earth level (0.289 vs 0.298), but does not restore a canopy (0.426 vs its
+Earth 0.364)**. The canopy VEGGIE run is well past the low-Mach limit (Mach 0.46), and BRIC/CARA in `T10`
 keep the original 3.8 s run length, so the canopy comparison is indicative only.
 The enclosure-drift side worsens too: the sealed (BRIC) rosette depletes its dish CO₂ ~2.5× faster than a
 single leaf, and even the taped (CARA) rosette carries a larger residual dish offset (`T10`,

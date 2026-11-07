@@ -60,7 +60,7 @@ measured \textit{Arabidopsis thaliana} whole-plant-chamber gas exchange (net ass
 Reducing gravity from 1\,\emph{g} to microgravity removes convective ventilation (peak flow $\propto\sqrt{g}\to0$)
 and steepens surface gas gaps 1.7--2.3$\times$ at every scale; denser architectures (rosette, microgreen canopy) trap
 air and amplify the effect. The forced airflow needed to restore Earth-equivalent boundary layers rises with
-planting density ($\approx$~2.0~\cmsu for a leaf, $\approx$~6.5~\cmsu for a rosette); a microgreen canopy is not
+planting density ($\approx$~2.0~\cmsu for a leaf, $\approx$~6.1~\cmsu for a rosette); a microgreen canopy is not
 restored within the solver's valid range. Mapping the three ISS
 growth systems onto dish boundary conditions, a sealed BRIC dish both drifts toward hypoxia and, once photosynthesis is
 made \co-limited, fixes only $\approx$\,1\,\% of the Earth carbon over a 12\,h photoperiod; a micropore-taped
@@ -210,10 +210,11 @@ Canopy $\cdot$ microgravity & 10.6 & 14.4\\
 \subsection{Forced ventilation reverses the penalty---but the requirement scales with density}
 Forced airflow substitutes for the missing buoyant convection. For an isolated leaf, $\approx2.0\,\cmsu$
 restores Earth-equivalent gradients (Fig.~\ref{fig:fan}). Across scales the Earth-equivalent airflow rises with
-density---$\approx$~2.0\,\cmsu for a leaf and $\approx$~6.5\,\cmsu for a rosette (Fig.~\ref{fig:fanscale}), about
+density---$\approx$~2.0\,\cmsu for a leaf and $\approx$~6.1\,\cmsu for a rosette (Fig.~\ref{fig:fanscale}), about
 $3\times$. The canopy is hardest to ventilate: side airflow skims the stand while within-canopy air stays
-stagnant, so its curve levels off above the Earth level and does not reach it within the solver's valid range
-(Mach $\le0.3$, up to 6.6\,\cmsu); faster runs exceed that limit or become unstable.
+stagnant, so its surface gap stays well above the Earth level across the solver's valid range (Mach $\le0.3$, up to
+3.3\,\cmsu; $\Delta C_{\mathrm{H_2O}}$ 0.32 vs 0.26 on Earth) and barely falls in the one faster canopy run that
+completes (6.6\,\cmsu, Mach 0.35, not used). Faster rosette and canopy runs ($\ge11.6\,\cmsu$) diverge on this lattice.
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.72\linewidth]{F6_forced_airflow.png}
@@ -225,8 +226,9 @@ Earth-1\,\emph{g} and $\mu$g references and the $\approx2.0\,\cmsu$ Earth-equiva
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{F8_fan_by_scale.png}
 \caption{\textbf{Ventilation requirement scales with planting density.} (a)~Fan-sweep curves per scale with Earth
-references and crossings; hollow points exceed Mach 0.3 and are not used. (b)~Earth-equivalent airflow $\approx$
-2.0~/~6.5~\cmsu for leaf~/~rosette; the canopy does not reach its Earth level within the valid range ($\le6.6\,\cmsu$).}
+references and crossings; hollow points exceed Mach 0.3 and are not used; runs that diverged are not shown.
+(b)~Earth-equivalent airflow $\approx$ 2.0~/~6.1~\cmsu for leaf~/~rosette; the canopy does not reach its Earth level
+within the valid range ($\le3.3\,\cmsu$).}
 \label{fig:fanscale}
 \end{figure}
 
@@ -241,7 +243,7 @@ surgical tape holds near-ambient \co/\oo{} while parafilm depletes \co{} and tri
 but does not fix the microgravity boundary layer (Fig.~\ref{fig:hwscale}). \textbf{VEGGIE}---light + forced airflow---
 vents the enclosure \emph{and} thins the boundary layer ($\sim4\times$ smaller surface gradient than an open
 microgravity dish). Across all scales BRIC~$\approx$~CARA at the surface; one VEGGIE fan speed ($\sim8\,\cmsu$)
-over-ventilates a leaf and brings a rosette to about its Earth level ($|\Delta C_{\mathrm{CO_2}}|$ 0.294 vs 0.298) but
+over-ventilates a leaf and brings a rosette to about its Earth level ($|\Delta C_{\mathrm{CO_2}}|$ 0.289 vs 0.298) but
 does not restore a canopy (Fig.~\ref{fig:hwscale}).
 
 \begin{figure}[t]\centering
@@ -314,7 +316,7 @@ convection, plant organs sit in a thickened, poorly-ventilated boundary layer th
 \oo-enriched and humid. This is not a fixed penalty but one that scales with gravity, canopy architecture and---through
 the \co{} feedback---the gas-exchange control of the enclosure. Because the effect is transport- rather than
 biochemistry-limited it is engineerable, and the same solver that quantifies it sizes the airflow needed to remove it.
-The scale dependence of that requirement ($\approx$2.0~$\to$~6.5\,\cmsu from leaf to rosette, canopy not restored
+The scale dependence of that requirement ($\approx$2.0~$\to$~6.1\,\cmsu from leaf to rosette, canopy not restored
 within the valid range) is a concrete design
 guideline: a setting tuned on sparse plants under-serves a dense stand. Framing the three ISS systems as a ladder of
 gas-exchange control---sealed, vented seal, actively ventilated---and adding the photosynthesis feedback converts these
@@ -330,8 +332,9 @@ physical basis for that hardware dependence, and its BRIC-specific \oo{} drawdow
 the hypoxia signatures reported for sealed-canister experiments.
 
 \paragraph{Limitations.} The model is 2-D and Boussinesq (kept within validity, $\beta\,\Delta C\lesssim0.5$);
-Earth-equivalent fan speeds use only runs below Mach 0.3 ($u_{\max}\lesssim0.17$), and the canopy VEGGIE value
-(Mach 0.32) is just outside that range.
+Earth-equivalent fan speeds use only runs below Mach 0.3 ($u_{\max}\lesssim0.17$); the canopy VEGGIE value
+(Mach 0.46) lies outside that range, and rosette and canopy fan runs at $\ge11.6\,\cmsu$ diverge on this lattice (the
+rosette also with MRT collision and from a ramped start).
 Photosynthesis is \co-limited but stomatal \emph{conductance} is not yet dynamic; the \co-response and tape-permeance
 parameters are reasonable assumptions, not fits. Absolute $\Delta C$ are lattice units converted to ppm through one
 literature-anchored conductance, and the microgravity boundary layer is bounded by the finite chamber, so the reported
@@ -353,8 +356,10 @@ diffusivity ratio $1.6:2.0:2.4\;(\times10^{-5}\,\mseu)$; walls zero-flux, Dirich
 \paragraph{Gravity/buoyancy.} $\mathbf{f}=\rho\,\mathbf{g}\sum_k\beta_k(c_k-c_{k,0})$, $\mathbf{g}$ user-set
 (0--9.81\,\msq); $g=0$ removes the force.
 \paragraph{Boundary conditions.} Leaf surface = stomatal source/sink (dark: signs reversed, $\times R/A=0.31$). Walls:
-ambient (Dirichlet), sealed (BRIC), semi-permeable lid/sides (CARA tape) or inlet/outlet (VEGGIE). The canopy uses a
-reduced per-leaf flux for self-shading.
+ambient (Dirichlet), sealed (BRIC), semi-permeable lid/sides (CARA tape) or inlet/outlet (VEGGIE). The VEGGIE inlet
+imposes the fan speed as an equilibrium distribution at the adjacent fluid density and the outlet holds $\rho=1$; the
+delivered through-flow (mass flux leaving the outlet) is 99.6--100.9\,\% of the set flow in every run below Mach 0.3
+(an inlet held at $\rho=1$ delivered only 85--98\,\%). The canopy uses a reduced per-leaf flux for self-shading.
 \paragraph{Photosynthesis feedback.} $A(C)=A_{\max}(C-\Gamma)/(C-\Gamma+K)$ of local surface \co{}, normalised to the
 measured flux at ambient; \oo{} release tracks $A$.
 \paragraph{Calibration \& 0-D model.} Lattice mapped by resolving a 1.5\,cm leaf at 52 cells and matching \wo{}
