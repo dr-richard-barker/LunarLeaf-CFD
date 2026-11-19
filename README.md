@@ -5,7 +5,7 @@
 > plant tissue — and how those change when gravity changes (1 g → Mars 0.38 g → Moon 0.17 g → µg).**
 >
  
-![Microgravity_Stagnation_in_Spaceflight_Plants](https://github.com/dr-richard-barker/LunarLeaf-CFD/blob/main/Microgravity_Stagnation_in_Spaceflight_Plants.png))
+![Microgravity_Stagnation_in_Spaceflight_Plants](https://github.com/dr-richard-barker/LunarLeaf-CFD/blob/main/Microgravity_Stagnation_in_Spaceflight_Plants.png)
 > 
 ### ▶ [Launch the live demo](https://dr-richard-barker.github.io/LunarLeaf-CFD/) — no install; pick a scenario and press Run
 *(deployed from `main` via GitHub Pages; a visible browser tab is needed since background tabs pause the animation loop.)*
@@ -88,11 +88,11 @@ publication‑grade data and figures. Full design: [`docs/ARCHITECTURE_AND_PLAN.
 
 Status legend: ✅ done · 🟡 in progress · ⬜ not started
 
-### Milestone 0 — Foundations
-- 🟡 Repo scaffolding — README, docs, Vite+React+TS app scaffolded; LICENSE, `.zenodo.json`, `CITATION.cff` still to add
-- ⬜ Consolidate three prototypes into `/legacy` for reference & credit
+### Milestone 0 — Foundations — ✅ complete
+- ✅ Repo scaffolding — README, docs, Vite+React+TS app, `LICENSE`, `.zenodo.json`, `CITATION.cff` all in place
+- ✅ Prior prototypes & retired assets — three predecessor repos linked via `related_identifiers` in `.zenodo.json` and analysed in `docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md`; retired July slide deck archived in `archive/2026-07-deck/`
 - ✅ Decide stack & pin versions — React 18 + TypeScript + Vite; CPU D2Q9 LBM core (WebGPU/WASM twin deferred to later milestones per plan)
-- 🟡 Define the canonical parameter schema — solver/scenario types in place; full UI schema (geometry/env/biology) comes with M2
+- ✅ Define the canonical parameter schema — solver/scenario types in place (`src/scenarios/scenarios.ts`, 33 scenarios); full interactive UI editor comes with M2
 
 ### Milestone 1 — Real 2D solver (the scientific core) — ✅ solver + all four gates validated
 - ✅ Incompressible flow solver (D2Q9 LBM, BGK) — validated on cavity + cylinder (gates 1 & 2)
@@ -188,9 +188,9 @@ not perfectly controlled. Treat the curl rows as indicative until the blade is r
 - 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
 - ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.0 cm/s nulls the microgravity penalty** (`results/T6`, `F6`; was 2.8 before the 2026‑10‑07 outlet + steady‑state fix, see `results/README.md`). Three in‑app fan presets (3/8/17 cm/s).
 - ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
-- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.0 / 6.1 cm/s** (leaf/rosette); the canopy does not reach Earth level within the solver's low‑Mach range (≤ 3.3 cm/s). Since 2026‑11‑07 the fan inlet delivers its set flow (it had leaked 2–15 %; `results/README.md`). BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`). 4 new in‑app presets → 23 scenarios.
-- ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression 1–4% (most in rosette crown); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). 3 feedback presets → 26 scenarios.
-- ✅ **Draft manuscript assembled** — [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md) (full paper) + [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex) (self‑contained npj‑Microgravity‑style LaTeX, 9 figures + 5 tables, structure‑validated).
+- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.0 / 6.1 cm/s** (leaf/rosette); the canopy does not reach Earth level within the solver's low‑Mach range (≤ 3.3 cm/s). Since 2026‑11‑07 the fan inlet delivers its set flow (it had leaked 2–15 %; `results/README.md`). BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`).
+- ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression **1.1–5.5%** (most in µg canopy / rosette); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). (`33` total scenarios in `src/scenarios/scenarios.ts`: 29 plant + 4 benchmark gates.)
+- ✅ **Draft manuscripts assembled** — [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md) + [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex) (*npj Microgravity* draft), and [`manuscript/MANUSCRIPT.md`](manuscript/MANUSCRIPT.md) + [`manuscript/main.tex`](manuscript/main.tex) (coupled biophysics & multi-omics draft).
 
 #### 5a. First science result — three scales × gravity
 All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O
@@ -226,16 +226,16 @@ calibration to the measured Vernier gas‑exchange data (Milestone 4) are the ne
 ### Milestone 4 — Validation against real data — 🟡 gas-exchange validation done (see `results/`)
 - ✅ Ingest Vernier O₂/RH/temperature `ExportedData` time series (diel gas cycling; `results/figures/F1,F2`)
 - ✅ Anchor the model to measured flux — net assimilation **3.85 µmol CO₂ m⁻² s⁻¹** (biomass workbook) + Vernier cross-check; closed-chamber transport reproduced (mass conserved 2×10⁻⁵)
-- ✅ Physical prediction — surface CO₂ drawdown **≈4 ppm (leaf, Earth) → ≈13 ppm (rosette bulk, µg)**, anchored on the measured flux (`results/tables/T5`, `DISCUSSION.md`)
+- ✅ Physical prediction — surface CO₂ drawdown **3.8 ppm (leaf, Earth) → 14.2 ppm (rosette, µg) → 19.8 ppm (canopy, µg)**, anchored on the measured flux (`results/tables/T5_physical_prediction.csv`, `DISCUSSION.md`)
 - ⬜ Cross‑check against the "Imaging of pH, CO₂ and O₂ around Arabidopsis" reference (spatially-resolved test — next)
 
-**→ Results package: [`results/`](results/README.md)** — tables T1–T5, figures F1–F5, and an
+**→ Results package: [`results/`](results/README.md)** — tables T1–T24, figures F1–F17, and an
 academic results + discussion write-up ([`results/DISCUSSION.md`](results/DISCUSSION.md)).
 
 ### Milestone 5 — Publish
 - ⬜ 3D solver benchmark (optional, if WebGPU perf allows)
-- 🟡 Zenodo release — repo packaged & Zenodo-ready (`LICENSE`, `.zenodo.json`, `CITATION.cff` added); tag a release + link the GitHub↔Zenodo webhook to mint the DOI
-- 🟡 *npj Microgravity* manuscript — draft assembled ([`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`.docx`](results/MANUSCRIPT.docx), [LaTeX](results/manuscript/manuscript.tex)); finalise authors/refs
+- 🟡 Zenodo release — repo packaged & Zenodo-ready (`LICENSE`, `.zenodo.json`, `CITATION.cff` aligned); tag `v0.1.0` + enable the GitHub↔Zenodo webhook to mint the DOI
+- 🟡 Manuscript — drafts assembled ([`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`.docx`](results/MANUSCRIPT.docx), [LaTeX](results/manuscript/manuscript.tex), and [`manuscript/`](manuscript/MANUSCRIPT.md)); finalise co-authors/refs and submit
 
 ## License & citation
 Source code: **MIT** (`LICENSE`). Manuscript text and figures under `results/` (`MANUSCRIPT.md`,
@@ -256,24 +256,20 @@ redistributed — referenced by provenance. To cite, see [`CITATION.cff`](CITATI
 ---
 
 ## 7. Zenodo readiness checklist
-- ⬜ `LICENSE` (code) + `LICENSE-data` if bundling data
-- ⬜ `.zenodo.json` (authors, ORCIDs, keywords, funding, related identifiers linking the 3 legacy repos)
-- ⬜ `CITATION.cff`
-- ⬜ Versioned release tag (`v0.1.0` …) and GitHub↔Zenodo webhook
-- ⬜ Archived reference datasets or clear links to their sources
-- ⬜ Screenshots / demo GIF / short methods note in the deposit
-- ⬜ ORCID for all contributors; funding/grant acknowledgements
+- ✅ `LICENSE` (MIT for code; CC-BY-4.0 documented for `results/` text and figures)
+- ✅ `.zenodo.json` (creator, ORCID `0000-0001-5681-9857`, affiliation, keywords, `related_identifiers` linking the 3 legacy repos)
+- ✅ `CITATION.cff` (aligned with `.zenodo.json`)
+- ✅ Reference datasets provenance documented (raw third-party measurements excluded from git and cited in `results/DISCUSSION.md`)
+- ✅ Overview figure (`Microgravity_Stagnation_in_Spaceflight_Plants.png`) + results figures (`results/figures/F1`–`F17`) + animations (`results/animations/`)
+- ⬜ Versioned release tag (`v0.1.0`) and GitHub↔Zenodo webhook enabled to mint DOI
+- ⬜ Add any remaining co-authors / ORCIDs and funding/grant acknowledgements if applicable
 
-## 8. *npj Microgravity* paper readiness checklist
-Target: methods/tool paper with a validation case study.
-- ⬜ **Abstract** — tool + the gravity→boundary‑layer→gradient finding
-- ⬜ **Introduction** — spaceflight gas‑exchange problem; boundary‑layer/convection background
-- ⬜ **Methods** — governing equations, solver, buoyancy model, BCs, geometries, validation protocol
-- ⬜ **Results** — benchmark validation; single‑leaf/rosette/canopy gravity sweeps; comparison to measured data
-- ⬜ **Discussion** — implications for spaceflight growth hardware & forced‑ventilation design
-- ⬜ **Data/Code availability** — Zenodo DOI + GitHub
-- ⬜ **Figures** — solver schematic, gradient maps vs. g, δ(g) and Gr/Ra curves, validation overlay
-- ⬜ Author list, affiliations, ORCIDs, CRediT roles, funding
+## 8. Paper readiness checklist
+Target: methods/tool & biophysics paper with validation case study.
+- ✅ **Abstract, Introduction, Methods, Results, Discussion** — drafted in [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex), and [`manuscript/MANUSCRIPT.md`](manuscript/MANUSCRIPT.md)
+- ✅ **Figures & Tables** — `F1`–`F17` and `T1`–`T24` generated in `results/`
+- 🟡 **Data/Code availability** — GitHub live; add Zenodo DOI once `v0.1.0` is minted
+- ⬜ Final author list, affiliations, ORCIDs, CRediT roles, funding, and journal submission
 
 ---
 
@@ -290,39 +286,43 @@ Kept out of git until curated; sources noted for the deposit.
 
 ## 10. Repository structure
 ```
-LunarLeaf_CFD/
+LunarLeaf-CFD/
 ├── README.md                     ← this file (the living goal tracker)
+├── LICENSE                       ← MIT (code) + CC-BY-4.0 notice (results/)
+├── .zenodo.json                  ← Zenodo deposit metadata
+├── CITATION.cff                  ← citation metadata
 ├── docs/
 │   ├── ANALYSIS_OF_PRIOR_ATTEMPTS.md
-│   ├── ARCHITECTURE_AND_PLAN.md
-│   └── PHYSICS_NOTES.md          ← governing equations & dimensionless numbers (to add)
-├── src/                          ← the consolidated app (Milestone 1 scaffolded)
+│   └── ARCHITECTURE_AND_PLAN.md
+├── src/                          ← the consolidated Vite + React + TS app
 │   ├── solver/lbm/               ← d2q9, LBMFluid, ScalarField, buoyancy
 │   ├── solver/diagnostics/       ← dimensionless numbers, Ghia reference, Strouhal probe
 │   ├── leaf/                     ← leaf geometry: outline SDF, loft, cross-sections, asset library
 │   │   └── assets/               ← leaf JSONs + PROVENANCE.md (read this before trusting one)
-│   ├── scenarios/                ← cavity + cylinder validation cases
+│   ├── scenarios/                ← 33 scenarios (4 benchmark gates + 29 plant/hardware cases)
 │   ├── render/                   ← colormaps + field rasteriser
 │   ├── sim/                      ← SimulationController (RAF loop)
 │   └── ui/                       ← App.tsx debug bench
+├── public/                       ← static site assets & paper viewer (`paper.html`, `cose/`)
 ├── index.html · package.json · vite.config.ts · tsconfig.json
-├── legacy/                       ← the three AI‑Studio prototypes (to import for credit/reference)
-├── tools/
-│   ├── leaf-assets/              ← generator for the provisional stand-in leaves
-│   ├── neuraleaf/                ← plate photo → real leaf asset pipeline (see its README)
-│   └── sync-leaf-module.sh       ← push src/leaf/ to AeroLeaf CFD
-├── validation/                   ← measured datasets + comparison notebooks (to add)
-├── .zenodo.json                  ← (to add)
-└── CITATION.cff                  ← (to add)
+├── validation/                   ← headless gates, sweeps, and data-anchoring scripts
+├── analysis/                     ← Python plotting, GCI, and stationarity scripts
+├── results/                      ← tables (T1–T24), figures (F1–F17), DISCUSSION.md, MANUSCRIPT.md
+├── manuscript/                   ← coupled biophysics & multi-omics manuscript (TeX/PDF/MD/DOCX)
+├── archive/                      ← retired July slide deck (2026-07-deck)
+└── tools/
+    ├── leaf-assets/              ← generator for the provisional stand-in leaves
+    ├── neuraleaf/                ← plate photo → real leaf asset pipeline (see its README)
+    └── sync-leaf-module.sh       ← push src/leaf/ to AeroLeaf CFD
 ```
 
 ---
 
 ## 11. How to contribute / next action
-The immediate next step is **Milestone 1**: stand up the real 2D flow + advection–diffusion solver
-with a user‑controlled gravity vector, validated on a textbook benchmark. Everything else (UI polish,
-3D import, canopy scale) layers on top of a solver we can trust. See
-[`docs/ARCHITECTURE_AND_PLAN.md`](docs/ARCHITECTURE_AND_PLAN.md) for the build order.
+Milestones 0, 1, and 3 are complete, and the Milestone 4 gas-exchange validation and results package are in place. The immediate next steps are:
+1. Commit the updated metadata/results, tag `v0.1.0` on GitHub, and mint the **Zenodo DOI** via the GitHub↔Zenodo integration.
+2. Add the minted DOI to `README.md` / `CITATION.cff` and finalise the manuscript for submission.
+See [`docs/ARCHITECTURE_AND_PLAN.md`](docs/ARCHITECTURE_AND_PLAN.md) for the full technical design.
 
 *This README is the single source of truth for project goals and progress — update the checkboxes as
 milestones land so the path to Zenodo and the npj Microgravity paper stays visible at a glance.*

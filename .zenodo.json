@@ -6,11 +6,28 @@
     {
       "name": "Barker, Richard J.",
       "orcid": "0000-0001-5681-9857",
-      "affiliation": "MadWest / AstroBotany International Research Initiative (AIRI)"
+      "affiliation": "Department of Agricultural Engineering, Purdue University, West Lafayette, IN, USA"
     }
   ],
   "license": "MIT",
   "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/dr-richard-barker/Aero-leaf-CFD-analysis-adapted-from-blender-ish",
+      "relation": "isNewVersionOf",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/dr-richard-barker/AstroBotany_LEAF_FDM_model_test",
+      "relation": "isNewVersionOf",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/dr-richard-barker/Nature-s-aerodynamic-analyser",
+      "relation": "isNewVersionOf",
+      "resource_type": "software"
+    }
+  ],
   "keywords": [
     "microgravity",
     "spaceflight biology",

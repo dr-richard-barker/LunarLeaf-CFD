@@ -1,9 +1,9 @@
 scenario,CO2 drawdown mean (ppm),CO2 drawdown peak (ppm),O2 build-up mean (ppm)
 Leaf · Earth,3.8,5.9,2.7
-Leaf · Mars,4.5,6.8,3.2
-Leaf · Moon,5.4,7.7,3.8
-Leaf · µg,7.8,8.9,5.1
+Leaf · Mars,4.6,6.8,3.2
+Leaf · Moon,5.4,7.8,3.8
+Leaf · µg,8.7,9.9,5.5
 Rosette · Earth,7.1,17.1,4.8
-Rosette · µg,13.2,24.7,8.6
-Canopy · Earth,7.8,12.9,5.4
-Canopy · µg,10.6,14.4,7.6
+Rosette · µg,14.2,25.4,8.9
+Canopy · Earth,8.7,15.3,5.7
+Canopy · µg,19.8,28.4,12.5

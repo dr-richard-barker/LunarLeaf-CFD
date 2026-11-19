@@ -37,8 +37,13 @@ ANCHOR = f"{TAB}/_flux_anchor.npy"
 HAVE_ANCHOR = os.path.exists(ANCHOR)
 if HAVE_ANCHOR:
     A_SI, R_SI = np.load(ANCHOR)   # umol/m2/s
+elif os.path.exists(f"{TAB}/T1_measured_gas_exchange.csv"):
+    t1 = pd.read_csv(f"{TAB}/T1_measured_gas_exchange.csv")
+    A_SI = float(t1.loc[(t1["quantity"] == "Net CO2 assimilation A") & (t1["units"] == "umol m^-2 s^-1"), "value"].iloc[0])
+    R_SI = float(t1.loc[(t1["quantity"] == "Dark respiration R") & (t1["units"] == "umol m^-2 s^-1"), "value"].iloc[0])
+    HAVE_ANCHOR = True
 else:
-    print(f"NOTE: {ANCHOR} missing (run analyze_data.py with validation/raw/) — skipping T3 and T5")
+    print(f"NOTE: {ANCHOR} and T1_measured_gas_exchange.csv missing — skipping T3 and T5")
 
 umax_earth = float(sweep.loc[sweep.scenario == "leaf-earth", "u_max"].iloc[0])
 cal = None if not HAVE_ANCHOR else pd.DataFrame([

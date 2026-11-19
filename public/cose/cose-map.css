@@ -11,32 +11,36 @@
 
 /* one place to define the palette, expanded into each selector below */
 :root{
-  --cose-l-bg:#ffffff;   --cose-l-surface:#f7f9fc; --cose-l-surface2:#eef2f8;
-  --cose-l-text:#1a2230;  --cose-l-muted:#5a6473;  --cose-l-faint:#8892a3;
-  --cose-l-line:#e5e9f0;  --cose-l-accent:#3B6EA5; --cose-l-accent2:#3FB6A8;
-  --cose-d-bg:#0f141b;   --cose-d-surface:#161d27; --cose-d-surface2:#1f2937;
-  --cose-d-text:#e6ebf2;  --cose-d-muted:#9aa6b6;  --cose-d-faint:#6f7d9c;
-  --cose-d-line:#232c39;  --cose-d-accent:#6ea3d8; --cose-d-accent2:#54c9ba;
+  --cose-l-bg:#ffffff;   --cose-l-surface:#f8fafc; --cose-l-surface2:#f1f5f9;
+  --cose-l-text:#0f172a;  --cose-l-muted:#334155;  --cose-l-faint:#64748b;
+  --cose-l-line:#e2e8f0;  --cose-l-accent:#2563eb; --cose-l-accent2:#0d9488;
+  --cose-d-bg:#0b0f17;   --cose-d-surface:#131b26; --cose-d-surface2:#1a2433;
+  --cose-d-text:#f8fafc;  --cose-d-muted:#cbd5e1;  --cose-d-faint:#94a3b8;
+  --cose-d-line:#233145;  --cose-d-accent:#60a5fa; --cose-d-accent2:#2dd4bf;
 }
 
 /* ---- LIGHT (default on light OS, and when toggled to light) ---- */
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --bg:var(--cose-l-bg); --panel:var(--cose-l-surface); --panel-2:var(--cose-l-surface2);
+  --bg:var(--cose-l-bg); --bg-2:var(--cose-l-surface2);
+  --panel:var(--cose-l-surface); --panel-2:var(--cose-l-surface2);
+  --card:var(--cose-l-surface); --card-border:var(--cose-l-line);
   --surface:var(--cose-l-surface); --surface-2:var(--cose-l-surface2); --soft:var(--cose-l-surface);
   --space-900:var(--cose-l-bg); --space-800:var(--cose-l-surface); --space-700:var(--cose-l-surface2); --space-600:#e3e9f2;
   --ink:var(--cose-l-text); --fg:var(--cose-l-text); --ink-soft:var(--cose-l-muted); --muted:var(--cose-l-muted); --ink-faint:var(--cose-l-faint);
   --line:var(--cose-l-line); --border:var(--cose-l-line); --edge:var(--cose-l-line);
-  --accent:var(--cose-l-accent); --green:var(--cose-l-accent); --green-l:var(--cose-l-accent2);
+  --accent:var(--cose-l-accent); --green:#047857; --green-l:var(--cose-l-accent2); --vermilion:#c2410c;
   --leaf-500:var(--cose-l-accent); --leaf-400:var(--cose-l-accent2); --leaf-300:#7fd0c6;
   --sky-400:var(--cose-l-accent); --accent2:var(--cose-l-accent2); --code:#f1f5f9;
 }}
 html[data-theme="light"]{
-  --bg:var(--cose-l-bg); --panel:var(--cose-l-surface); --panel-2:var(--cose-l-surface2);
+  --bg:var(--cose-l-bg); --bg-2:var(--cose-l-surface2);
+  --panel:var(--cose-l-surface); --panel-2:var(--cose-l-surface2);
+  --card:var(--cose-l-surface); --card-border:var(--cose-l-line);
   --surface:var(--cose-l-surface); --surface-2:var(--cose-l-surface2); --soft:var(--cose-l-surface);
   --space-900:var(--cose-l-bg); --space-800:var(--cose-l-surface); --space-700:var(--cose-l-surface2); --space-600:#e3e9f2;
   --ink:var(--cose-l-text); --fg:var(--cose-l-text); --ink-soft:var(--cose-l-muted); --muted:var(--cose-l-muted); --ink-faint:var(--cose-l-faint);
   --line:var(--cose-l-line); --border:var(--cose-l-line); --edge:var(--cose-l-line);
-  --accent:var(--cose-l-accent); --green:var(--cose-l-accent); --green-l:var(--cose-l-accent2);
+  --accent:var(--cose-l-accent); --green:#047857; --green-l:var(--cose-l-accent2); --vermilion:#c2410c;
   --leaf-500:var(--cose-l-accent); --leaf-400:var(--cose-l-accent2); --leaf-300:#7fd0c6;
   --sky-400:var(--cose-l-accent); --accent2:var(--cose-l-accent2); --code:#f1f5f9;
   color-scheme:light;
@@ -44,22 +48,26 @@ html[data-theme="light"]{
 
 /* ---- DARK (default on dark OS, and when toggled to dark) ---- */
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:var(--cose-d-bg); --panel:var(--cose-d-surface); --panel-2:var(--cose-d-surface2);
+  --bg:var(--cose-d-bg); --bg-2:var(--cose-d-surface2);
+  --panel:var(--cose-d-surface); --panel-2:var(--cose-d-surface2);
+  --card:var(--cose-d-surface); --card-border:var(--cose-d-line);
   --surface:var(--cose-d-surface); --surface-2:var(--cose-d-surface2); --soft:var(--cose-d-surface);
   --space-900:#0b0f14; --space-800:var(--cose-d-surface); --space-700:var(--cose-d-surface2); --space-600:#2b3647;
   --ink:var(--cose-d-text); --fg:var(--cose-d-text); --ink-soft:var(--cose-d-muted); --muted:var(--cose-d-muted); --ink-faint:var(--cose-d-faint);
   --line:var(--cose-d-line); --border:var(--cose-d-line); --edge:var(--cose-d-line);
-  --accent:var(--cose-d-accent); --green:var(--cose-d-accent); --green-l:var(--cose-d-accent2);
+  --accent:var(--cose-d-accent); --green:#34d399; --green-l:var(--cose-d-accent2); --vermilion:#fb923c;
   --leaf-500:var(--cose-d-accent); --leaf-400:var(--cose-d-accent2); --leaf-300:#54c9ba;
   --sky-400:var(--cose-d-accent); --accent2:var(--cose-d-accent2); --code:#0f1a2e;
 }}
 html[data-theme="dark"]{
-  --bg:var(--cose-d-bg); --panel:var(--cose-d-surface); --panel-2:var(--cose-d-surface2);
+  --bg:var(--cose-d-bg); --bg-2:var(--cose-d-surface2);
+  --panel:var(--cose-d-surface); --panel-2:var(--cose-d-surface2);
+  --card:var(--cose-d-surface); --card-border:var(--cose-d-line);
   --surface:var(--cose-d-surface); --surface-2:var(--cose-d-surface2); --soft:var(--cose-d-surface);
   --space-900:#0b0f14; --space-800:var(--cose-d-surface); --space-700:var(--cose-d-surface2); --space-600:#2b3647;
   --ink:var(--cose-d-text); --fg:var(--cose-d-text); --ink-soft:var(--cose-d-muted); --muted:var(--cose-d-muted); --ink-faint:var(--cose-d-faint);
   --line:var(--cose-d-line); --border:var(--cose-d-line); --edge:var(--cose-d-line);
-  --accent:var(--cose-d-accent); --green:var(--cose-d-accent); --green-l:var(--cose-d-accent2);
+  --accent:var(--cose-d-accent); --green:#34d399; --green-l:var(--cose-d-accent2); --vermilion:#fb923c;
   --leaf-500:var(--cose-d-accent); --leaf-400:var(--cose-d-accent2); --leaf-300:#54c9ba;
   --sky-400:var(--cose-d-accent); --accent2:var(--cose-d-accent2); --code:#0f1a2e;
   color-scheme:dark;

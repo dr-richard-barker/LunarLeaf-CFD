@@ -1,8 +1,8 @@
 scenario,net_assimilation_pct,dC_CO2_mean
-leaf Earth,98.9,-0.158
-leaf ug,98.0,-0.296
-rosette ug,96.5,-0.504
-canopy ug,97.5,-0.361
+leaf Earth,98.9,-0.159
+leaf ug,97.6,-0.355
+rosette ug,96.1,-0.570
+canopy ug,94.5,-0.783
 leaf ug BRIC,97.9,-0.306
-leaf ug CARA,98.0,-0.301
-leaf ug VEGGIE,99.3,-0.100
+leaf ug CARA,98.0,-0.300
+leaf ug VEGGIE,99.4,-0.086
