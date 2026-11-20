@@ -1,328 +1,239 @@
-# LunarLeaf‑CFD — Gravity‑Dependent Airflow & Gas Transport Around Arabidopsis
+# LunarLeaf-CFD
 
-> **A browser‑based, user‑friendly fluid‑dynamics workbench for modelling, visualising and
-> measuring the movement of air and the O₂ / CO₂ / H₂O concentration gradients that form around
-> plant tissue — and how those change when gravity changes (1 g → Mars 0.38 g → Moon 0.17 g → µg).**
->
- 
-![Microgravity_Stagnation_in_Spaceflight_Plants](https://github.com/dr-richard-barker/LunarLeaf-CFD/blob/main/Microgravity_Stagnation_in_Spaceflight_Plants.png)
-> 
-### ▶ [Launch the live demo](https://dr-richard-barker.github.io/LunarLeaf-CFD/) — no install; pick a scenario and press Run
-*(deployed from `main` via GitHub Pages; a visible browser tab is needed since background tabs pause the animation loop.)*
+[![Live demo](https://img.shields.io/badge/demo-live-brightgreen)](https://dr-richard-barker.github.io/LunarLeaf-CFD/)
+[![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![License: CC BY 4.0](https://img.shields.io/badge/results-CC%20BY%204.0-lightgrey.svg)](results/)
 
-Part of the **AstroBotany / AIRI** family and the **Lunar Leaf** line of work
-(see [`O2_and_CO2_calculations_LUNAR_LEAF-`](https://github.com/dr-richard-barker/O2_and_CO2_calculations_LUNAR_LEAF-)).
-This repository consolidates and supersedes three earlier Google AI Studio prototypes
-(analysed in [`docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md`](docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md)) into a single
-scientifically‑grounded tool, packaged from day one for **Zenodo archival** and a
-**peer‑reviewed *npj Microgravity*‑style paper**.
+A browser-based CFD workbench for modelling gravity-dependent airflow and
+O₂, CO₂, and H₂O transport around *Arabidopsis* at leaf, rosette, and canopy scales.
 
----
+[**Launch the live demo**](https://dr-richard-barker.github.io/LunarLeaf-CFD/) ·
+[Read the manuscript draft](public/paper.html) ·
+[Explore the results](results/README.md) ·
+[Review the architecture](docs/ARCHITECTURE_AND_PLAN.md)
 
-## 1. The scientific question
+![Microgravity stagnation around spaceflight plants](Microgravity_Stagnation_in_Spaceflight_Plants.png)
 
-On Earth, a photosynthesising leaf warms and humidifies the air touching it. That air becomes
-buoyant and rises, continuously sweeping away the **unstirred boundary layer** and refreshing the
-leaf surface with CO₂ while carrying away O₂ and water vapour. **In microgravity there is no
-buoyancy‑driven convection.** The boundary layer thickens, transport collapses to pure molecular
-diffusion, and steep O₂ / CO₂ / H₂O gradients build up at the leaf surface — a leading candidate
-mechanism for the hypoxia, altered gas exchange and morphological stress seen in spaceflight plants.
+## Why this project
 
-**Core hypothesis this tool exists to test and communicate:**
-> As the gravity vector `g` is scaled from 1 g toward 0, natural convection around Arabidopsis tissue
-> weakens (falling Grashof/Rayleigh number), the diffusive boundary layer thickens, and the
-> surface‑to‑bulk gradients of CO₂, O₂ and H₂O steepen — measurably and predictably — with the
-> effect amplifying from a single leaf → a rosette → a dense microgreen canopy.
+On Earth, natural convection carries humid, CO₂-depleted air away from a leaf
+and replaces it with air from the surrounding bulk. In microgravity, buoyancy-
+driven convection disappears, leaving molecular diffusion to dominate.
 
-### Measurable outputs the tool must produce (for the paper)
-- Boundary‑layer thickness δ (mm) as a function of `g`, wind speed, and geometry.
-- Surface vs. bulk concentration gap ΔC for **CO₂, O₂, H₂O** and the resulting flux.
-- Dimensionless numbers: **Grashof (Gr), Rayleigh (Ra), Reynolds (Re), Sherwood (Sh), Nusselt (Nu), Péclet (Pe)**.
-- Effective boundary‑layer conductance `g_bl` (mol m⁻² s⁻¹) — directly comparable to gas‑exchange literature.
+LunarLeaf-CFD evaluates whether this transition:
 
----
+- Thickens the gas-exchange boundary layer
+- Steepens near-leaf O₂, CO₂, and H₂O gradients
+- Amplifies from an isolated leaf to a rosette or dense canopy
+- Can be mitigated by forced airflow or spaceflight hardware ventilation
+- Produces results that can be compared with measured gas-exchange data
 
-## 2. What we are modelling — three geometric scales
+The project uses a two-dimensional D2Q9 lattice-Boltzmann solver with Boussinesq
+buoyancy and species transport. It is designed for research, education,
+hypothesis generation, and reproducible publication work—not clinical or
+flight-safety certification.
 
-| Scale | Geometry | Question it answers |
-|---|---|---|
-| **1 — Single leaf** | One Arabidopsis leaf (imported 3D surface or parametric blade) | Boundary‑layer physics on an isolated surface; cleanest validation case. |
-| **2 — Rosette** | Full Arabidopsis rosette (overlapping leaves, self‑shading of flow) | How leaf‑to‑leaf interaction traps air and creates a rosette‑scale microclimate. |
-| **3 — Microgreen "lawn"** | Dense community canopy grown like microgreens | Emergent canopy boundary layer, within‑canopy stagnation, whole‑stand gas budget. |
+## Key capabilities
 
-Each scale is run across a **gravity sweep** (µg, Moon, Mars, 1 g, and arbitrary user values) and
-optional forced airflow (fan/ventilation), because on real spacecraft forced convection is the
-engineered substitute for the buoyancy that microgravity removes.
+- Interactive browser-based solver
+- Gravity presets for microgravity, Moon, Mars, and Earth
+- Arbitrary positive gravity magnitude and direction
+- CO₂ uptake and O₂/H₂O release at plant surfaces
+- Leaf, rosette, and microgreen-canopy geometries
+- Forced-airflow and spaceflight-hardware scenarios
+- CO₂-limited photosynthesis and humidity-limited transpiration feedback
+- Boundary-layer thickness, conductance, and dimensionless-number reporting
+- Headless TypeScript validation and sweep exports
+- Python analysis and publication-quality figure generation
+- CSV, manuscript, LaTeX, DOCX, and figure outputs
 
----
+## Scientific status
 
-## 3. Why the earlier attempts were not enough (short version)
+The scientific core has passed four reproducible numerical validation gates:
 
-All three prototypes looked plausible but **none solved any physics**:
+| Validation gate | Reference | Result | Status |
+|---|---:|---:|:---:|
+| Lid-driven cavity, Re = 100 | Ghia et al. L2 < 0.05 | 0.0105 | ✅ Pass |
+| Flow past cylinder, Re = 100 | Strouhal ≈ 0.164–0.20 | 0.192 | ✅ Pass |
+| Natural-convection cavity, Ra = 10⁴ | Nu = 2.238 | 2.242 | ✅ Pass |
+| Pure diffusion | Analytic error-function limit | ≈ 0.0000 | ✅ Pass |
 
-| Prototype | Strength to keep | Fatal gap |
-|---|---|---|
-| [Aero‑leaf‑CFD (blender‑ish)](https://github.com/dr-richard-barker/Aero-leaf-CFD-analysis-adapted-from-blender-ish) | Excellent 5‑step setup wizard + real CFD parameter schema | Engine is `Math.random()`; results are noise |
-| [AstroBotany LEAF FDM](https://github.com/dr-richard-barker/AstroBotany_LEAF_FDM_model_test) | Beautiful anatomically‑textured, gravity‑morphing leaf shader | Gas fluxes are static sliders; boundary layer is a visual glow, not solved |
-| [Nature's aerodynamic analyser](https://github.com/dr-richard-barker/Nature-s-aerodynamic-analyser) | Friendly UI; clear plain‑language explanations | "Analysis" is Gemini text; no field solve; only ½ρv² is real |
+An optional multiple-relaxation-time MRT collision scheme also passes the
+same validation suite.
 
-**None couples gravity to buoyancy — the one thing the science is actually about.**
-Full breakdown: [`docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md`](docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md).
+The model has also been checked against:
 
----
+- Diel Vernier gas-exchange measurements
+- Measured net assimilation and biomass-derived flux estimates
+- Closed-chamber mass conservation
+- Steady-state and grid-resolution sensitivity checks
+- Leaf, rosette, and canopy gravity sweeps
+- BRIC, CARA, and VEGGIE boundary-condition scenarios
+- Forced-airflow inlet and outlet variants
+- Leaf-shape and surface-distribution sensitivity studies
 
-## 4. What "doing better" means — the plan in one paragraph
+See [`results/`](results/README.md) for tables, figures, negative results,
+caveats, and reproduction instructions.
 
-Keep the winning UI (the 5‑step wizard) and the winning visuals (the shader leaf), and **drop a
-real solver underneath them**: an incompressible flow + multi‑species advection–diffusion solver
-(Lattice‑Boltzmann on WebGPU/WebGL, with a validated CPU/WASM reference), with **Boussinesq
-buoyancy driven by a user‑controlled gravity vector**, and **leaf surfaces as biologically‑set
-source/sink boundaries** (stomatal CO₂ uptake, O₂ + H₂O release). Add the features a professional
-FDM/CFD package is expected to have: import arbitrary 3D leaf models, voxelise, set boundary
-conditions, run, probe/measure, visualise fields and streamlines, sweep parameters, and export
-publication‑grade data and figures. Full design: [`docs/ARCHITECTURE_AND_PLAN.md`](docs/ARCHITECTURE_AND_PLAN.md).
+## Main findings
 
----
+Across the three plant scales, reducing gravity from Earth to microgravity:
 
-## 5. Project goals & milestone tracker
+- Reduces peak convection velocity toward zero
+- Increases mean CO₂ surface gaps by approximately 2.0–2.3×
+- Increases mean H₂O surface gaps by approximately 1.7–2.1×
+- Reduces isolated-leaf boundary-layer conductance from approximately
+  0.997 to 0.443 mol m⁻² s⁻¹
+- Amplifies stagnation as geometry changes from leaf to rosette to canopy
+- Is partly mitigated by ventilation, although the required airflow is scale-dependent
 
-Status legend: ✅ done · 🟡 in progress · ⬜ not started
+A forced airflow of approximately 2.0 cm/s restores Earth-equivalent gradients
+for the isolated leaf in the model; approximately 6.1 cm/s is required for the
+rosette. The canopy remains outside the validated low-Mach operating range
+within the tested fan sweep.
 
-### Milestone 0 — Foundations — ✅ complete
-- ✅ Repo scaffolding — README, docs, Vite+React+TS app, `LICENSE`, `.zenodo.json`, `CITATION.cff` all in place
-- ✅ Prior prototypes & retired assets — three predecessor repos linked via `related_identifiers` in `.zenodo.json` and analysed in `docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md`; retired July slide deck archived in `archive/2026-07-deck/`
-- ✅ Decide stack & pin versions — React 18 + TypeScript + Vite; CPU D2Q9 LBM core (WebGPU/WASM twin deferred to later milestones per plan)
-- ✅ Define the canonical parameter schema — solver/scenario types in place (`src/scenarios/scenarios.ts`, 33 scenarios); full interactive UI editor comes with M2
+Full results are in [`results/tables/`](results/tables/) and
+[`results/figures/`](results/figures/).
 
-### Milestone 1 — Real 2D solver (the scientific core) — ✅ solver + all four gates validated
-- ✅ Incompressible flow solver (D2Q9 LBM, BGK) — validated on cavity + cylinder (gates 1 & 2)
-- ✅ Scalar advection–diffusion for CO₂/O₂/H₂O — D2Q5 `ScalarField`, correct diffusivities, Dirichlet + zero-flux walls; **gate 4 (erfc limit) passes**
-- ✅ Boussinesq buoyancy coupled to a gravity vector (µg → 1 g) — `applyBoussinesqForce` + presets; **gate 3 (natural convection, Nu vs Ra) passes at 0.18% error** — the buoyancy coupling is proven
-- ✅ Leaf boundary as source/sink (stomatal flux BCs) — CO₂ sink + O₂/H₂O source wired onto the leaf/rosette/canopy surface cells in `makeLeafScene`, coupled to solutal buoyancy, with CO₂-limited photosynthesis feedback and the spaceflight enclosures (BRIC/CARA/VEGGIE)
-- ✅ Report Gr, Ra, Re, Sh, Nu, δ, g_bl each run — Re/Gr/Ra/Pe/Sc + Nu (natconv) + St (cylinder); the leaf scenarios now also derive **g_bl (mol m⁻² s⁻¹), the diffusive film δ (mm) and Sherwood Sh** from the simulated flux + surface gap. g_bl reproduces the literature Earth single-leaf anchor (1.0 mol m⁻² s⁻¹) and then falls with gravity (Mars 0.85 → Moon 0.72 → µg 0.49), δ thickening 0.67 → 1.35 mm — a model output, no longer an assumed constant
+## Run the application
 
-#### Milestone 1 validation results (headless, reproducible)
-| Gate | Benchmark | Reference | Measured | Status |
-|---|---|---|---|---|
-| **1** | Lid-driven cavity, Re 100 — centreline vs. Ghia et al. (1982) | L2 < 0.05 | **L2 = 0.0105** | ✅ PASS |
-| **2** | Flow past cylinder, Re 100 — Kármán shedding Strouhal | 0.164 unconfined; ≈0.19–0.20 confined | **St = 0.192** (16 cycles) | ✅ PASS |
-| **3** | Natural-convection cavity, Ra 1e4 — hot-wall Nusselt vs. de Vahl Davis (1983) | Nu = 2.238 | **Nu = 2.242** (0.18% err) | ✅ PASS |
-| **4** | Pure diffusion — profile vs. ½·erfc analytic | L2 → 0 | **L2 ≈ 0.0000** | ✅ PASS |
+### Requirements
 
-An opt-in multiple-relaxation-time collision (MRT, Lallemand & Luo 2000; `collision: 'mrt'`) passes the same four gates (`LBM_COLLISION=mrt node validation/gates.mjs`: L2 0.0115, St 0.200, Nu 2.248, erfc L2 0.0001). BGK remains the default for every published result; MRT does not rescue the wet-agar 1 g runs (T24).
+- Node.js 18 or newer
+- npm
+- A modern browser with JavaScript enabled
+- A visible browser tab for interactive runs
 
-Gate 3 is the decisive one: it proves gravity correctly drives buoyant convection, so scaling **g → 0** genuinely collapses it (gate 4's diffusion-only limit). That is the exact microgravity mechanism this project exists to model.
+The browser animation loop is throttled in background tabs.
 
-Run the interactive bench with `npm install && npm run dev` → pick a scenario, press **Run**, watch the diagnostics/gate panel. (Use a visible browser tab — background tabs throttle `requestAnimationFrame` to zero; long runs are best driven headlessly.)
-
-All four gates also run headlessly in one shot, which is what you want after touching anything the solver reaches:
+### Development
 
 ```bash
-npx esbuild validation/gates.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/gates.mjs && node validation/gates.mjs
+git clone https://github.com/dr-richard-barker/LunarLeaf-CFD.git
+cd LunarLeaf-CFD
+npm install
+npm run dev
 ```
 
-#### Leaf geometry — `src/leaf/`
+Open the local address printed by Vite.
 
-The blade was an ellipse (`stampEllipse`, a = 26, b = 4 cells). `src/leaf/` replaces it with real
-leaf geometry, following the shape/deformation split of **NeuraLeaf**
-([Yang et al., ICCV 2025, arXiv:2507.12714](https://arxiv.org/abs/2507.12714)): a flattened 2D base
-shape (outline + midrib) kept apart from the 3D deformation (midrib profile + transverse camber), so
-one outline can be re-posed without refitting anything.
-
-The 2D domain here is a **vertical slice**, so what it needs is a cut *through* the blade, not the
-top-down silhouette — `section.ts` provides both the longitudinal cut (along the midrib; reduces to
-the old ellipse for a flat leaf) and the transverse cut (across the blade, where cupping and curl live).
-
-`stampEllipse` stays: it is the published calibration reference and T1–T13 depend on it. Shape results
-land in a separate table.
+### Production build
 
 ```bash
-# geometry invariants (SDF signs, watertight shell, section extents)
-npx esbuild validation/leaf_checks.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_checks.mjs && node validation/leaf_checks.mjs
-
-# visual contact sheet of every asset: outline, both cuts, and a curl sweep
-npx esbuild validation/leaf_preview.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/leaf_preview.mjs && node validation/leaf_preview.mjs
+npm run build
+npm run preview
 ```
 
-⚠️ The shipped leaves are **provisional analytic stand-ins**, not fits to imagery. See
-[`src/leaf/assets/PROVENANCE.md`](src/leaf/assets/PROVENANCE.md) and
-[`tools/neuraleaf/README.md`](tools/neuraleaf/README.md) for the pipeline that replaces them with real
-outlines from your own plate photographs.
+`vite.config.ts` uses a relative base, allowing the build to be served from
+GitHub Pages project-subpath deployments.
 
-#### First shape result — T14
+## Run validation gates
 
 ```bash
-npx esbuild validation/export_shape.ts --bundle --format=esm --platform=node --loader:.json=json --outfile=validation/export_shape.mjs && node validation/export_shape.mjs
+npx esbuild validation/gates.ts \
+  --bundle \
+  --format=esm \
+  --platform=node \
+  --loader:.json=json \
+  --outfile=validation/gates.mjs
+
+node validation/gates.mjs
 ```
 
-Two independently controlled groups in [`results/tables/T14_shape_sweep.csv`](results/tables/T14_shape_sweep.csv).
-Do **not** compare across them — the longitudinal cut has a 52-cell chord and the transverse cut a
-27-cell one, so their characteristic lengths and Sherwood numbers are on different scales by construction.
+With the MRT collision scheme:
 
-| finding | measurement |
-|---|---|
-| **A real outline conducts less than the ellipse.** Chord and thickness matched at 52 × 8 cells, so the outline is the only variable. | g_bl 0.997 → **0.941** at 1 g (−5.6%); 0.443 → **0.426** in µg (−3.8%) |
-| **Curl costs about the same in the blade *mean* at either gravity** — curl and gravity do not compound on the mean. | ×0.814 at 1 g, ×0.832 in µg |
-| **They do compound on the *worst spot*.** The peak surface gap is the trapped interior of the U, which is where a cell actually sits. | peak ΔC_CO₂ −0.208 → −0.326 at 1 g, but −0.338 → **−0.540** in µg: **2.6×** the flat-blade 1 g peak |
-
-*Values from `T14_shape_sweep.csv`, every case run to steady state (150 000 steps, drift < 0.5 % over the last 5 s; regenerated 2026‑10‑07 — the earlier 30 000‑step snapshot overstated the µg values by ~10 % but gave the same ratios).*
-
-⚠️ **Caveat on the curl group.** A real Arabidopsis blade is ~0.2 mm, which at dx = 0.288 mm is under
-one lattice cell — it would fall straight through. Thickness is therefore inflated to 8 cells (~11×
-life size), matching what `stampEllipse` already did silently. That inflation fattens a *tilted* margin
-sideways, so the curled section is 35 cells wide against the flat one's 27 and the curl comparison is
-not perfectly controlled. Treat the curl rows as indicative until the blade is resolved on a finer lattice.
-
-### Milestone 2 — User‑friendly GUI (professional‑package features)
-- ⬜ Import 3D models (STL / OBJ / GLB / PLY) + parametric leaf‑shape generator
-- ⬜ Auto‑voxelise geometry to solver grid; domain & mesh controls
-- ⬜ Boundary‑condition editor (inlet/outlet/walls, forced airflow, gravity direction & magnitude)
-- ⬜ Live field visualisation (velocity, pressure, species concentration, streamlines, iso‑lines)
-- ⬜ Probe/measure tool, plots, and CSV / VTK / PNG / MP4 export
-- ⬜ Save / load project files; reproducible run manifests
-
-### Milestone 3 — Three scales + gravity sweep — ✅ all three scales built
-- ✅ Single‑leaf preset & gravity sweep (Earth/Mars/Moon/µg)
-- ✅ Rosette preset (fan of overlapping leaves — interior air‑trapping)
-- ✅ Microgreen‑canopy preset (row of upright shoots on soil — within‑canopy stagnation)
-- 🟡 Gravity sweep — 8 selectable presets + reproducible headless sweep done; automated in‑app comparative dashboard still to build
-- ✅ **Forced‑airflow (fan) scenarios** — µg leaf + ventilation; **≈2.0 cm/s nulls the microgravity penalty** (`results/T6`, `F6`; was 2.8 before the 2026‑10‑07 outlet + steady‑state fix, see `results/README.md`). Three in‑app fan presets (3/8/17 cm/s).
-- ✅ **Spaceflight‑hardware scenarios** — BRIC (sealed) / CARA (micropore tape) / VEGGIE (vented) as dish boundary conditions, ±light (`results/F7`, `T7`, `T8`, `DISCUSSION.md §3.7`). Added a semi‑permeable membrane BC. BRIC: CO₂ fixed in ~7 min / O₂ hypoxia ~6.5 days.
-- ✅ **Membrane + fan across all three scales** — Earth‑equivalent ventilation **≈2.0 / 6.1 cm/s** (leaf/rosette); the canopy does not reach Earth level within the solver's low‑Mach range (≤ 3.3 cm/s). Since 2026‑11‑07 the fan inlet delivers its set flow (it had leaked 2–15 %; `results/README.md`). BRIC≈CARA at the surface, one VEGGIE speed under‑serves denser stands (`results/F8`, `F9`, `T9`, `T10`, `§3.8`).
-- ✅ **Closed‑loop CO₂‑limited photosynthesis** — surface flux now feeds back on assimilation (`§3.9`, `F10`, `T11`, `T12`). Spatial self‑suppression **1.1–5.5%** (most in µg canopy / rosette); over a photoperiod a **sealed BRIC dish fixes ~1%** of Earth carbon vs ~90% (CARA) / ~100% (VEGGIE). (`33` total scenarios in `src/scenarios/scenarios.ts`: 29 plant + 4 benchmark gates.)
-- ✅ **Draft manuscripts assembled** — [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md) + [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex) (*npj Microgravity* draft), and [`manuscript/MANUSCRIPT.md`](manuscript/MANUSCRIPT.md) + [`manuscript/main.tex`](manuscript/main.tex) (coupled biophysics & multi-omics draft).
-
-#### 5a. First science result — three scales × gravity
-All three plant scales share one physics: the surface is a stomatal source/sink (CO₂ uptake, O₂ + H₂O
-release), the near‑surface air is lighter (humid, CO₂‑depleted), and solutal Boussinesq buoyancy drives
-the convection that sweeps the boundary layer — until gravity is reduced. Fields are excess‑over‑ambient
-(so ambient = 0 and CO₂ goes negative). Headless sweep run to steady state — 150 000 steps each (the µg canopy
-900 000), regenerated 2026‑10‑07 from `results/tables/T2_model_sweep.csv`; earlier versions of this table used
-30 000‑step snapshots taken before the µg cases had settled. ΔC is the surface‑to‑ambient gap, reported as **mean / peak** over the surface:
-
-| Scale · gravity | u_max (convection) | ΔC H₂O (mean/peak) | ΔC CO₂ (mean/peak) |
-|---|---|---|---|
-| Single leaf · 1 g | 4.6e‑2 | 0.128 / 0.188 | −0.161 / −0.247 |
-| Single leaf · **µg** | **0.0** | **0.240** / 0.274 | **−0.364** / −0.414 |
-| Rosette · 1 g | 4.6e‑2 | 0.225 / 0.510 | −0.298 / −0.716 |
-| Rosette · **µg** | **0.0** | **0.392** / 0.704 | **−0.593** / −1.064 |
-| Microgreen canopy · 1 g | 7.2e‑2 | 0.259 / 0.452 | −0.364 / −0.638 |
-| Microgreen canopy · **µg** | **0.0** | **0.547** / 0.785 | **−0.829** / −1.188 |
-
-**Two effects, both reproduced from first principles:**
-1. **Gravity.** Within every scale, dropping to microgravity kills convection (u_max → 0) and steepens the
-   surface gaps ≈1.7–2.1× (H₂O; CO₂ 2.0–2.3×) — the leaf/stand sits in stale, CO₂‑starved, humid air. (The full single‑leaf
-   Mars/Moon points scale ≈√g: u_max 4.6e‑2 → 2.8e‑2 → 1.6e‑2 → 0.)
-2. **Scale.** Denser geometry traps air, so the gaps grow leaf → rosette → canopy. The rosette crown shows
-   the steepest *peak* (0.51 vs the leaf’s 0.19 — tightly enclosed pockets); the canopy shows the highest
-   *mean* (the whole stand stagnates). The two compound: a microgravity canopy is the worst case.
-
-This is the candidate spaceflight plant‑stress mechanism, now reproduced across the three scales the project
-set out to model. *(Modelling notes: kept in the low‑Mach/Boussinesq‑valid regime, u_max < 0.1 and β·ΔC ≲ 0.5;
-the canopy uses a reduced per‑leaf flux representing self‑shading. Absolute ΔC magnitudes are in lattice
-excess units — the trends and ratios are the result. Larger domains, forced‑airflow ventilation, and
-calibration to the measured Vernier gas‑exchange data (Milestone 4) are the next refinements.)*
-
-### Milestone 4 — Validation against real data — 🟡 gas-exchange validation done (see `results/`)
-- ✅ Ingest Vernier O₂/RH/temperature `ExportedData` time series (diel gas cycling; `results/figures/F1,F2`)
-- ✅ Anchor the model to measured flux — net assimilation **3.85 µmol CO₂ m⁻² s⁻¹** (biomass workbook) + Vernier cross-check; closed-chamber transport reproduced (mass conserved 2×10⁻⁵)
-- ✅ Physical prediction — surface CO₂ drawdown **3.8 ppm (leaf, Earth) → 14.2 ppm (rosette, µg) → 19.8 ppm (canopy, µg)**, anchored on the measured flux (`results/tables/T5_physical_prediction.csv`, `DISCUSSION.md`)
-- ⬜ Cross‑check against the "Imaging of pH, CO₂ and O₂ around Arabidopsis" reference (spatially-resolved test — next)
-
-**→ Results package: [`results/`](results/README.md)** — tables T1–T24, figures F1–F17, and an
-academic results + discussion write-up ([`results/DISCUSSION.md`](results/DISCUSSION.md)).
-
-### Milestone 5 — Publish
-- ⬜ 3D solver benchmark (optional, if WebGPU perf allows)
-- 🟡 Zenodo release — repo packaged & Zenodo-ready (`LICENSE`, `.zenodo.json`, `CITATION.cff` aligned); tag `v0.1.0` + enable the GitHub↔Zenodo webhook to mint the DOI
-- 🟡 Manuscript — drafts assembled ([`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`.docx`](results/MANUSCRIPT.docx), [LaTeX](results/manuscript/manuscript.tex), and [`manuscript/`](manuscript/MANUSCRIPT.md)); finalise co-authors/refs and submit
-
-## License & citation
-Source code: **MIT** (`LICENSE`). Manuscript text and figures under `results/` (`MANUSCRIPT.md`,
-`DISCUSSION.md`, `manuscript/`, `figures/`): **CC-BY-4.0**. Raw third-party measurement data are not
-redistributed — referenced by provenance. To cite, see [`CITATION.cff`](CITATION.cff).
-
----
-
-## 6. Success criteria (definition of "great", so we don't repeat the prototypes)
-1. **It solves physics, not cosmetics.** Every visualised field comes from a numerical solve, and the
-   flow solver passes at least one textbook benchmark (flow past a cylinder: Strouhal ≈ 0.2 at Re≈100).
-2. **Gravity changes the answer.** Reducing `g` demonstrably thickens δ and steepens ΔC, with
-   Gr/Ra scaling as theory predicts — reproducible on demand.
-3. **A non‑CFD scientist can use it.** Upload a leaf, pick a gravity, press run, read the numbers.
-4. **Every result is reproducible & exportable.** Run manifest in, CSV/VTK/figures out.
-5. **At least one quantitative comparison to real measured data** exists for the paper.
-
----
-
-## 7. Zenodo readiness checklist
-- ✅ `LICENSE` (MIT for code; CC-BY-4.0 documented for `results/` text and figures)
-- ✅ `.zenodo.json` (creator, ORCID `0000-0001-5681-9857`, affiliation, keywords, `related_identifiers` linking the 3 legacy repos)
-- ✅ `CITATION.cff` (aligned with `.zenodo.json`)
-- ✅ Reference datasets provenance documented (raw third-party measurements excluded from git and cited in `results/DISCUSSION.md`)
-- ✅ Overview figure (`Microgravity_Stagnation_in_Spaceflight_Plants.png`) + results figures (`results/figures/F1`–`F17`) + animations (`results/animations/`)
-- ⬜ Versioned release tag (`v0.1.0`) and GitHub↔Zenodo webhook enabled to mint DOI
-- ⬜ Add any remaining co-authors / ORCIDs and funding/grant acknowledgements if applicable
-
-## 8. Paper readiness checklist
-Target: methods/tool & biophysics paper with validation case study.
-- ✅ **Abstract, Introduction, Methods, Results, Discussion** — drafted in [`results/MANUSCRIPT.md`](results/MANUSCRIPT.md), [`results/manuscript/manuscript.tex`](results/manuscript/manuscript.tex), and [`manuscript/MANUSCRIPT.md`](manuscript/MANUSCRIPT.md)
-- ✅ **Figures & Tables** — `F1`–`F17` and `T1`–`T24` generated in `results/`
-- 🟡 **Data/Code availability** — GitHub live; add Zenodo DOI once `v0.1.0` is minted
-- ⬜ Final author list, affiliations, ORCIDs, CRediT roles, funding, and journal submission
-
----
-
-## 9. Data & validation assets (already in hand)
-Kept out of git until curated; sources noted for the deposit.
-- **Vernier gas‑exchange time series** — `Arabidopsis_v2_ExportedData.csv`, `Arabidopsis_right_v3_ExportedData.csv`
-  (O₂ %, temperature, relative & absolute humidity vs. time) → Milestone 4 validation.
-- **`Biomass_FW_DW_gas_exchange_data.xlsx`** — fresh/dry weight + gas exchange.
-- **"Imaging of pH, CO₂ and O₂ levels around Arabidopsis" (PDF)** — spatial gradient reference.
-- **Real leaf 3D model** — `single-leaf` (`leaf.glb` + UV texture) → geometry import test case.
-- **Reference software to learn from** — VirtualLeaf (cell‑based tissue), Vernier GasLab.
-
----
-
-## 10. Repository structure
-```
-LunarLeaf-CFD/
-├── README.md                     ← this file (the living goal tracker)
-├── LICENSE                       ← MIT (code) + CC-BY-4.0 notice (results/)
-├── .zenodo.json                  ← Zenodo deposit metadata
-├── CITATION.cff                  ← citation metadata
-├── docs/
-│   ├── ANALYSIS_OF_PRIOR_ATTEMPTS.md
-│   └── ARCHITECTURE_AND_PLAN.md
-├── src/                          ← the consolidated Vite + React + TS app
-│   ├── solver/lbm/               ← d2q9, LBMFluid, ScalarField, buoyancy
-│   ├── solver/diagnostics/       ← dimensionless numbers, Ghia reference, Strouhal probe
-│   ├── leaf/                     ← leaf geometry: outline SDF, loft, cross-sections, asset library
-│   │   └── assets/               ← leaf JSONs + PROVENANCE.md (read this before trusting one)
-│   ├── scenarios/                ← 33 scenarios (4 benchmark gates + 29 plant/hardware cases)
-│   ├── render/                   ← colormaps + field rasteriser
-│   ├── sim/                      ← SimulationController (RAF loop)
-│   └── ui/                       ← App.tsx debug bench
-├── public/                       ← static site assets & paper viewer (`paper.html`, `cose/`)
-├── index.html · package.json · vite.config.ts · tsconfig.json
-├── validation/                   ← headless gates, sweeps, and data-anchoring scripts
-├── analysis/                     ← Python plotting, GCI, and stationarity scripts
-├── results/                      ← tables (T1–T24), figures (F1–F17), DISCUSSION.md, MANUSCRIPT.md
-├── manuscript/                   ← coupled biophysics & multi-omics manuscript (TeX/PDF/MD/DOCX)
-├── archive/                      ← retired July slide deck (2026-07-deck)
-└── tools/
-    ├── leaf-assets/              ← generator for the provisional stand-in leaves
-    ├── neuraleaf/                ← plate photo → real leaf asset pipeline (see its README)
-    └── sync-leaf-module.sh       ← push src/leaf/ to AeroLeaf CFD
+```bash
+LBM_COLLISION=mrt node validation/gates.mjs
 ```
 
----
+Additional reproducible checks are documented in
+[`results/README.md`](results/README.md).
 
-## 11. How to contribute / next action
-Milestones 0, 1, and 3 are complete, and the Milestone 4 gas-exchange validation and results package are in place. The immediate next steps are:
-1. Commit the updated metadata/results, tag `v0.1.0` on GitHub, and mint the **Zenodo DOI** via the GitHub↔Zenodo integration.
-2. Add the minted DOI to `README.md` / `CITATION.cff` and finalise the manuscript for submission.
-See [`docs/ARCHITECTURE_AND_PLAN.md`](docs/ARCHITECTURE_AND_PLAN.md) for the full technical design.
+## Repository structure
 
-*This README is the single source of truth for project goals and progress — update the checkboxes as
-milestones land so the path to Zenodo and the npj Microgravity paper stays visible at a glance.*
+```text
+src/
+  solver/       D2Q9 LBM, scalar transport, buoyancy, diagnostics
+  leaf/         Leaf outlines, sections, deformations, and assets
+  scenarios/    Leaf, rosette, canopy, fan, and hardware scenarios
+  sim/          Browser simulation and request-animation-frame control
+  render/       Rasterisation and concentration/velocity colour maps
+  ui/           React application and simulation controls
+
+validation/     Headless solver gates and reproducible sweep jobs
+analysis/       Python convergence, stationarity, and plotting tools
+results/        Tables, figures, discussion, and manuscript drafts
+manuscript/     Journal-style TeX, Markdown, and document outputs
+docs/           Prior-attempt analysis and architecture documentation
+tools/          Leaf-tracing and leaf-asset generation utilities
+public/         Static manuscript and browser assets
+```
+
+## Documentation
+
+- [Results package and reproduction guide](results/README.md)
+- [Scientific results and limitations](results/DISCUSSION.md)
+- [Manuscript draft](results/MANUSCRIPT.md)
+- [Architecture and implementation plan](docs/ARCHITECTURE_AND_PLAN.md)
+- [Prior prototype analysis](docs/ANALYSIS_OF_PRIOR_ATTEMPTS.md)
+- [Leaf asset provenance](src/leaf/assets/PROVENANCE.md)
+
+## Current limitations
+
+- The production solver is currently two-dimensional
+- Plant leaves are represented by cross-sections or analytic stand-ins
+- Most cases operate in a low-Mach, Boussinesq-valid regime
+- Absolute concentration values depend on the chosen lattice-to-physical mapping
+- Real dish geometry and finite chamber volumes matter substantially at microgravity
+- Microgravity chamber predictions are not independent of chamber size
+- Raw third-party measurements are intentionally not redistributed
+- The canopy and some high-ventilation cases exceed the current validated operating range
+- 3D geometry import, GPU acceleration, and a general project editor remain future work
+- Wet-agar and highly buoyant humidity forcing are explicitly flagged as unsafe or unresolved cases
+
+These limitations are an important part of the results, not implementation defects
+to hide.
+
+## Roadmap
+
+Near-term work is focused on completing publication readiness:
+
+- [ ] Mint a Zenodo DOI and attach it to the repository metadata
+- [ ] Finalise author contributions, affiliations, ORCID records, and funding
+- [ ] Complete the spatially resolved CO₂/O₂ comparison
+- [ ] Regenerate stale table T12 and remaining unverified predictions
+- [ ] Submit the manuscript to *npj Microgravity*
+- [ ] Add 3D geometry import and voxelisation if performance permits
+- [ ] Add a persistent project/run-manifest format
+- [ ] Provide CSV/VTK/figure export in the browser interface
+- [ ] Compare against additional independent CFD and experimental data
+
+The active technical plan is in
+[`docs/ARCHITECTURE_AND_PLAN.md`](docs/ARCHITECTURE_AND_PLAN.md).
+
+## License
+
+- Source code: [MIT License](LICENSE)
+- Manuscript text and original figures under `results/`: CC BY 4.0
+- Raw third-party datasets are not redistributed and are documented by
+  provenance in [`results/DISCUSSION.md`](results/DISCUSSION.md)
+
+## Citation
+
+Until a release DOI is minted, cite this repository using
+[`CITATION.cff`](CITATION.cff).
+
+```bibtex
+@software{barker_lunarleaf_cfd,
+  author = {Barker, Richard D.},
+  title = {LunarLeaf-CFD},
+  url = {https://github.com/dr-richard-barker/LunarLeaf-CFD},
+  version = {0.1.0}
+}
+```
+
+## Part of the AstroBotany/AIRI project
+
+LunarLeaf-CFD is part of the AstroBotany / AIRI research family and the
+Lunar Leaf line of work, including
+[O2_and_CO2_calculations_LUNAR_LEAF](https://github.com/dr-richard-barker/O2_and_CO2_calculations_LUNAR_LEAF-).
